@@ -1,0 +1,151 @@
+<div class="flex justify-content-center p-4">
+    <div class="w-full sm:w-10 md:w-8 lg:w-6 flex flex-column gap-2">
+
+        <!-- Info Card -->
+        <p-card styleClass="bg-blue-200 text-sm md:text-base">
+            Accées réservé au entreprise, les visiteurs pourront s’inscrire sur la plateforme SEEKUBE et non sur le site
+            forum ESTP.
+        </p-card>
+
+        <!-- Register Form -->
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="bg-white p-4 md:p-5 border-round-md shadow-2">
+
+
+            <!-- Logo -->
+            <div class="flex justify-content-center mb-4">
+                <img src="assets/logo.png" height="80" class="w-5 md:w-3 lg:w-4" alt="Logo">
+            </div>
+
+            <!-- Heading -->
+            <h2 class="mb-4">S'inscrire</h2>
+
+            <p-tabView [(activeIndex)]="activeIndex">
+                <p-tabPanel header="1. Vos coordonnées">
+                    <!-- Last Name -->
+                    <div class="field">
+                        <label for="lastname">Nom</label>
+                        <input pInputText id="lastname" formControlName="lastname" placeholder="Entrez votre nom"
+                            class="w-full" />
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="field">
+                        <label for="firstname">Prénom</label>
+                        <input pInputText id="firstname" formControlName="firstname" placeholder="Entrez votre prénom"
+                            class="w-full" />
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="field">
+                        <label for="phonenumber">Numéro de téléphone</label>
+                        <input pInputText id="phonenumber" formControlName="phonenumber"
+                            placeholder="Entrez votre numéro de téléphone" class="w-full" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field">
+                        <label for="email">Email (Qui sera votre identifiant de connexion)</label>
+                        <input pInputText id="email" formControlName="email" placeholder="Entrez votre email"
+                            class="w-full" />
+                    </div>
+                    <div class="mb-3 flex justify-content-between">
+                        <div></div>
+                        <button pButton label="Suivant" (click)="activeIndex = 1"></button>
+                    </div>
+                </p-tabPanel>
+                <p-tabPanel header="2. Votre entreprise">
+                    <!-- Company Name -->
+                    <div class="field">
+                        <label for="companyName">Nom de l'entreprise</label>
+                        <input pInputText id="companyName" formControlName="companyName"
+                            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+
+                    </div>
+
+                    <!-- Company SIREN -->
+                    <div class="field">
+                        <label for="companySiren">{{ labelSiren }}</label>
+                        <input pInputText id="companySiren" formControlName="companySiren"
+                            placeholder="Entrez le numéro SIREN" class="w-full" />
+
+                    </div>
+
+                    <!-- Is in France -->
+                    <div class="field-checkbox mb-3">
+                        <p-checkbox formControlName="isNotInFrance" [binary]="true" inputId="isNotInFrance" (click)="onCheckboxChange()"></p-checkbox>
+                        <label for="isNotInFrance">Vous n'etes pas en France</label>
+                    </div>
+
+                    <!-- Function in Company -->
+                    <div class="field">
+                        <label for="functionInCompany">Fonction dans l'entreprise</label>
+                        <input pInputText id="functionInCompany" formControlName="functionInCompany"
+                            placeholder="Entrez votre fonction" class="w-full" />
+
+                    </div>
+                    <div class="mb-3 flex justify-content-between">
+
+                        <button pButton label="Retour" (click)="activeIndex = 0" class="p-button-outlined"></button>
+                        <button pButton label="Suivant" (click)="activeIndex = 2"></button>
+                    </div>
+                </p-tabPanel>
+                <p-tabPanel header="3. Votre mot de passe">
+                    <!-- Password -->
+                    <div class="field">
+                        <label for="password">Mot de passe</label>
+                        <input pInputText id="password" formControlName="password"
+                            placeholder="Entrez votre mot de passe" class="w-full" type="password" />
+
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="field">
+                        <label for="confirmPassword">Confirmer le mot de passe</label>
+                        <input pInputText id="confirmPassword" formControlName="confirmPassword"
+                            placeholder="Confirmez votre mot de passe" class="w-full" type="password" />
+
+                    </div>
+                    <!-- Submit -->
+                    <div class="mb-3 flex justify-content-between">
+                        <button pButton label="Retour" (click)="activeIndex = 1" class="p-button-outlined"></button>
+                        <button pButton type="submit" label="Envoyer" [disabled]="registerForm.invalid"></button>
+                    </div>
+
+                </p-tabPanel>
+            </p-tabView>
+            <p-message *ngIf="registerForm.get('lastname')?.invalid && registerForm.get('lastname')?.touched"
+            severity="error" text="Nom requis" styleClass="w-full mt-1"></p-message>
+        <p-message *ngIf="registerForm.get('firstname')?.invalid && registerForm.get('firstname')?.touched"
+            severity="error" text="Prénom requis" styleClass="w-full mt-1"></p-message>
+        <p-message *ngIf="registerForm.get('phonenumber')?.invalid && registerForm.get('phonenumber')?.touched"
+            severity="error" text="Numéro de téléphone requis" styleClass="w-full mt-1"></p-message>
+        <p-message *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" severity="error"
+            text="Email requis ou format invalide" styleClass="w-full mt-1">
+        </p-message>
+        <p-message *ngIf="registerForm.get('companyName')?.invalid && registerForm.get('companyName')?.touched"
+            severity="error" text="Nom de l'entreprise requis" styleClass="w-full mt-1"></p-message>
+        <p-message *ngIf="registerForm.get('companySiren')?.invalid && registerForm.get('companySiren')?.touched"
+            severity="error" text="Numéro SIREN requis" styleClass="w-full mt-1"></p-message>
+        <p-message
+            *ngIf="registerForm.get('functionInCompany')?.invalid && registerForm.get('functionInCompany')?.touched"
+            severity="error" text="Fonction requise" styleClass="w-full mt-1"></p-message>
+        <p-message *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            severity="error" text="Mot de passe requis (min 6 caractères)" styleClass="w-full mt-1">
+        </p-message>
+        <p-message
+            *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+            severity="error" text="Les mots de passe doivent correspondre" styleClass="w-full mt-1">
+        </p-message>
+            <!-- Separator -->
+            <div class="text-center mb-2">Ou</div>
+
+            <!-- Login Link -->
+            <div class="text-center">
+                <a class="text-primary" routerLink="">Se connecter</a>
+            </div>
+
+
+        </form>
+
+    </div>
+</div>

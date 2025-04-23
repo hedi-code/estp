@@ -1,0 +1,13 @@
+:host ::ng-deep .p-tabview-nav {
+    justify-content: center !important;
+    width: 100%;
+    border-top: .5px solid rgb(206, 206, 206);
+  }
+
+  :host ::ng-deep .p-stepper .p-stepper-panels{
+    padding-left: 0;
+    padding-right: 0;
+  }
+  :host ::ng-deep .p-tabview .p-tabview-panels{
+    padding: 0;
+  }

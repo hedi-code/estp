@@ -1,0 +1,68 @@
+<div class="flex justify-content-center p-4">
+    <div class="w-full sm:w-10 md:w-8 lg:w-4 flex flex-column gap-2">
+
+        <!-- Info Card -->
+        <p-card styleClass="bg-blue-200 text-sm md:text-base">
+            NB1: Aux entreprises présentes lors de la 44e édition du Forum ESTP, le compte associé à votre adresse
+            e-mail a été supprimé par mesure de sécurité. Veuillez créer un nouveau compte en cliquant sur
+            "Inscription".
+            <br> NB2: Les BC2 seront disponibles début octobre.
+        </p-card>
+
+        <!-- Login Form -->
+        <form [formGroup]="loginForm" class="bg-white p-4 md:p-5 border-round-md shadow-2">
+
+            <!-- Logo -->
+            <div class="flex justify-content-center mb-4">
+                <img src="assets/logo.png" height="80" class="w-6 md:w-4 lg:w-5" alt="Logo">
+            </div>
+
+            <!-- Heading -->
+            <h2 class="mb-4">Se connecter</h2>
+
+            <!-- Email -->
+            <div class="field">
+                <label for="email">Email</label>
+                <input pInputText id="email" formControlName="email" placeholder="Entrez votre email" class="w-full" />
+                <p-message *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" severity="error"
+                    text="Email requis ou format invalide" styleClass="w-full mt-1"></p-message>
+            </div>
+
+            <!-- Password -->
+            <div class="field">
+                <label for="password">Mot de passe</label>
+                <input pInputText id="password" formControlName="password" placeholder="Entrez votre mot de passe"
+                    class="w-full" type="password" />
+                <p-message *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                    severity="error" text="Mot de passe requis (min 6 caractères)" styleClass="w-full mt-1"></p-message>
+            </div>
+
+            <!-- Remember Me -->
+            <div class="field-checkbox mb-3">
+                <p-checkbox formControlName="rememberMe" [binary]="true" inputId="rememberMe"></p-checkbox>
+                <label for="rememberMe">Se souvenir de moi</label>
+            </div>
+
+            <!-- Forgot Password -->
+            <div class="text-center mb-3 text-sm">
+                Mot de passe oublié ?
+                <a class="text-primary ml-1" routerLink="/reset">Réinitialiser</a>
+            </div>
+
+            <!-- Submit -->
+            <div class="mb-3">
+                <button pButton (click)="onSubmit()" type="submit" label="Se connecter" class="w-full"
+                    [disabled]="loginForm.invalid"></button>
+            </div>
+
+            <!-- Separator -->
+            <div class="text-center mb-2">Ou</div>
+
+            <!-- Register -->
+            <div>
+                <button pButton routerLink="/register" label="S'inscrire" class="w-full p-button-outlined"></button>
+            </div>
+        </form>
+
+    </div>
+</div>
