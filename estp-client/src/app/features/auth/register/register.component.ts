@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { EntrepriseService } from '../../entreprise/entreprise.service';
 import { ContactService } from '../../forum/models/contact.service';
 import { AuthService } from '../auth.service';
@@ -18,7 +17,6 @@ export class RegisterComponent {
   labelSiren = "Numéro SIREN de l'entreprise";
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private entrepriseService: EntrepriseService,
     private contactService: ContactService,
     private authService: AuthService
