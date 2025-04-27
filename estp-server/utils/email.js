@@ -1,9 +1,10 @@
 const SibApiV3Sdk = require('sib-api-v3-sdk');
+require('dotenv').config();
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
 // Configure API key authorization
 const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = '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';
+apiKey.apiKey = process.env.EMAIL_KEY;
 
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
