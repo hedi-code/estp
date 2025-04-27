@@ -2,135 +2,35 @@
     <p-tabPanel header="I. Votre stand">
         <div class="grid">
             <div class="col-9 p-3 pt-4">
-                <div class="grid flex-wrap">
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
+                <div class="grid flex-wrap p-4">
+                    <ng-container *ngFor="let pack of pack1s">
+                        <h1>{{pack.titre}}</h1>
+                        <div class="border-2 border-round-xl border-solid border-primary grid flex">
+                            <img [src]="baseUrl + pack.img" alt="" class="col-4 m-0 p-0 border-round-left-xl">
+                            <div class="col-8 p-4">
+                                <h3 class="text-primary">{{pack.description}}</h3>
+                                <ng-container *ngFor="let option of pack.options">
+                                    <p class="ml-3"><i class="pi pi-check" style="font-size: 1rem"></i>
+                                        {{option.option_description}}</p>
+                                </ng-container>
+                                <div class="grid mt-1 align-items-center">
+                                    <div class="col-2 font-bold ">Surface/Prix</div>
+                                    <p-dropdown class="col-6" styleClass="w-full" [options]="pack.surfaces" [(ngModel)]="selectedOption">
+                                        <ng-template pTemplate="selectedItem">
+                                            {{ selectedOption.surface }}m² pour {{selectedOption.prix}}
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            {{ option.surface }}m² pour {{option.prix}} €
+                                        </ng-template>
+                                    </p-dropdown>
+                                    <p-button label="Ajouter" [disabled]="addBtnIsDisabled()" icon="pi pi-plus" class="col-4" styleClass="w-full" (click)="addToCommand(pack)"/>
                                 </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
-                    <div class="col-3">
-                        <p-card header="Advanced Card" subheader="Card Subheader" [style]="{ width: '250px' }">
-                            <ng-template pTemplate="header">
-                                <img alt="Card" src="https://primefaces.org/cdn/primeng/images/card-ng.jpg" />
-                            </ng-template>
-                            <p>
-                                Lorem ipsum dolor sit amet...
-                            </p>
-                            <ng-template pTemplate="footer">
-                                <div class="flex gap-3 mt-1">
-                                    <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full" />
-                                    <p-button label="Save" class="w-full" styleClass="w-full" />
-                                </div>
-                            </ng-template>
-                        </p-card>
-                    </div>
+                            </div>
+
+
+                        </div>
+                    </ng-container>
+
                 </div>
             </div>
             <app-commande class="col-3 h-full"></app-commande>
