@@ -9,7 +9,7 @@ import { environment } from './../../../environments/environment';
 })
 export class AuthService {
 
-  baseUrl = `${environment.apiUrl}`;  // Backend API URL
+  baseUrl = `${environment.apiUrl}/api`;  // Backend API URL
 
   constructor(private httpClient: HttpClient) { }
 
