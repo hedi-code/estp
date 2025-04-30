@@ -12,7 +12,14 @@ const cors = require('cors');
 dotenv.config();
 const app = express();
 const corsOptions = {
-  origin: ['*', 'http://localhost:4200', 'https://test.new.app.forumestp.fr', 'https://www.test.new.app.forumestp.fr','http://test.new.app.forumestp.fr', 'http://www.test.new.app.forumestp.fr', 'https://www.new.app.forumestp.fr', 'https://new.app.forumestp.fr'  // Allow requests from this origin
+  origin: ['*', 
+    'http://localhost:4200',
+    'https://test.new.app.forumestp.fr', 
+    'https://www.test.new.app.forumestp.fr',
+    'http://test.new.app.forumestp.fr', 
+    'http://www.test.new.app.forumestp.fr', 
+    'https://www.new.app.forumestp.fr', 
+    'https://new.app.forumestp.fr'  // Allow requests from this origin
   ], 
   credentials: true,  // Allow credentials (cookies) to be included in the request
 };
@@ -29,7 +36,7 @@ app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUniniti
 app.use('/uploads', express.static('uploads'));
 
 
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/entreprises", entrepriseRoutes);
 app.use("/api/user", userRoutes);
