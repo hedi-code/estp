@@ -3,14 +3,13 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Contact } from './contact.model';
 import { AuthCookieService } from '../../../core/services/auth-cookie.service';
-import { CookieService } from 'ngx-cookie-service';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactService {
-  private baseUrl = 'http://localhost:3000/api/contact'; // Change as needed
-
+baseUrl = `${environment.apiUrl}/contact`
   constructor(private http: HttpClient,private cookieService:AuthCookieService) {}
 
   getAllContacts(): Observable<Contact[]> {
