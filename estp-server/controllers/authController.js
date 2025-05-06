@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
       "INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)",
       [email, hashedPassword, first_name, last_name],
       (err, result) => {
-        if (err) return res.status(500).json({ error: "Database error" });
+        if (err) return res.status(500).json({ error: err });
 
         // Send verification email
         sendEmail(
@@ -72,7 +72,7 @@ exports.verifyEmail = (req, res) => {
     if (err) return res.status(400).json({ error: "Invalid or expired token" });
 
     db.query("UPDATE users SET verified = 1 WHERE email = ?", [decoded.email], (err) => {
-      if (err) return res.status(500).json({ error: "Database error" });
+      if (err) return res.status(500).json({ error: err });
       res.json({ message: "Merci d'avoir vérifier votre email, veuillez se connecter." });
     });
   });
@@ -85,7 +85,6 @@ exports.resetPasswordRequest = (req, res) => {
   db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
     if (results.length === 0) return res.status(404).json({ error: "Email non existant" });
-  
     // Generate reset token (expires in 1 hour)
     const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 

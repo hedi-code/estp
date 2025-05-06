@@ -20,8 +20,13 @@ const corsOptions = {
     'http://test.new.app.forumestp.fr', 
     'http://www.test.new.app.forumestp.fr', 
     'https://www.new.app.forumestp.fr', 
-    'https://new.app.forumestp.fr'  // Allow requests from this origin
+    'https://new.app.forumestp.fr',
+    'https://test.app.forumestp.fr',
+    'http://test.app.forumestp.fr',
+'https://www.test.app.forumestp.fr',
+'http://www.test.app.forumestp.fr'  // Allow requests from this origin
   ], 
+
   credentials: true,  // Allow credentials (cookies) to be included in the request
 };
   const env = process.env.NODE_ENV || 'development';
