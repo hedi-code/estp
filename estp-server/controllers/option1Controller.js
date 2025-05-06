@@ -11,7 +11,6 @@ exports.createOption1 = (req, res) => {
       if (err) return res.status(500).json({ error: 'Erreur lors de l\'insertion' });
 
       const id = result.insertId;
-      let updatedImg = img ? `${id}/${img}` : null;
 
       res.status(201).json({
         message: 'Option créée avec succès',
@@ -21,7 +20,7 @@ exports.createOption1 = (req, res) => {
           prix_ht,
           qmax,
           dispo_si,
-          img: updatedImg, // Returning img with the id_ prefix
+          img, // Returning img with the id_ prefix
           description,
           ordre,
         },
@@ -36,7 +35,7 @@ exports.getAllOption1s = (req, res) => {
     if (err) return res.status(500).json({ error: 'Erreur serveur' });
     const options = results.map(opt => ({
       ...opt,
-      img: opt.img ? `${opt.id}_${opt.img.split('_').slice(1).join('_')}` : null, // Adding id_ prefix
+      img: opt.img ? `/uploads/img/option1s/${opt.id}/${opt.img}` : null, // Adding id_ prefix
     }));
     res.json(options);
   });
