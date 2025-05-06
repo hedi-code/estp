@@ -115,23 +115,31 @@
             </p-tabView>
             <p-message *ngIf="registerForm.get('lastname')?.invalid && registerForm.get('lastname')?.touched"
             severity="error" text="Nom requis" styleClass="w-full mt-1"></p-message>
+
         <p-message *ngIf="registerForm.get('firstname')?.invalid && registerForm.get('firstname')?.touched"
             severity="error" text="Prénom requis" styleClass="w-full mt-1"></p-message>
+
         <p-message *ngIf="registerForm.get('phonenumber')?.invalid && registerForm.get('phonenumber')?.touched"
             severity="error" text="Numéro de téléphone requis" styleClass="w-full mt-1"></p-message>
+
         <p-message *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" severity="error"
             text="Email requis ou format invalide" styleClass="w-full mt-1">
         </p-message>
+
         <p-message *ngIf="registerForm.get('companyName')?.invalid && registerForm.get('companyName')?.touched"
             severity="error" text="Nom de l'entreprise requis" styleClass="w-full mt-1"></p-message>
+
         <p-message *ngIf="registerForm.get('companySiren')?.invalid && registerForm.get('companySiren')?.touched"
             severity="error" text="Numéro SIREN requis" styleClass="w-full mt-1"></p-message>
+
         <p-message
             *ngIf="registerForm.get('functionInCompany')?.invalid && registerForm.get('functionInCompany')?.touched"
             severity="error" text="Fonction requise" styleClass="w-full mt-1"></p-message>
+
         <p-message *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-            severity="error" text="Mot de passe requis (min 6 caractères)" styleClass="w-full mt-1">
+            severity="error" text="Mot de passe requis (min 6 caractères, un symbole, un caractère majuscule, un caractère miniscule)" styleClass="w-full mt-1">
         </p-message>
+        
         <p-message
             *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
             severity="error" text="Les mots de passe doivent correspondre" styleClass="w-full mt-1">

@@ -30,7 +30,7 @@ export class RegisterComponent {
       companySiren: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]], // Example pattern for SIREN number
       isNotInFrance: [false],
       functionInCompany: ['', Validators.required],
-      password: ['', [Validators.required, Validators.pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)]],
+      password: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)]],
       confirmPassword: ['', [Validators.required]],
     }, {
       validator: this.passwordMatcher('password', 'confirmPassword')

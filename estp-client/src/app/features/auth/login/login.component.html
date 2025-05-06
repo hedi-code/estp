@@ -34,7 +34,7 @@
                 <input pInputText id="password" formControlName="password" placeholder="Entrez votre mot de passe"
                     class="w-full" type="password" />
                 <p-message *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-                    severity="error" text="Mot de passe requis (min 6 caractères)" styleClass="w-full mt-1"></p-message>
+                    severity="error" text="Mot de passe requis (min 6 caractères, un symbole, un caractère majuscule, un caractère miniscule)" styleClass="w-full mt-1"></p-message>
             </div>
 
             <!-- Remember Me -->

@@ -10,17 +10,17 @@ exports.register = async (req, res) => {
 
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: "Invalid email format" });
+    return res.status(400).json({ error: "Format email invalide" });
   }
 
   db.query("SELECT * FROM users WHERE email = ? AND verified = 1", [email], async (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    if (results.length > 0) return res.status(400).json({ error: "Email is already registered" });
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length > 0) return res.status(400).json({ error: "Email existant" });
 
-    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,16}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
-        error: "Password must be between 8-16 characters and include at least one number and one special character",
+        error: "Mot de passe requis (min 6 caractères, un symbole, un caractère majuscule, un caractère miniscule)",
       });
     }
 
@@ -39,7 +39,16 @@ exports.register = async (req, res) => {
           email,
           `${first_name} ${last_name}`,
           "Email Verification",
-          `<a href='${process.env.FRONT_BASE_URL}/auth/verify/${token}'>Click here to verify your email</a>`
+          `
+          Bonjour haneso4638@harinv.com,
+
+          Suite à votre inscription sur le site du ForumESTP, nous avons besoin de vérifier votre adresse e-mail.
+          Pour ce faire, il suffit de suivre ce lien dans les 24 heures : <a href='${process.env.FRONT_BASE_URL}/auth/verify/${token}'>Cliquez ici pour vérifier votr eemail</a>
+          Si le lien ne fonctionne pas correctement, veuillez copier le lien suivant dans votre navigateur :
+          ${process.env.FRONT_BASE_URL}/auth/verify/${token}
+
+          Merci par avance et à très bientôt,
+          L'équipe du Forum ESTP 2025 `
         );
 
         // Return the new user info (without password)
@@ -51,7 +60,7 @@ exports.register = async (req, res) => {
           verified: false
         };
 
-        res.status(201).json({ message: "Registered! Check your email to verify.", user: newUser });
+        res.status(201).json({ message: "Un email d'activation a été envoyé à votre compte, merci de l'activer.", user: newUser });
       }
     );
   });
@@ -74,8 +83,8 @@ exports.resetPasswordRequest = (req, res) => {
 
   // Check if the email exists in the database
   db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    if (results.length === 0) return res.status(404).json({ error: "Email not found" });
+    if (err) return res.status(500).json({ error: "Erreur base de données" });
+    if (results.length === 0) return res.status(404).json({ error: "Email non existant" });
   
     // Generate reset token (expires in 1 hour)
     const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
@@ -84,7 +93,7 @@ exports.resetPasswordRequest = (req, res) => {
     sendEmail("ne-pas-repondre@forumestp.fr", results[0].email,results[0].first_name + " " + results[0].last_name , "Demande de rénitialisation de mot de passe", 
       `<a href='${process.env.FRONT_BASE_URL}/auth/validate-password/${resetToken}'>Click here to reset your password</a>`
     );
-    res.json({ message: "Password reset link sent to email" });
+    res.json({ message: "Votre demande de rénitialisation a été envoyer à votre email" });
   });
 };
 
@@ -106,7 +115,7 @@ exports.resetPassword = (req, res) => {
     // Update password in the database
     db.query("UPDATE users SET password = ? WHERE email = ?", [hashedPassword, decoded.email], (err) => {
       if (err) return res.status(500).json({ error: "Database error" });
-      res.json({ message: "Password successfully updated!" });
+      res.json({ message: "Mot de passe modifié" });
     });
   });
 };
@@ -115,10 +124,10 @@ exports.login = (req, res) => {
   const { email, password, rememberMe} = req.body;
   db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
     if (err || results.length === 0 || !(await bcrypt.compare(password, results[0].password))) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Mot de passe ou email incorrecte" });
     }
     if (!results[0].verified) {
-      return res.status(403).json({ error: "Email not verified" });
+      return res.status(403).json({ error: "Email non vérifier" });
     }
     const entreprise = await entrepriseController._getEntrepriseByUserId(results[0].id);
     const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, { expiresIn: "1d" });

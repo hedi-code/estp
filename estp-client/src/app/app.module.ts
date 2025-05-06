@@ -34,8 +34,9 @@ import { ValidatePasswordComponent } from './features/auth/validate-password/val
 import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { authInterceptorInterceptor } from './core/interceptors/auth-interceptor.interceptor';
-
-
+import { messageInterceptorInterceptor } from './core/interceptors/message-interceptor.interceptor';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 
 
@@ -54,7 +55,7 @@ import { authInterceptorInterceptor } from './core/interceptors/auth-interceptor
     RecapitulatifComponent,
     CommandeComponent,
     VerifyAcccountComponent,
-    ValidatePasswordComponent
+    ValidatePasswordComponent,
   ],
   imports: [
     BrowserModule,
@@ -73,12 +74,16 @@ import { authInterceptorInterceptor } from './core/interceptors/auth-interceptor
     TableModule,
     PanelModule,
     DropdownModule,
-    HttpClientModule
+    HttpClientModule,
+    ToastModule
+
     
   ],
   providers: [provideAnimations(), provideHttpClient(
     withInterceptors([authInterceptorInterceptor])
-  )],
+  ),  provideHttpClient(
+    withInterceptors([authInterceptorInterceptor, messageInterceptorInterceptor])  // Add messageInterceptor here
+  ),MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

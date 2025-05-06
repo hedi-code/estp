@@ -21,7 +21,7 @@ export class LoginComponent implements OnInit{
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)]],
+      password: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)]],
       rememberMe: [false]
     });
   }
@@ -29,11 +29,9 @@ export class LoginComponent implements OnInit{
      if(!!this.cookieService.getEmail() && !!this.cookieService.getPassword()){
       this.authService.login(this.cookieService.getEmail() || '', this.cookieService.getPassword() || '', true).subscribe({
         next: (response) => {
-          console.log('Login successful:', response);
           this.router.navigate(['/entreprise']);
         },
         error: (error) => {
-          alert(error.error ? error.error : 'An error occurred during login');
         }
       });
     }
@@ -45,18 +43,14 @@ export class LoginComponent implements OnInit{
 
       this.authService.login(email, password, rememberMe).subscribe({
         next: (response) => {
-          console.log('Login successful:', response);
           if (rememberMe) {
             localStorage.setItem('email', email);
           }
           this.router.navigate(['/entreprise']);
         },
         error: (error) => {
-          alert(error.error ? error.error : 'An error occurred during login');
         }
       });
-    } else {
-      console.log('Form is invalid');
     }
   }
 }

@@ -6,7 +6,7 @@
                     <ng-container *ngFor="let pack of pack1s">
                         <h1>{{pack.titre}}</h1>
                         <div class="border-2 border-round-xl border-solid border-primary grid flex">
-                            <img [src]="baseUrl + pack.img" alt="" class="col-4 m-0 p-0 border-round-left-xl">
+                            <img [src]="baseUrl+ '/api' + pack.img" alt="" class="col-4 m-0 p-0 border-round-left-xl">
                             <div class="col-8 p-4">
                                 <h3 class="text-primary">{{pack.description}}</h3>
                                 <ng-container *ngFor="let option of pack.options">
