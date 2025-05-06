@@ -37,6 +37,7 @@ import { authInterceptorInterceptor } from './core/interceptors/auth-interceptor
 import { messageInterceptorInterceptor } from './core/interceptors/message-interceptor.interceptor';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 
 
@@ -75,7 +76,8 @@ import { ToastModule } from 'primeng/toast';
     PanelModule,
     DropdownModule,
     HttpClientModule,
-    ToastModule
+    ToastModule,
+    InputNumberModule
 
     
   ],
