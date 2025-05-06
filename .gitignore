@@ -4,3 +4,10 @@ estp-client/node_modules
 estp-client/.editorconfig
 estp-server/node_modules
 estp-server/.env
+estp-client/src/environments/environment.test.ts
+estp-server/config/db.js
+estp-client/dist/
+estp-server/my_script.sql
+estp-server/packages.microsoft.gpg
+estp-server/sudo
+estp-server/temctl status mysql.service'
