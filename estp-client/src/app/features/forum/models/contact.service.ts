@@ -9,7 +9,7 @@ import { environment } from '../../../../environments/environment';
   providedIn: 'root'
 })
 export class ContactService {
-baseUrl = `${environment.apiUrl}/contact`
+baseUrl = `${environment.apiUrl}/api/contact`
   constructor(private http: HttpClient,private cookieService:AuthCookieService) {}
 
   getAllContacts(): Observable<Contact[]> {

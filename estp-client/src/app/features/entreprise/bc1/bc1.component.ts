@@ -3,6 +3,8 @@ import { Pack1Service } from '../../forum/services/pack1.service';
 import { environment } from './../../../../environments/environment';
 import { Pack } from '../../forum/models/pack1.model';
 import { CommandeService } from '../commande/commande.service';
+import { Option1 } from '../../forum/models/option1.model';
+import { Option1Service } from '../../forum/services/option1.service';
 
 
 @Component({
@@ -15,10 +17,12 @@ export class Bc1Component implements OnInit{
 
   baseUrl: String = environment.apiUrl
   pack1s: Pack[] = []
+  options: Option1[] = [];  // Store options here
+
   selectedOption:any;
   selectedOption2:any;
   isDisabled= true
-  constructor(private pack1Service: Pack1Service, private commandeService: CommandeService){}
+  constructor(private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service){}
 
   ngOnInit(){
     this.pack1Service.getAllPacks().subscribe({
@@ -29,6 +33,15 @@ export class Bc1Component implements OnInit{
         console.log(err)
       }
     })
+    // Fetch options when the component is initialized
+    this.option1Service.getAllOptions().subscribe({
+      next: (data) => {
+        this.options = data;  // Assign data to options array
+      },
+      error: (err) => {
+        console.error('Error fetching options:', err);
+      }
+    });
   }
 
   addBtnIsDisabled(){
