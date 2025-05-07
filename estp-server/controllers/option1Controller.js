@@ -31,7 +31,7 @@ exports.createOption1 = (req, res) => {
 
 // Get all
 exports.getAllOption1s = (req, res) => {
-  db.query('SELECT * FROM option1s', (err, results) => {
+  db.query('SELECT * FROM option1s ORDER BY ordre ASC', (err, results) => {
     if (err) return res.status(500).json({ error: 'Erreur serveur' });
     const options = results.map(opt => ({
       ...opt,
