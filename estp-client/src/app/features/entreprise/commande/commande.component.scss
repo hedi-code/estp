@@ -1,8 +1,7 @@
 :host ::ng-deep .p-panel-header {
     background-color: white !important;
-    border-top: 0;
-    border-radius: 0;
     text-align: center;
+    margin-top: 1rem;
 }
 :host ::ng-deep .p-panel-content {
     background-color: white !important;

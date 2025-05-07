@@ -21,7 +21,7 @@
                                             {{ selectedOption.surface }}m² pour {{selectedOption.prix}}
                                         </ng-template>
                                         <ng-template let-option pTemplate="item">
-                                            {{ option.surface }}m² pour {{option.prix}} €
+                                            {{ option.surface }}m² pour {{option.prix}} € HT
                                         </ng-template>
                                     </p-dropdown>
                                     <p-button label="Ajouter" [disabled]="addBtnIsDisabled()" icon="pi pi-plus"
@@ -45,44 +45,48 @@
           <div class="grid">
             <ng-container *ngFor="let option of options">
               <div class="col-12 sm:col-6 md:col-4 lg:col-3 h-max">
-                <p-card header="{{ option.name }}" subheader="{{ option.prix_ht }} €" class="w-max">
-                  <ng-template pTemplate="header">
-                    <img
-                      alt="Card"
-                      [src]="baseUrl+'/api' + option.img"
-                      class="w-full"
-                    />
-                  </ng-template>
-                  <p>{{ option.description || 'No description available' }}</p>
-                  
-                  <ng-template pTemplate="footer">
-                    <div class="flex flex-column w-full gap-2">
-                      <div class="flex justify-content-between align-items-center gap-2 w-full">
-                        <p-inputNumber 
-                          *ngIf="[94, 105, 106, 107, 108, 109].includes(option.id)"
-                          (ngModel)="option.id"
-                          [showButtons]="true" 
-                          buttonLayout="horizontal" 
-                          inputId="horizontal" 
-                          spinnerMode="horizontal" 
-                          [step]="1"
-                          [min]="1"
-                          [max]="option.qmax"
-                          class="flex-grow-1 w-full"
-                          styleClass="w-full"
-                          inputStyleClass="w-full"
-                          decrementButtonClass="p-button-secondary outlined"
-                          incrementButtonClass="p-button-secondary  outlined"
-                          incrementButtonIcon="pi pi-plus" 
-                          decrementButtonIcon="pi pi-minus" 
-                          mode="decimal"
+                    <p-card header="{{ option.name }}" subheader="{{ option.prix_ht }} € HT" class="w-max">
+                      <ng-template pTemplate="header">
+                        <img
+                          alt="Card"
+                          [src]="baseUrl+'/api' + option.img"
+                          class="w-full"
                         />
-                      </div>
-                      <p-button label="Ajouter" class="w-full" styleClass="w-full"></p-button>
-                    </div>
-                  </ng-template>
-                  
-                </p-card>
+                      </ng-template>
+                      <p>{{ option.description || 'No description available' }}</p>
+                      
+                      <ng-template pTemplate="footer">
+                        <div class="flex flex-column w-full gap-2">
+                          <div class="flex justify-content-between align-items-center gap-2 w-full">
+                            <p-inputNumber 
+                              *ngIf="[94, 105, 106, 107, 108, 109].includes(option.id)"
+                              [(ngModel)]="optionQuantities[option.id]"
+                              [showButtons]="true" 
+                              buttonLayout="horizontal" 
+                              inputId="horizontal" 
+                              spinnerMode="horizontal" 
+                              [step]="1"
+                              [min]="1"
+                              [max]="option.qmax"
+                              class="flex-grow-1 w-full"
+                              styleClass="w-full"
+                              inputStyleClass="w-full"
+                              decrementButtonClass="p-button-secondary outlined"
+                              incrementButtonClass="p-button-secondary  outlined"
+                              incrementButtonIcon="pi pi-plus" 
+                              decrementButtonIcon="pi pi-minus" 
+                              mode="decimal"
+                            />
+                          </div>
+                          <p-button 
+                          label="Ajouter" 
+                          class="w-full" 
+                          styleClass="w-full" 
+                          (click)="addOption(option.id, optionQuantities[option.id])"
+                        ></p-button>                    </div>
+                      </ng-template>
+                      
+                    </p-card>
               </div>
             </ng-container>
           </div>

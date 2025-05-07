@@ -10,10 +10,11 @@ import { Commande, CommandeService } from './commande.service';
 export class CommandeComponent {
 
   commande!: any[];
-
+  price!: number;
   constructor(private commandeService: CommandeService){
   }
   ngOnInit(){
     this.commandeService.commandeBs.subscribe(c => this.commande = c)
+    this.commandeService.prixTotal.subscribe(p => this.price = p)
   }
 }

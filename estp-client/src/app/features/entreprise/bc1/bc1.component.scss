@@ -11,3 +11,11 @@
   :host ::ng-deep .p-tabview .p-tabview-panels{
     padding: 0;
   }
+  :host ::ng-deep .card-content {
+    background: #fff; /* Optional */
+    padding: 1rem;     /* Optional */
+    border-radius: 8px; /* Optional */
+    height: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+  }
