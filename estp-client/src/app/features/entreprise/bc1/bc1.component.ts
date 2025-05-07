@@ -18,6 +18,8 @@ export class Bc1Component implements OnInit{
   baseUrl: String = environment.apiUrl
   pack1s: Pack[] = []
   options: Option1[] = [];  // Store options here
+  optionQuantities: { [key: number]: number } = {};
+
 
   selectedOption:any;
   selectedOption2:any;
@@ -37,6 +39,11 @@ export class Bc1Component implements OnInit{
     this.option1Service.getAllOptions().subscribe({
       next: (data) => {
         this.options = data;  // Assign data to options array
+        this.options.forEach(option => {
+          if ([94, 105, 106, 107, 108, 109].includes(option.id)) {
+            this.optionQuantities[option.id] = 1;
+          }
+        });
       },
       error: (err) => {
         console.error('Error fetching options:', err);
@@ -52,6 +59,14 @@ export class Bc1Component implements OnInit{
     this.commandeService.addDisplay(pack.titre + " " + this.selectedOption.surface + "m²", this.selectedOption.prix, "1");
     this.commandeService.addPack(this.selectedOption ? this.selectedOption.id : this.selectedOption2.id);
     this.isDisabled = false;
+    
+  }
+  addOption(id: any, qte: any){
+    console.log(`id = ${id} qte = ${qte}`);
+    const option = this.options.find( o => o.id === id);
+    console.log(option)
+    this.commandeService.addDisplay(option?.name ?? '' , option?.prix_ht ?? 0, qte??1)
+    
     
   }
 }
