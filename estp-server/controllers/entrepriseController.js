@@ -102,7 +102,7 @@ exports.updateEntreprise = (req, res) => {
   
   db.query(updateQuery, values, (err, result) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    res.json({ message: 'Entreprise mise à jour', affectedRows: result.affectedRows });
+    res.json({ nonDisplayMessage: 'Entreprise mise à jour', affectedRows: result.affectedRows });
   });
   
 };

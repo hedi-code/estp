@@ -106,7 +106,7 @@ exports.updateContact = (req, res) => {
   db.query(sql, values, (err, result) => {
     if (err) return res.status(500).json({ error: err });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Contact not found' });
-    res.status(200).json({ message: 'Contact updated' });
+    res.status(200).json({ message: 'Contacts mis à jour' });
   });
 };
 
