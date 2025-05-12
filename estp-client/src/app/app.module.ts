@@ -38,6 +38,9 @@ import { messageInterceptorInterceptor } from './core/interceptors/message-inter
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { DialogModule } from 'primeng/dialog';
+import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/facture-bc1.component';
+
 
 
 
@@ -57,6 +60,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
     CommandeComponent,
     VerifyAcccountComponent,
     ValidatePasswordComponent,
+    FactureBc1Component,
   ],
   imports: [
     BrowserModule,
@@ -77,7 +81,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
     DropdownModule,
     HttpClientModule,
     ToastModule,
-    InputNumberModule
+    InputNumberModule,
+    DialogModule
 
     
   ],
