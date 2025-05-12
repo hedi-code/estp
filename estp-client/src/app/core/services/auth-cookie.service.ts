@@ -36,5 +36,8 @@ export class AuthCookieService {
   getStep(){
     return this.cookieService.get('step') || null;
   }
+  logout(){
+    this.cookieService.deleteAll();
+  }
 }
 

@@ -7,6 +7,7 @@ const entrepriseRoutes = require("./routes/entrepriseRoutes");
 const userRoutes = require("./routes/userRoutes")
 const pack1Routes = require("./routes/pack1Routes")
 const option1Routes = require("./routes/option1Routes")
+const secteurRoutes = require("./routes/secteurRoutes")
 const cors = require('cors');
 
 
@@ -43,5 +44,6 @@ app.use("/api/entreprises", entrepriseRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/pack1", pack1Routes);
 app.use("/api/option1", option1Routes);
+app.use("/api/secteur", secteurRoutes);
 
 app.listen(3000, () => console.log("Server running on port 3000"));

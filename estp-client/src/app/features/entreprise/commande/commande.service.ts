@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Pack } from '../../forum/models/pack1.model';
 import { BehaviorSubject } from 'rxjs';
+import { Option1 } from '../../forum/models/option1.model';
 
-export interface Commande{
+export interface Commande {
   pack: Pack,
-  option: any[],
-  surfacePrix:number
+  option: Option1[],
+  surfacePrix: number
 
 }
 @Injectable({
@@ -14,31 +15,50 @@ export interface Commande{
 
 export class CommandeService {
 
-  affichageCommande:{id?: number,title: string, price: number, quantity: string}[]=[]
-  commande:{idSurfacePrixPack: number, options:{idOption: number, qte: number, price: number}[]}={
-    idSurfacePrixPack: 0,
-    options: []
-  }
-  commandeBs: BehaviorSubject<{title: string, price: number, quantity: string}[]> = new BehaviorSubject<{title: string, price: number,  quantity: string}[]>(this.affichageCommande);
+  commande: Commande = {
+    pack:{},
+    option: [],
+    surfacePrix: 9999
+  }; 
+  commandeBs: BehaviorSubject<Commande> = new BehaviorSubject<Commande>(this.commande);
   prixTotal: BehaviorSubject<number> = new BehaviorSubject<number>(0)
   constructor() { }
 
-  addPack(selectedSurface: number){
-   this.commande.idSurfacePrixPack = selectedSurface
+  addPack(pack: Pack, selectedSurface: number) {
+    console.log(this.commande)
+    if(!!selectedSurface)
+    this.commande.surfacePrix = selectedSurface
+  if(!!pack)
+    this.commande.pack = pack;
+    this.getPrice()
   }
-  addDisplay(title: string, price: number, quantity: string){
-    this.affichageCommande.push({title,price,quantity})
-    this.commandeBs.next(this.affichageCommande)
+
+  getPrice() {
+    console.log(this.commande)
+    let prix: number = 0;
+    if (!!this.commande?.pack?.surfaces)
+      prix = prix + Number(this.commande.pack.surfaces.find(s => s.surface_id == this.commande.surfacePrix)?.prix);
+    if (!!this.commande.option)
+      this.commande.option.forEach(c => prix = prix + Number(c.prix_ht) * Number(c.qteCommande))
+    this.prixTotal.next(prix);
+  }
+  addOption(option: Option1) {
+    this.commande.option.push(option)
+    this.commandeBs.next(this.commande);
+    this.getPrice()
+  }
+  deleteOption(index: number) {
+    if (index > -1 && index < this.commande.option.length) {
+      this.commande.option.splice(index, 1);
+      this.commandeBs.next(this.commande);
+      this.getPrice();
+    }
+  }
+
+  deletePack() {
+    this.commande.pack = {} as Pack;
+    this.commande.surfacePrix = 0;
+    this.commandeBs.next(this.commande);
     this.getPrice();
   }
-  remove(c:Commande){
-    this.affichageCommande = this.affichageCommande.filter(item => {});
-  }
-  getPrice(){
-    let prix = 0;
-    this.affichageCommande.forEach(c => prix = prix + c.price*Number(c.quantity))
-    this.prixTotal.next(prix);
-
-  }
-
 }

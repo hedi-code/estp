@@ -43,7 +43,7 @@ exports.updateStep = (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
       if (result.affectedRows === 0) return res.status(404).json({ message: 'User not found' });
-      res.json({ message: 'Step updated successfully', affectedRows: result.affectedRows });
+      res.json({ nonDisplayMessage: 'Step updated successfully', affectedRows: result.affectedRows });
     }
   );
 };

@@ -4,6 +4,8 @@ import { ContactService } from '../../forum/models/contact.service';
 import { AuthCookieService } from '../../../core/services/auth-cookie.service';
 import { Entreprise } from '../entreprise.model';
 import { EntrepriseService } from '../entreprise.service';
+import { Secteur } from '../../forum/models/secteur.model';
+import { SecteurService } from '../../forum/services/secteur.service';
 
 @Component({
   selector: 'app-votre-entreprise',
@@ -14,6 +16,7 @@ import { EntrepriseService } from '../entreprise.service';
 export class VotreEntrepriseComponent implements OnInit{
   participationOptions: any[] = [{ label: 'Oui', value: 1 },{ label: 'Non', value: 0 }];
   contacts: Contact[]=[];
+  secteurs: Secteur[]=[];
   email: string = "";
   nom: string = "";
   prenom: string = "";
@@ -26,7 +29,7 @@ export class VotreEntrepriseComponent implements OnInit{
     siren: ''
   }
 
-  constructor(private contactService: ContactService, private cookieService: AuthCookieService, private entrepriseService: EntrepriseService){}
+  constructor(private secteurService: SecteurService, private contactService: ContactService, private cookieService: AuthCookieService, private entrepriseService: EntrepriseService){}
 
   ngOnInit(): void {
     this.contactPrincipalId = Number(this.cookieService.getContacPrincipaltId()) ;
@@ -58,6 +61,11 @@ export class VotreEntrepriseComponent implements OnInit{
       }},
       error: (error) => {console.error(error.error)}
     });
+
+    this.secteurService.getSecteurs().subscribe({
+      next: (response) => this.secteurs = response,
+      error: (error) => console.error(error)
+    })
     
   } 
 

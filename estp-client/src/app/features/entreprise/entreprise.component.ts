@@ -38,4 +38,9 @@ export class EntrepriseComponent implements OnInit{
     console.log('After increment:', this.step);
     this.userService.updateStep(Number(this.authCookieService.getUserId()),this.step).subscribe()
   }
+
+  logout(){
+    this.authCookieService.logout()
+    this.router.navigateByUrl('');
+  }
 }

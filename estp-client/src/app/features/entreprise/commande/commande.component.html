@@ -1,31 +1,51 @@
 <p-panel class="h-full">
-    <ng-template pTemplate="header" class="font-bold text-center">
-        <div class="font-bold text-center">Votre commande</div>
+    <ng-template pTemplate="header">
+      <div class="font-bold text-center">Votre commande</div>
     </ng-template>
-
-    <ng-container *ngFor="let c of commande">
-        <p-panel>
-            <ng-template pTemplate="header">
-                <div class="w-full font-bold flex align-items-center justify-content-between ">
-                    <div class="text-left">{{ c?.title }}</div>
-                    <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" />
-                </div>
-            </ng-template>
-
-            <div class="flex justify-content-between">
-                <div>
-                    <span>{{ c?.quantity }} X </span>
-                    <span>{{ c?.price }} € HT</span>
-                </div>
-                <span>{{ c?.price* c?.quantity}} € HT</span>
-            </div>
-        </p-panel>
-    </ng-container>
-    <div class="flex justify-content-between align-content-center font-bold text-xl mt-2">
-        <div>Total :</div>
-
-        <div>
-            {{ price }} € HT
+  
+    <!-- Pack Panel -->
+    <p-panel *ngIf="!!commande?.pack?.pack_id">
+      <ng-template pTemplate="header">
+        <div class="w-full font-bold flex align-items-center justify-content-between">
+          <div class="text-left">{{ commande.pack.titre }}</div>
+          <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" (click)="deletePack()"></p-button>
         </div>
+      </ng-template>
+  
+      <div class="flex justify-content-between">
+        <div>
+          <span>{{ getSurfacePrix()?.surface }} M² pour </span>
+          <span>{{ getSurfacePrix()?.prix }} € HT</span>
+        </div>
+      </div>
+    </p-panel>
+  
+    <!-- Options -->
+    <ng-container *ngIf="commande?.option?.length">
+      <ng-container *ngFor="let o of commande.option;let i = index">
+        <p-panel>
+          <ng-template pTemplate="header">
+            <div class="w-full font-bold flex align-items-center justify-content-between">
+              <div class="text-left">{{ o?.name }}</div>
+              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" (click)="deleteOption(i)"></p-button>
+            </div>
+          </ng-template>
+  
+          <div class="flex justify-content-between">
+            <div>
+              <span>{{ o?.qteCommande }} X </span>
+              <span>{{ o?.prix_ht }} € HT</span>
+            </div>
+            <span>{{ (o?.qteCommande || 0) * (o?.prix_ht || 0) }} € HT</span>
+          </div>
+        </p-panel>
+      </ng-container>
+    </ng-container>
+  
+    <!-- Total -->
+    <div class="flex justify-content-between align-content-center font-bold text-xl mt-4">
+      <div>Total :</div>
+      <div>{{ price }} € HT</div>
     </div>
-</p-panel>
+  </p-panel>
+  
