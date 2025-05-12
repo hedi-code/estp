@@ -10,6 +10,8 @@ const option1Routes = require("./routes/option1Routes")
 const secteurRoutes = require("./routes/secteurRoutes")
 const commande1Routes = require("./routes/commande1Routes");
 const commande1OptionsRoutes = require("./routes/commande1OptionsRoutes");
+const fileRoutes = require('./routes/fileRoutes'); // <- Import file routes
+
 
 
 const cors = require('cors');
@@ -51,6 +53,8 @@ app.use("/api/option1", option1Routes);
 app.use("/api/secteur", secteurRoutes);
 app.use("/api/commande1", commande1Routes);
 app.use("/api/commande1Options", commande1OptionsRoutes);
+app.use('/api/files', fileRoutes); // <- Use file routes under /api/files
+
 
 
 

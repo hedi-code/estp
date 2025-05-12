@@ -6,8 +6,14 @@
           <ng-container *ngFor="let pack of pack1s">
             <h1>{{pack.titre}}</h1>
             <div class="border-2 border-round-xl border-solid border-primary grid flex">
-              <img [src]="baseUrl+ '/api' + pack.img" alt=""
-                class="col-4 m-0 p-0 border-round-left-xl object-contain w-full h-auto max-h-40rem">
+              
+
+                <!-- <img [src]="baseUrl+ '/api' + pack.img" alt="" class="col-4 m-0 p-0 border-round-left-xl"> -->
+                <div class="col-4 m-0 p-0 flex items-center justify-center overflow-hidden">
+                  <img [src]="baseUrl+ '/api' + pack.img" alt="" class="border-round-left-xl w-full h-auto max-h-full"
+                    style="object-fit:cover">
+                </div>
+                
               <div class="col-8 p-4">
                 <h3 class="text-primary">{{pack.description}}</h3>
                 <ng-container *ngFor="let option of pack.options">
