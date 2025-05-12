@@ -5,6 +5,12 @@ import { Pack } from '../../forum/models/pack1.model';
 import { CommandeService } from '../commande/commande.service';
 import { Option1 } from '../../forum/models/option1.model';
 import { Option1Service } from '../../forum/services/option1.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { EntrepriseService } from '../entreprise.service';
+import { AuthCookieService } from '../../../core/services/auth-cookie.service';
+import { Entreprise } from '../entreprise.model';
+import { ContactService } from '../../forum/models/contact.service';
+import { Contact } from '../../forum/models/contact.model';
 
 
 @Component({
@@ -13,19 +19,36 @@ import { Option1Service } from '../../forum/services/option1.service';
   templateUrl: './bc1.component.html',
   styleUrl: './bc1.component.scss'
 })
-export class Bc1Component implements OnInit{
-  activeIndex:number = 0;
+export class Bc1Component implements OnInit {
+  activeIndex: number = 0;
   baseUrl: String = environment.apiUrl
   pack1s: Pack[] = []
   options: Option1[] = [];  // Store options here
   optionQuantities: { [key: number]: number } = {};
-  selectedOption:any;
-  isDisabled= true
-  
-  constructor(private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service){}
+  selectedOption: any;
+  isDisabled = true
+  savedSignature: any;
+  visible = false;
+  reservationForm!: FormGroup;
+  entreprise: Entreprise | undefined;
+  contactPrincipal: Contact | undefined;
 
-  ngOnInit(){
-    this.pack1Service.getAllPacks().subscribe({
+
+  constructor(private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
+
+  ngOnInit() {
+    this.reservationForm = this.fb.group({
+      nom: ['', Validators.required],
+      rue: ['', Validators.required],
+      codePostale: ['', Validators.required],
+      ville: ['', Validators.required],
+      telephone_standard: ['', Validators.required],
+      nomResponsable: ['', Validators.required],
+      prenomResponsable: ['', Validators.required],
+      telResponsable: ['', Validators.required],
+      faitA: ['', Validators.required],
+      emailResponsable: ['', [Validators.required, Validators.email]]
+    });    this.pack1Service.getAllPacks().subscribe({
       next: (response) => {
         this.pack1s = response;
         console.log(this.pack1s)
@@ -49,23 +72,105 @@ export class Bc1Component implements OnInit{
         console.error('Error fetching options:', err);
       }
     });
+    
+    this.entrepriseService.getEntrepriseById(Number(this.cookieService.getEntrepriseId())).subscribe(e => {
+      this.entreprise = e
+      this.reservationForm.patchValue({
+        nom: e.nom ?? '',
+        rue: '',
+        codePostale: '',
+        ville: '',
+        telephone_standard: e.telephone_standard ?? '',
+        
+      });
+      this.contactService.getContact(e.contact_principal_id ?? 9999).subscribe(c => {
+        this.contactPrincipal = c;
+        this.reservationForm.patchValue({
+          nomResponsable: c.nom,
+          prenomResponsable: c.prenom,
+          telResponsable: c.telephone1,
+          emailResponsable: c.email
+        });
+      })
+    });
+    
+
   }
 
-  addBtnIsDisabled(){
+  addBtnIsDisabled() {
     return !!!this.selectedOption
   }
 
-  addToCommand(pack: Pack){
-    this.commandeService.addPack(pack,this.selectedOption.surface_id);
+  addToCommand(pack: Pack) {
+    this.commandeService.addPack(pack, this.selectedOption.surface_id);
     this.isDisabled = false;
-    
+
   }
-  addOption(id: any, qte: any){
-    let option:Option1 | undefined  = this.options.find( o => o.id === id);
-   if(option){option.qteCommande = qte ? qte : 1}
-if(!!option){
-  this.commandeService.addOption(option);
-}    
+  addOption(id: any, qte: any) {
+    let option: Option1 | undefined = this.options.find(o => o.id === id);
+    if (option) { option.qteCommande = qte ? qte : 1 }
+    if (!!option) {
+      this.commandeService.addOption(option);
+    }
   }
 
+
+  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  private ctx!: CanvasRenderingContext2D;
+  private isDrawing = false;
+  private lastX = 0;
+  private lastY = 0;
+
+  ngAfterViewInit() {
+    const canvas = this.canvasRef.nativeElement;
+    this.ctx = canvas.getContext('2d')!;
+    this.ctx.strokeStyle = 'rgb(66, 133, 244)'; // Blue pen color
+    this.ctx.lineWidth = 3; // Pen width
+    this.ctx.lineJoin = 'round'; // Join lines at corners
+    this.ctx.lineCap = 'round'; // Line cap at end of stroke
+  }
+
+  @HostListener('mousedown', ['$event'])
+  onMouseDown(event: MouseEvent) {
+    const { offsetX, offsetY } = event;
+    this.isDrawing = true;
+    this.lastX = offsetX;
+    this.lastY = offsetY;
+  }
+
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.isDrawing) return;
+    const { offsetX, offsetY } = event;
+
+    // Draw on the canvas
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.lastX, this.lastY);
+    this.ctx.lineTo(offsetX, offsetY);
+    this.ctx.stroke();
+    
+    this.lastX = offsetX;
+    this.lastY = offsetY;
+  }
+
+  @HostListener('mouseup')
+  onMouseUp() {
+    this.isDrawing = false;
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave() {
+    this.isDrawing = false;
+  }
+
+  clearCanvas() {
+    this.ctx.clearRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
+  }
+
+  saveCanvas() {
+    const dataUrl = this.canvasRef.nativeElement.toDataURL();
+    console.log('Signature saved:', dataUrl);
+    this.visible = true
+    this.savedSignature = dataUrl
+  }
 }

@@ -15,18 +15,17 @@
                 </ng-container>
                 <div class="grid mt-1 align-items-center">
                   <div class="col-2 font-bold ">Surface/Prix</div>
-                  <p-dropdown class="col-6" styleClass="w-full" [options]="pack.surfaces" 
-                   [(ngModel)]="selectedOption">
+                  <p-dropdown class="col-6" styleClass="w-full" [options]="pack.surfaces" [(ngModel)]="selectedOption">
                     <ng-template pTemplate="selectedItem">
                       {{ selectedOption.surface }}m² pour {{selectedOption.prix}} € HT
-                  </ng-template>
-                  <ng-template let-option pTemplate="item">
+                    </ng-template>
+                    <ng-template let-option pTemplate="item">
                       {{ option.surface }}m² pour {{option.prix}} € HT
-                  </ng-template>
+                    </ng-template>
                   </p-dropdown>
-                <p-button label="Ajouter" [disabled]="addBtnIsDisabled()" icon="pi pi-plus"
-                                        class="col-4" styleClass="w-full" (click)="addToCommand(pack)" />
-                                
+                  <p-button label="Ajouter" [disabled]="addBtnIsDisabled()" icon="pi pi-plus" class="col-4"
+                    styleClass="w-full" (click)="addToCommand(pack)" />
+
                 </div>
               </div>
 
@@ -88,12 +87,92 @@
   </p-tabPanel>
 
   <p-tabPanel header="III. Votre reservation">
+    <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
+      <h2 class="mb-4">Facturation</h2>
+
+      <div class="field">
+        <label for="lastname">Nom de votre entreprise</label>
+        <input pInputText id="nom" formControlName="nom" placeholder="Entrez le nom de l'entreprise" class="w-full" />
+      </div>
+      <div class="grid">
+        <div class="field col-4">
+          <label for="lastname">Rue</label>
+          <input pInputText id="nom_entrprise" formControlName="rue" placeholder="Entrez le nom de l'entreprise"
+            class="w-full" />
+        </div>
+        <div class="field col-4">
+          <label for="lastname">Code postale</label>
+          <input pInputText id="nom_entrprise" formControlName="codePostale" placeholder="Entrez le nom de l'entreprise"
+            class="w-full" />
+        </div>
+        <div class="field col-4">
+          <label for="lastname">Ville</label>
+          <input pInputText id="nom_entrprise" formControlName="ville" placeholder="Entrez le nom de l'entreprise"
+            class="w-full" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="lastname">Téléphone</label>
+        <input pInputText id="nom_entrprise" formControlName="telephone_standard"
+          placeholder="Entrez le nom de l'entreprise" class="w-full" />
+      </div>
+
+      <h2 class="mb-4">Responsable</h2>
+      <div class="grid">
+        <div class="field col-6">
+          <label for="lastname">Nom</label>
+          <input pInputText id="nom_entrprise" formControlName="nomResponsable"
+            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+        </div>
+        <div class="field col-6">
+          <label for="lastname">Prénom</label>
+          <input pInputText id="nom_entrprise" formControlName="prenomResponsable"
+            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+        </div>
+
+      </div>
+      <div class="grid">
+        <div class="field col-6">
+          <label for="lastname">Téléphone</label>
+          <input pInputText id="nom_entrprise" formControlName="telResponsable"
+            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+        </div>
+        <div class="field col-6">
+          <label for="lastname">Email</label>
+          <input pInputText type="email" id="nom_entrprise" formControlName="emailResponsable"
+            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+        </div>
+      </div>
+      <h2 class="mb-4">Signature</h2>
+      <div class="grid">
+        <div class="field col-6">
+          <label for="lastname">Fait à</label>
+          <input pInputText type="email" id="nom_entrprise" formControlName="faitA"
+            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+        </div>
+        <div class="signature-pad col-6">
+          <label for="lastname">Signature</label>
+          <canvas #canvas style="border: 1px solid #d8d8d8;" width="600"></canvas>
+          <p-button severity="primary" outlined="true" (click)="clearCanvas()" class="mt-2">Effacer</p-button>
+          <p-dialog header="Votre commande" [modal]="true" [(visible)]="visible" [style]="{ width: '50%' }">
+            <app-facture-bc1 [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
+            [nomFichierBc1]="entreprise?.id + '_BC1'" [entreprise]="entreprise"></app-facture-bc1>
+              <p-button 
+                  label="Valider" 
+                  severity="primary" 
+                  (onClick)="visible = false" 
+                  styleClass="w-full"
+                />
+          </p-dialog>
+        </div>
+      </div>
+    </form>
 
 
-<div class="mb-3 flex justify-content-between">
+    <div class="mb-3 flex justify-content-between">
 
       <button pButton label="Retour" (click)="activeIndex = 1" class="p-button-outlined"></button>
-      <button pButton label="Suivant" (click)="activeIndex = 3"></button>
+      <button pButton label="Valider" (click)="saveCanvas()"></button>
     </div>
   </p-tabPanel>
 

@@ -1,0 +1,347 @@
+<html>
+
+<head>
+    <style>
+
+
+
+        body,
+        table {
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 10px;
+        }
+
+       
+
+        p {
+            margin: 0;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .blockTitle {
+            width: 130px;
+            font-weight: bold;
+        }
+
+        .blockContent {
+            width: 170px;
+        }
+
+        .darkBlueBg {
+            background-color: #4274b6;
+        }
+
+        .grayBlueBg {
+            background-color: #f7f6fb;
+        }
+
+        .lightBlueBg {
+            background-color: #ecf4fd;
+        }
+
+        td {
+            padding: 2px;
+        }
+
+        .t-r {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .contact-details tr {
+            padding: 0;
+        }
+
+        .contact-details tr td {
+            padding: 0;
+        }
+
+        .contact-details tr td p {
+            padding: 2px 0;
+            margin: 0;
+        }
+
+        .signature-wrapper {
+            border: 1px solid #e5e6e7;
+            position: relative;
+            width: 100%;
+            height: 100px;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body class="p-5 bg-white">
+    <div style="width: 100%; display: block; margin-bottom:10px;">
+        <img width="100" [src]="logo" alt="" />
+        <div style="float: right; margin-top:auto; margin-bottom:auto;">
+            <p style="font-size: 12px;">{{ nomFichierBc1 | uppercase }}</p>
+            <p style="font-size: 12px;">Page: 1 sur 1</p>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+
+    <!-- Block contacts -->
+    <div style="border:1px solid black;">
+        <div style="border:1px solid black; margin:2px; padding:6px;" class="grayBlueBg">
+
+            <!-- left block -->
+            <div style="float:left; width:50%">
+                <table class="contact-details">
+                    <tr>
+                        <td>
+                            <p class="blockTitle">Société</p>
+                        </td>
+                        <td>
+                            <p class="blockContent">{{ entreprise?.nom | uppercase }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="blockTitle">Adresse</p>
+                        </td>
+                        <td>
+                            <p class="blockContent">{{ commande1?.entreprise?.adresse | uppercase }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="blockTitle">Téléphone</p>
+                        </td>
+                        <td>
+                            <p class="blockContent">{{ commande1?.entreprise?.telephone_standard | uppercase }}</p>
+                        </td>
+                    </tr>
+                </table>
+                <p style="clear:left"></p>
+            </div>
+
+            <!-- right blocks -->
+            <div style="float:right;width:50%; color:#FFF">
+
+                <!-- block1 -->
+                <div style="border:2px solid black">
+                    <div style="margin:2px; padding:5px;" class="darkBlueBg">
+                        <table class="contact-details">
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Responsable</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ contactPrincipal?.prenom || '-' }} {{ contactPrincipal?.nom || '-' }}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">E-mail</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ contactPrincipal?.email || '-' }}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Téléphone</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ contactPrincipal?.telephone1 || '-' }}</p>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="clear:left"></p>
+                    </div>
+                </div>
+
+                <!-- block2 -->
+                <div style="border:2px solid black; margin-top:20px">
+                    <div style="margin:2px; padding:5px;" class="darkBlueBg">
+                        <table class="contact-details">
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Correspondant</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ commercial?.nom_complet || '-' }}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">E-mail</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ commercial?.email || '-' }}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Téléphone</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ commercial?.telephone1 || '-' }}</p>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="clear:left"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="clear:both"></div>
+        </div>
+    </div>
+    <!-- Fin Block contacts -->
+
+    <!-- Block detail produits -->
+    <div style="border:2px solid black;margin-top:30px; ">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase" class="darkBlueBg">Détails de la commande</div>
+
+        <table class="table" width="100%">
+            <thead class="grayBlueBg">
+                <tr>
+                    <th width="40%">Produit</th>
+                    <th width="10%">Quantité</th>
+                    <th width="10%">TVA</th>
+                    <th width="25%">Prix Unitaire HT</th>
+                    <th width="15%">Prix Total HT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="lightBlueBg">
+                    <td>
+                        <!-- Pack {{ commande1?.pack1?.type }} - {{ commande1?.pack1?.surface }}m<sup>2</sup> -->
+                    </td>
+                    <td style="text-align:right">1</td>
+                    <td style="text-align:right">
+                        <!-- {{ config?.tva1 | number: '1.2-2' }} % -->
+                    </td>
+                    <td style="text-align:right">
+                        <!-- {{ commande1?.pack1?.prix | number: '1.2-2' }} -->
+                    </td>
+                    <td style="text-align:right">
+                        <!-- {{ commande1?.pack1?.prix | number: '1.2-2' }} -->
+                    </td>
+                </tr>
+
+                <tr *ngFor="let option1 of commande1?.option1s">
+                    <td>
+                        <!-- {{ option1?.name }} -->
+                    </td>
+                    <td style="text-align:right">
+                        <!-- {{ getOptionQuantity(option1.id) }} -->
+                    </td>
+                    <td style="text-align:right">
+                        <!-- {{ config?.tva1 | number: '1.2-2' }} % -->
+                    </td>
+                    <td style="text-align:right">
+                        <!-- {{ option1?.prix_ht | number: '1.2-2' }} -->
+                    </td>
+                    <td style="text-align:right">
+                        <!-- {{ getOptionQuantity(option1.id) * option1?.prix_ht | number: '1.2-2' }} -->
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Fin Block detail produits -->
+
+    <!-- Block Detail Prix Total -->
+    <div style="border:2px solid black;margin-top:30px; ">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase" class="darkBlueBg">Montant de la commande</div>
+
+        <table class="table" width="100%">
+            <tr *ngIf="commande1?.reduc_pct > 0">
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">Total HT avant remise (&euro; )</td>
+                <td width="15%" style="text-align:right">
+                    <!-- {{ commande1?.montant_ht | number: '1.2-2' }} -->
+                </td>
+            </tr>
+            <tr *ngIf="commande1?.reduc_pct > 0">
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">Remise &euro;</td>
+                <td width="15%" style="text-align:right">
+                    <!-- {{ commande1?.reduc_pct | number: '1.2-2' }} -->
+                </td>
+            </tr>
+            <tr *ngIf="commande1?.reduc_pct > 0">
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">Total après remise</td>
+                <td width="15%" style="text-align:right">
+                    <!-- {{ commande1?.montant_ht | number: '1.2-2' }} -->
+                </td>
+            </tr>
+            <tr>
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">Montant total TTC</td>
+                <td width="15%" style="text-align:right">
+                    <!-- {{ commande1?.montant_ttc | number: '1.2-2' }} -->
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!-- Fin Block Detail Prix Total -->
+    <div style="border:2px solid black;margin-top:30px; ">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase" class="darkBlueBg">Modalit&eacute;s de r&egrave;glement</div>
+
+        <table class="table" width="100%">
+            <thead style="background-color:red">
+                <tr>
+                    <th width="50%" class="lightBlueBg">Entreprises</th>
+                    <th width="50%" class="lightBlueBg">Associations, Ecole, Organismes, Autres</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan=2 style="vertical-align:top;text-align:center">R&eacute;gler 50% du montant total TTC mentionn&eacute; sur le pr&eacute;sent bon avant le 11/04/2025. R&egrave;glement du solde avant le 25 Nomvembre 2025.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Fin Modalites -->
+
+    <hr style="margin-top:10px; margin-bottom:20px" />
+
+    <p>Je soussign&eacute;(e), Madame, Monsieur (rayez la mention inutile)
+        <b>
+            {{contactPrincipal.prenom}} {{contactPrincipal.nom}} 
+        </b>
+    </p>
+    <p style="margin-top:20px">Repr&eacute;sentant la soci&eacute;t&eacute; <b>test</b>, m'engage &agrave; effectuer le r&egrave;glement des prestations, suivant le mode choisi ci-dessus, et &agrave; envoyer le pr&eacute;sent bon avant la date limite du <b>15 Octobre 2025</b>. Pour tout d&eacute;sistement effectu&eacute; au-del&agrave; de cette date, le montant indiqu&eacute; ci-dessus sera d&ucirc;.</p>
+
+    <div style="height: 200px;">
+        <table width="100%">
+            <tr>
+                <td>
+                    <div style="float:left; width:50%;text-align:right; margin-top:20px;">
+                        <p style="margin-top:10px; margin-left:35px">Fait &agrave; <b>paris</b>, le <b>20/12/2025</b></p>
+                        <p style="font-weight:bold">Signature et cachet </p>
+                    </div>
+                    <div style="float:right; height: fit-content;" class="signature-bg">
+                        <div class="signature-wrapper lightBlueBg" style="border: 2px dashed black; cursor: initial;">
+                            <img style="width: 300px;" [src]="signature" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

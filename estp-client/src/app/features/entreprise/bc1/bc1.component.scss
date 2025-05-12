@@ -19,3 +19,24 @@
     min-height: 100%;
     box-sizing: border-box;
   }
+  .signature-pad {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  canvas {
+    border: 1px solid #000;
+    cursor: crosshair;
+  }
+  
+  .buttons {
+    margin-top: 10px;
+  }
+  
+  button {
+    margin: 0 5px;
+    padding: 8px 16px;
+  }
+  
