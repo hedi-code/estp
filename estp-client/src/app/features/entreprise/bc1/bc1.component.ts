@@ -115,6 +115,42 @@ export class Bc1Component implements OnInit {
   }
 
 
+  updateEntreprise(){
+    if (this.reservationForm.touched && this.reservationForm.get('rue')?.value && 
+      this.reservationForm.get('telephone_standard')?.value && 
+      this.reservationForm.get('nom')?.value && 
+      this.reservationForm.get('ville')?.value && 
+      this.reservationForm.get('codePostale')?.value){
+        if(!!this.entreprise){
+          this.entreprise.telephone_standard = this.reservationForm.get('telephone_standard')?.value;
+          this.entreprise.nom = this.reservationForm.get('nom')?.value
+          this.entreprise.adresse = this.reservationForm.get('rue')?.value + '-'+this.reservationForm.get('codePostale')?.value+'-'+this.reservationForm.get('ville')?.value
+          this.entrepriseService.updateEntreprise(this.entreprise?.id ?? 99999, this.entreprise).subscribe();
+        }
+      }
+  }
+
+  updateContactPrincipal(){
+    if(
+      this.reservationForm.touched && this.reservationForm.get('nomResponsable')?.value &&
+       this.reservationForm.get('prenomResponsable')?.value &&
+       this.reservationForm.get('telResponsable')?.value &&
+       this.reservationForm.get('emailResponsable')?.value 
+    )
+    {
+      if(!!this.contactPrincipal){
+        this.contactPrincipal.nom = this.reservationForm.get('nomResponsable')?.value;
+        this.contactPrincipal.telephone1 = this.reservationForm.get('telResponsable')?.value;
+        this.contactPrincipal.prenom = this.reservationForm.get('prenomResponsable')?.value;
+        this.contactPrincipal.email = this.reservationForm.get('emailResponsable')?.value;
+        this.contactService.updateContact(this.contactPrincipal.id??9999, this.contactPrincipal)
+      }
+    }
+  }
+
+
+
+
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private ctx!: CanvasRenderingContext2D;
   private isDrawing = false;

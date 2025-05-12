@@ -6,7 +6,8 @@
           <ng-container *ngFor="let pack of pack1s">
             <h1>{{pack.titre}}</h1>
             <div class="border-2 border-round-xl border-solid border-primary grid flex">
-              <img [src]="baseUrl+ '/api' + pack.img" alt="" class="col-4 m-0 p-0 border-round-left-xl">
+              <img [src]="baseUrl+ '/api' + pack.img" alt=""
+                class="col-4 m-0 p-0 border-round-left-xl object-contain w-full h-auto max-h-40rem">
               <div class="col-8 p-4">
                 <h3 class="text-primary">{{pack.description}}</h3>
                 <ng-container *ngFor="let option of pack.options">
@@ -97,24 +98,24 @@
       <div class="grid">
         <div class="field col-4">
           <label for="lastname">Rue</label>
-          <input pInputText id="nom_entrprise" formControlName="rue" placeholder="Entrez le nom de l'entreprise"
+          <input pInputText id="nom_entrprise" formControlName="rue" placeholder="Entrez la rue"
             class="w-full" />
         </div>
         <div class="field col-4">
           <label for="lastname">Code postale</label>
-          <input pInputText id="nom_entrprise" formControlName="codePostale" placeholder="Entrez le nom de l'entreprise"
+          <input pInputText id="nom_entrprise" formControlName="codePostale" placeholder="Entrez le code postale"
             class="w-full" />
         </div>
         <div class="field col-4">
           <label for="lastname">Ville</label>
-          <input pInputText id="nom_entrprise" formControlName="ville" placeholder="Entrez le nom de l'entreprise"
+          <input pInputText id="nom_entrprise" formControlName="ville" placeholder="Entrez la ville"
             class="w-full" />
         </div>
       </div>
       <div class="field">
         <label for="lastname">Téléphone</label>
         <input pInputText id="nom_entrprise" formControlName="telephone_standard"
-          placeholder="Entrez le nom de l'entreprise" class="w-full" />
+          placeholder="Entrez le numéro de téléphone" class="w-full" />
       </div>
 
       <h2 class="mb-4">Responsable</h2>
@@ -122,12 +123,12 @@
         <div class="field col-6">
           <label for="lastname">Nom</label>
           <input pInputText id="nom_entrprise" formControlName="nomResponsable"
-            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+            placeholder="Entrez le nom du responsable" class="w-full" />
         </div>
         <div class="field col-6">
           <label for="lastname">Prénom</label>
           <input pInputText id="nom_entrprise" formControlName="prenomResponsable"
-            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+            placeholder="Entrez le prénom du responsable" class="w-full" />
         </div>
 
       </div>
@@ -135,12 +136,12 @@
         <div class="field col-6">
           <label for="lastname">Téléphone</label>
           <input pInputText id="nom_entrprise" formControlName="telResponsable"
-            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+            placeholder="Entrez le téléphone du responsable" class="w-full" />
         </div>
         <div class="field col-6">
           <label for="lastname">Email</label>
           <input pInputText type="email" id="nom_entrprise" formControlName="emailResponsable"
-            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+            placeholder="Entrez l'email du responsable" class="w-full" />
         </div>
       </div>
       <h2 class="mb-4">Signature</h2>
@@ -156,23 +157,52 @@
           <p-button severity="primary" outlined="true" (click)="clearCanvas()" class="mt-2">Effacer</p-button>
           <p-dialog header="Votre commande" [modal]="true" [(visible)]="visible" [style]="{ width: '50%' }">
             <app-facture-bc1 [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
-            [nomFichierBc1]="entreprise?.id + '_BC1'" [entreprise]="entreprise"></app-facture-bc1>
-              <p-button 
-                  label="Valider" 
-                  severity="primary" 
-                  (onClick)="visible = false" 
-                  styleClass="w-full"
-                />
+              [nomFichierBc1]="entreprise?.id + '_BC1'" [entreprise]="entreprise"></app-facture-bc1>
+            <p-button label="Valider" severity="primary" (onClick)="visible = false" styleClass="w-full" />
           </p-dialog>
         </div>
       </div>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('nom')?.invalid && reservationForm.get('nom')?.touched" severity="error"
+        text="Le nom est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('rue')?.invalid && reservationForm.get('rue')?.touched" severity="error"
+        text="La rue est requise."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('codePostale')?.invalid && reservationForm.get('codePostale')?.touched"
+        severity="error" text="Le code postal est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('ville')?.invalid && reservationForm.get('ville')?.touched" severity="error"
+        text="La ville est requise."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('telephone_standard')?.invalid && reservationForm.get('telephone_standard')?.touched"
+        severity="error" text="Le téléphone standard est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('nomResponsable')?.invalid && reservationForm.get('nomResponsable')?.touched"
+        severity="error" text="Le nom du responsable est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('prenomResponsable')?.invalid && reservationForm.get('prenomResponsable')?.touched"
+        severity="error" text="Le prénom du responsable est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('telResponsable')?.invalid && reservationForm.get('telResponsable')?.touched"
+        severity="error" text="Le téléphone du responsable est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('faitA')?.invalid && reservationForm.get('faitA')?.touched" severity="error"
+        text="Le champ 'Fait à' est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('emailResponsable')?.errors?.['required'] && reservationForm.get('emailResponsable')?.touched"
+        severity="error" text="L'email du responsable est requis."></p-message>
+      <p-message class="w-full" styleClass="w-full mb-2"
+        *ngIf="reservationForm.get('emailResponsable')?.errors?.['email'] && reservationForm.get('emailResponsable')?.touched"
+        severity="error" text="L'adresse email du responsable n'est pas valide."></p-message>
+
     </form>
 
 
     <div class="mb-3 flex justify-content-between">
 
       <button pButton label="Retour" (click)="activeIndex = 1" class="p-button-outlined"></button>
-      <button pButton label="Valider" (click)="saveCanvas()"></button>
+      <button pButton label="Valider" [disabled]="!this.reservationForm.valid" (click)="saveCanvas()"></button>
     </div>
   </p-tabPanel>
 
