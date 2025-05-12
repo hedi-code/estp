@@ -52,6 +52,21 @@
         </p-table>
 
     </div>
-    <button type="button" pButton pRipple (click)="update()">Valider les Données
-    </button>
+    <div class="field">
+        <label for="nomEntreprise">Domaine d'activité</label>
+
+        <p-dropdown 
+        [options]="secteurs" 
+        [(ngModel)]="entreprise.secteur_id" 
+        optionLabel="nom" 
+        optionValue="id"
+        class="w-full"
+        styleClass="w-full"
+        placeholder="Selectionnez votre domaine d'activité" />    </div>
+
+        <div class="flex justify-content-between mb-3">
+            <div></div>
+            <button type="button" [outlined]="true" pButton pRipple (click)="update()">Valider les Données
+            </button>
+        </div>
 </div>

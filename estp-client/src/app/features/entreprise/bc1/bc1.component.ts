@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Pack1Service } from '../../forum/services/pack1.service';
 import { environment } from './../../../../environments/environment';
 import { Pack } from '../../forum/models/pack1.model';
@@ -14,22 +14,22 @@ import { Option1Service } from '../../forum/services/option1.service';
   styleUrl: './bc1.component.scss'
 })
 export class Bc1Component implements OnInit{
-
+  activeIndex:number = 0;
   baseUrl: String = environment.apiUrl
   pack1s: Pack[] = []
   options: Option1[] = [];  // Store options here
   optionQuantities: { [key: number]: number } = {};
-
-
   selectedOption:any;
-  selectedOption2:any;
   isDisabled= true
+  
   constructor(private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service){}
 
   ngOnInit(){
     this.pack1Service.getAllPacks().subscribe({
       next: (response) => {
         this.pack1s = response;
+        console.log(this.pack1s)
+
       },
       error: (err) => {
         console.log(err)
@@ -56,17 +56,16 @@ export class Bc1Component implements OnInit{
   }
 
   addToCommand(pack: Pack){
-    this.commandeService.addDisplay(pack.titre + " " + this.selectedOption.surface + "m²", this.selectedOption.prix, "1");
-    this.commandeService.addPack(this.selectedOption ? this.selectedOption.id : this.selectedOption2.id);
+    this.commandeService.addPack(pack,this.selectedOption.surface_id);
     this.isDisabled = false;
     
   }
   addOption(id: any, qte: any){
-    console.log(`id = ${id} qte = ${qte}`);
-    const option = this.options.find( o => o.id === id);
-    console.log(option)
-    this.commandeService.addDisplay(option?.name ?? '' , option?.prix_ht ?? 0, qte??1)
-    
-    
+    let option:Option1 | undefined  = this.options.find( o => o.id === id);
+   if(option){option.qteCommande = qte ? qte : 1}
+if(!!option){
+  this.commandeService.addOption(option);
+}    
   }
+
 }

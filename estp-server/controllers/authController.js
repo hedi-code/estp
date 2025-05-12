@@ -1,14 +1,14 @@
 const db = require("../config/db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcryptjs');
-const {sendEmail} = require("../utils/email");
+const { sendEmail } = require("../utils/email");
 const entrepriseController = require('./entrepriseController');
 
 
 exports.register = async (req, res) => {
   const { email, password, first_name, last_name } = req.body;
 
-  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: "Format email invalide" });
   }
@@ -38,17 +38,71 @@ exports.register = async (req, res) => {
           "ne-pas-repondre@forumestp.fr",
           email,
           `${first_name} ${last_name}`,
-          "Email Verification",
-          `
-          Bonjour haneso4638@harinv.com,
+          "Vérification d'email",
+          `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background-color: #f6f6f6;
+      padding: 20px;
+      color: #333;
+    }
+    .email-container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    a.button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #005baa;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <p>Bonjour <strong>${first_name} ${last_name}</p>
 
-          Suite à votre inscription sur le site du ForumESTP, nous avons besoin de vérifier votre adresse e-mail.
-          Pour ce faire, il suffit de suivre ce lien dans les 24 heures : <a href='${process.env.FRONT_BASE_URL}/auth/verify/${token}'>Cliquez ici pour vérifier votr eemail</a>
-          Si le lien ne fonctionne pas correctement, veuillez copier le lien suivant dans votre navigateur :
-          ${process.env.FRONT_BASE_URL}/auth/verify/${token}
+    <p>Suite à votre inscription sur le site du <strong>Forum ESTP</strong>, nous avons besoin de vérifier votre adresse e-mail.</p>
 
-          Merci par avance et à très bientôt,
-          L'équipe du Forum ESTP 2025 `
+    <p>Pour ce faire, il vous suffit de cliquer sur le bouton ci-dessous dans les prochaines 24 heures :  </p><a href="${process.env.FRONT_BASE_URL}/auth/verify/${token}" class="button">
+        Vérifier mon adresse e-mail
+      </a>
+          <br>
+    <p>Si le bouton ne fonctionne pas, copiez et collez le lien suivant dans votre navigateur :</p>
+
+    <p><a href="${process.env.FRONT_BASE_URL}/auth/verify/${token}">
+      ${process.env.FRONT_BASE_URL}/auth/verify/${token}
+    </a></p>
+    <br>
+    <p>Merci par avance et à très bientôt,</p>
+
+    <p>L’équipe du Forum ESTP 2025</p><br>
+
+    <div class="footer">
+      © 2025 Forum ESTP — Tous droits réservés.
+    </div>
+  </div>
+</body>
+</html>
+`
         );
 
         // Return the new user info (without password)
@@ -89,8 +143,8 @@ exports.resetPasswordRequest = (req, res) => {
     const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     // Send reset password email
-    sendEmail("ne-pas-repondre@forumestp.fr", results[0].email,results[0].first_name + " " + results[0].last_name , "Demande de rénitialisation de mot de passe", 
-      `<a href='${process.env.FRONT_BASE_URL}/auth/validate-password/${resetToken}'>Click here to reset your password</a>`
+    sendEmail("ne-pas-repondre@forumestp.fr", results[0].email, results[0].first_name + " " + results[0].last_name, "Demande de rénitialisation de mot de passe",
+      `<a href='${process.env.FRONT_BASE_URL}/auth/validate-password/${resetToken}'>Cliquez ici pour réinitialiser votre mot de passe</a>`
     );
     res.json({ message: "Votre demande de rénitialisation a été envoyer à votre email" });
   });
@@ -120,7 +174,7 @@ exports.resetPassword = (req, res) => {
 };
 
 exports.login = (req, res) => {
-  const { email, password, rememberMe} = req.body;
+  const { email, password, rememberMe } = req.body;
   db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
     if (err || results.length === 0 || !(await bcrypt.compare(password, results[0].password))) {
       return res.status(401).json({ error: "Mot de passe ou email incorrecte" });
@@ -132,61 +186,61 @@ exports.login = (req, res) => {
     const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.cookie('user_id', results[0].id, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('entreprise_id', entreprise.id, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('contact_principal_id', entreprise.contact_principal_id, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('token', token, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('first_name', results[0].first_name, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('last_name', results[0].last_name, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('step', results[0].step, {
       httpOnly: false,
-      secure:  false,
+      secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
-    if(rememberMe){
+    if (rememberMe) {
       res.cookie('email', results[0].email, {
         httpOnly: false,
-        secure:  false,
+        secure: false,
         sameSite: 'Lax',
         maxAge: 24 * 60 * 60 * 1000
       });
       res.cookie('password', password, {
         httpOnly: false,
-        secure:  false,
+        secure: false,
         sameSite: 'Lax',
         maxAge: 24 * 60 * 60 * 1000
       });
     }
-    res.json({ message: "Login successful" , user: results[0]});
+    res.json({ nonDisplayMessage: "Login successful", user: results[0] });
   });
 };
 

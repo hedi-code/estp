@@ -1,4 +1,4 @@
-<div class="bg-white flex justify-content-end align-items-center px-4 py-3 border-bottom-1 border-200">Connecté en tant que {{nom}}<button label="Se déconnecter" class="ml-2 p-button-danger"
+<div class="bg-white flex justify-content-end align-items-center px-4 py-3 border-bottom-1 border-200">Connecté en tant que {{nom}}<button (click)="logout()" label="Se déconnecter" class="ml-2 p-button-danger"
         pButton size="small" icon="pi pi-times" [outlined]="true" severity="danger"></button>
 </div>
 
@@ -30,9 +30,6 @@
                 let-index="index">
                 <app-bc1></app-bc1>
                 <div class="flex justify-content-between">
-                    <p-button label="Retour" icon="pi pi-arrow-left" iconPos="left" (onClick)="decrementStep()" />
-                    <p-button label="Suivant" icon="pi pi-arrow-right" iconPos="right"
-                        (onClick)="incrementStep()" />
                 </div>
             </ng-template>
         </p-stepperPanel>
