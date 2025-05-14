@@ -18,4 +18,6 @@ export class FactureBc1Component {
   @Input() commercial: any;
   @Input() config: any;
   @Input() nomFichierBc1: string | undefined;
+    today: Date = new Date();
+
 }
