@@ -40,6 +40,8 @@ import { ToastModule } from 'primeng/toast';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
 import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/facture-bc1.component';
+import { apiInterceptorProvider } from './core/interceptors/api.interceptor';
+import { LoaderComponent } from './core/components/loader/loader.component';
 
 
 
@@ -61,6 +63,7 @@ import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/factu
     VerifyAcccountComponent,
     ValidatePasswordComponent,
     FactureBc1Component,
+    LoaderComponent
   ],
   imports: [
     BrowserModule,
@@ -86,7 +89,7 @@ import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/factu
 
     
   ],
-  providers: [provideAnimations(), provideHttpClient(
+  providers: [provideAnimations(),apiInterceptorProvider, provideHttpClient(
     withInterceptors([authInterceptorInterceptor])
   ),  provideHttpClient(
     withInterceptors([authInterceptorInterceptor, messageInterceptorInterceptor])  // Add messageInterceptor here
