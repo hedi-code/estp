@@ -95,19 +95,18 @@
                 <img [src]="baseUrl+'/api' + option.img" alt="" class="border-round-left-md w-full h-auto max-h-full"
                   style="object-fit: cover;" />
               </div>
-              
-              <div class="col-8 p-4">
-                <h3 class="text-primary uppercase">{{option.name}}</h3>
-                <span>{{ option.prix_ht }} € HT</span>
-                <ng-container *ngFor="let offre of getOffreOption(option.description ?? '')">
-                  <p class="ml-3 captalize"><i class="pi pi-check" style="font-size: 1rem"></i>
-                    {{ offre || 'Pas de description' }}</p>
-                </ng-container>
+              <div class="col-8 p-4 flex justify-content-between">
+                <div>
+                  <h3 class="text-primary uppercase">{{option.name}}</h3>
+                  <span>{{ option.prix_ht }} € HT</span>
+                  <ng-container *ngFor="let offre of getOffreOption(option.description ?? '')">
+                    <p class="ml-3 captalize"><i class="pi pi-check" style="font-size: 1rem"></i>
+                      {{ offre || 'Pas de description' }}</p>
+                  </ng-container>
+                </div>
                 <p-button label="Ajouter" class="w-full" styleClass="w-full"
                   (click)="addOption(option.id, optionQuantities[option.id])"></p-button>
-
               </div>
-
             </div>
           </ng-container>
         </div>
