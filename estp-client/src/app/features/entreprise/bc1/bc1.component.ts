@@ -122,10 +122,7 @@ export class Bc1Component implements OnInit {
       this.reservationForm.get('ville')?.value && 
       this.reservationForm.get('codePostale')?.value){
         if(!!this.entreprise){
-          this.entreprise.telephone_standard = this.reservationForm.get('telephone_standard')?.value;
-          this.entreprise.nom = this.reservationForm.get('nom')?.value
-          this.entreprise.adresse = this.reservationForm.get('rue')?.value + '-'+this.reservationForm.get('codePostale')?.value+'-'+this.reservationForm.get('ville')?.value
-          this.entrepriseService.updateEntreprise(this.entreprise?.id ?? 99999, this.entreprise).subscribe();
+         this.entrepriseService.updateEntreprise(this.entreprise?.id ?? 99999, this.entreprise).subscribe();
         }
       }
   }
@@ -206,7 +203,18 @@ export class Bc1Component implements OnInit {
   saveCanvas() {
     const dataUrl = this.canvasRef.nativeElement.toDataURL();
     console.log('Signature saved:', dataUrl);
+     if (this.entreprise) {
+
+      this.entreprise.telephone_standard = this.reservationForm.get('telephone_standard')?.value;
+      this.entreprise.nom = this.reservationForm.get('nom')?.value
+      this.entreprise.adresse = this.reservationForm.get('rue')?.value + '-' + this.reservationForm.get('codePostale')?.value + '-' + this.reservationForm.get('ville')?.value
+
+    }
     this.visible = true
     this.savedSignature = dataUrl
+  }
+
+  getOffreOption(offre: string){
+    return offre.split('+');
   }
 }

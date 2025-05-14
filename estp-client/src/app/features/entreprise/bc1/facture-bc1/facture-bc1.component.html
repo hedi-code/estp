@@ -110,7 +110,7 @@
                             <p class="blockTitle">Adresse</p>
                         </td>
                         <td>
-                            <p class="blockContent">{{ commande1?.entreprise?.adresse | uppercase }}</p>
+                            <p class="blockContent">{{ entreprise?.adresse | uppercase }}</p>
                         </td>
                     </tr>
                     <tr>
@@ -118,7 +118,7 @@
                             <p class="blockTitle">Téléphone</p>
                         </td>
                         <td>
-                            <p class="blockContent">{{ commande1?.entreprise?.telephone_standard | uppercase }}</p>
+                            <p class="blockContent">{{ entreprise?.telephone_standard | uppercase }}</p>
                         </td>
                     </tr>
                 </table>
@@ -170,7 +170,8 @@
                                     <p class="blockTitle">Correspondant</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">{{ commercial?.nom_complet || '-' }}</p>
+                                    <!-- <p class="blockContent">{{ commercial?.nom_complet || '-' }}</p> -->
+                                    <p class="blockContent">Alice Douard</p>
                                 </td>
                             </tr>
                             <tr>
@@ -178,7 +179,7 @@
                                     <p class="blockTitle">E-mail</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">{{ commercial?.email || '-' }}</p>
+                                    <p class="blockContent">alice.douard&#64;forumestp.fr</p>
                                 </td>
                             </tr>
                             <tr>
@@ -186,7 +187,7 @@
                                     <p class="blockTitle">Téléphone</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">{{ commercial?.telephone1 || '-' }}</p>
+                                    <p class="blockContent">+337 81 33 78 87</p>
                                 </td>
                             </tr>
                         </table>
@@ -330,7 +331,7 @@
             <tr>
                 <td>
                     <div style="float:left; width:50%;text-align:right; margin-top:20px;">
-                        <p style="margin-top:10px; margin-left:35px">Fait &agrave; <b>paris</b>, le <b>20/12/2025</b></p>
+                        <p style="margin-top:10px; margin-left:35px">Fait &agrave; <b>paris</b>, le <b>{{ today | date: 'dd/MM/yyyy' }}</b></p>
                         <p style="font-weight:bold">Signature et cachet </p>
                     </div>
                     <div style="float:right; height: fit-content;" class="signature-bg">
