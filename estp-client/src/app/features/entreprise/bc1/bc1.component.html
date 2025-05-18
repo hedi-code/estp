@@ -1,5 +1,5 @@
 <p-tabView [(activeIndex)]="activeIndex">
-  <p-tabPanel header="I. Votre stand">
+  <p-tabPanel header="I. Votre stand" [disabled]="true">
     <div class="grid">
       <div class="col-9 p-3 pt-4">
         <div class="grid flex-wrap p-4">
@@ -32,16 +32,16 @@
                 </ng-container>
                 <div class="grid mt-1 align-items-center">
                   <div class="col-2 font-bold ">Surface/Prix</div>
-                  <p-dropdown class="col-6" styleClass="w-full" [options]="pack.surfaces" [(ngModel)]="selectedOption">
+                  <p-dropdown class="col-6" styleClass="w-full" [options]="pack.surfaces" [(ngModel)]="pack.selectedOption">
                     <ng-template pTemplate="selectedItem">
-                      {{ selectedOption.surface }}m² pour {{selectedOption.prix}} € HT
+                      {{ pack?.selectedOption?.surface || 0 }}m² - {{pack?.selectedOption?.prix || 0}} € HT
                     </ng-template>
                     <ng-template let-option pTemplate="item">
-                      {{ option.surface }}m² pour {{option.prix}} € HT
+                      {{ option.surface }}m² - {{option.prix}} € HT
                     </ng-template>
                   </p-dropdown>
-                  <p-button label="Ajouter" [disabled]="addBtnIsDisabled()" icon="pi pi-plus" class="col-4"
-                    styleClass="w-full" (click)="addToCommand(pack)" />
+                  <p-button label="Ajouter" [disabled]="!!!pack.selectedOption" icon="pi pi-plus" class="col-4"
+                    styleClass="w-full" (click)="addToCommand(pack,pack?.selectedOption || 0)" />
 
                 </div>
               </div>
@@ -59,13 +59,13 @@
     </div>
   </p-tabPanel>
 
-  <p-tabPanel header="II. Options">
+  <p-tabPanel [disabled]="true" header="II. Options">
     <div class="grid">
       <div class="col-9 pt-4">
         <div class="grid">
           <ng-container *ngFor="let option of options">
             <div class="col-12 sm:col-6 md:col-4 lg:col-4" *ngIf="!option?.name?.toLowerCase()?.includes('offre')">
-              <p-card header="{{ option.name }}" subheader="{{ option.prix_ht }} € HT" class="w-max">
+              <p-card header="{{ option.name }}" subheader="{{ option.prix_ht }} € HT {{[113,114].includes(option.id) ? '/ mètre linéaire' : ''}}">
                 <ng-template pTemplate="header">
                   <img alt="Card" [src]="baseUrl+'/api' + option.img" class="w-full border-round-top-md" />
                 </ng-template>
@@ -89,7 +89,7 @@
 
               </p-card>
             </div>
-            <div class="border-1 border-round-md border-solid border-300 shadow-1 col-12 grid mt-2 mb-2 p-0"
+            <div class="border-round-md grid shadow-1 col-12 m-2"
               *ngIf="option?.name?.toLowerCase()?.includes('offre')">
               <div class="col-4 m-0 p-0 flex items-center justify-center overflow-hidden relative">
                 <img [src]="baseUrl+'/api' + option.img" alt="" class="border-round-left-md w-full h-auto max-h-full"
@@ -122,12 +122,12 @@
     </div>
   </p-tabPanel>
 
-  <p-tabPanel header="III. Votre reservation">
+  <p-tabPanel [disabled]="true" header="III. Votre reservation">
     <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
       <h2 class="mb-4">Facturation</h2>
 
       <div class="field">
-        <label for="lastname">Nom de votre entreprise</label>
+        <label for="lastname">Nom de l'entreprise à facturer</label>
         <input pInputText id="nom" formControlName="nom" placeholder="Entrez le nom de l'entreprise" class="w-full" />
       </div>
       <div class="grid">
@@ -238,7 +238,7 @@
     </div>
   </p-tabPanel>
 
-  <p-tabPanel header="IV. Page de book">
+  <p-tabPanel [disabled]="true" header="IV. Page de book">
     <p>En cours de developpement....</p>
     <div class="mb-3 flex justify-content-between">
       <button pButton label="Retour" (click)="activeIndex = 2" class="p-button-outlined"></button>
