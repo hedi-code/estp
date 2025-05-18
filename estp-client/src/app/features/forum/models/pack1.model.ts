@@ -6,4 +6,5 @@ export interface Pack {
     img?: string;
     surfaces?: { surface_id: number; surface?: number; prix?: string }[];
     options?: { option_id: number; option_description?: string }[];
+    selectedOption?: { surface_id: number; surface?: number; prix?: string };
   }

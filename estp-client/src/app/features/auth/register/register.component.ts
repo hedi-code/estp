@@ -27,7 +27,7 @@ export class RegisterComponent {
       phonenumber: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       email: ['', [Validators.required, Validators.email]],
       companyName: ['', Validators.required],
-      companySiren: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]], // Example pattern for SIREN number
+      companySiren: ['', [Validators.required, Validators.pattern('^(\\d\\s*){4,15}$')]], // Example pattern for SIREN number
       isNotInFrance: [false],
       functionInCompany: ['', Validators.required],
       password: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{10,}$/)]],

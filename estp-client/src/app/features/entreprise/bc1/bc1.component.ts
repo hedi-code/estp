@@ -101,8 +101,8 @@ export class Bc1Component implements OnInit {
     return !!!this.selectedOption
   }
 
-  addToCommand(pack: Pack) {
-    this.commandeService.addPack(pack, this.selectedOption.surface_id);
+  addToCommand(pack: Pack, surface: any) {
+    this.commandeService.addPack(pack, surface.surface_id);
     this.isDisabled = false;
 
   }
@@ -113,7 +113,6 @@ export class Bc1Component implements OnInit {
       this.commandeService.addOption(option);
     }
   }
-
 
   updateEntreprise(){
     if (this.reservationForm.touched && this.reservationForm.get('rue')?.value && 
