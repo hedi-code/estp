@@ -28,7 +28,7 @@ exports.createCommande1 = (req, res) => {
 
       // Step 2: If a commande already exists for this entreprise_id, return an error
       if (result.length > 0) {
-        return res.status(400).json({ error: "Une commande existe déjà pour cette entreprise." });
+        return res.status(400).json({ error: "Un bon de commande existe déjà pour cette entreprise." });
       }
 
       // Step 3: If no commande exists, proceed to insert a new one
@@ -64,7 +64,7 @@ exports.createCommande1 = (req, res) => {
                   "p { color: black !important; }" +
                   "</style>" +
                   "<p>Bonjour ,</p>" +
-                  "<p>Félicitations, votre inscription à la 45ème édition du Forum ESTP est validée. <br /> Nous avons hâte de vous recevoir.</p>" +
+                  "<p>Félicitations, votre inscription à la 46ème édition du Forum ESTP est validée. <br /> Nous avons hâte de vous recevoir.</p>" +
                   "<p>Vous trouverez ci-joint votre bon de commande 1. <br /> La facture associée vous sera bientôt transmise.</p>" +
                   "<p>Vous pouvez maintenant compléter votre <b>page sur le Book du Forum</b>.</p>" +
                   "<p>Cet outil vous permet de présenter votre entreprise et de décrire ce que vous recherchez chez un futur collaborateur dans l’annuaire de l'évènement, support distribué à tous les visiteurs lors de leur passage au Forum.</p>" +
@@ -77,8 +77,7 @@ exports.createCommande1 = (req, res) => {
                   "<img src=\"https://staging.app.forumetp.fr/img/logo.png\" alt=\"\" style=\"max-width: 100%; max-height: 200px;\" />" +
                   "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex <br />Tél. : +33 9 51 23 97 76</p>" +
                   "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
-                sendEmail("ne-pas-repondre@forumestp.fr", result[0].email, result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, `${entreprise_id}_BC1.pdf`, base64Attachment);
-                sendEmail("ne-pas-repondre@forumestp.fr", "kahina.saibi@forumestp.fr", "Kahina Saibi", "Inscription à la 46ème édition du Forum ESTP", "Bonjour,<br /><br />La société <b>" + result[0].nomEntreprise + "</b> vient d'enregistrer son BC1.<br />");
+                sendEmail("ne-pas-repondre@forumestp.fr", result[0].email, result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, ["alice.douard@forumestp.fr"],`${entreprise_id}_BC1.pdf`, base64Attachment);
               }
             }
           );

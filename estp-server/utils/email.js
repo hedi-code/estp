@@ -15,6 +15,9 @@ const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
  * @param {string} receiverName - The receiver's name
  * @param {string} subject - The subject of the email
  * @param {string} htmlText - The HTML content of the email
+ * @param {Array} [ccEmails=null] - The email addresses of CC recipients (optional)
+ * @param {string} [attachmentName=null] - The name of the attachment (optional)
+ * @param {string} [attachment=null] - The Base64 encoded attachment content (optional)
  */
 const sendEmail = async (
   senderEmail,
@@ -22,6 +25,7 @@ const sendEmail = async (
   receiverName,
   subject,
   htmlText,
+    ccEmails = null, // Default is null, meaning no CC unless provided
   attachmentName = null,
   attachment = null
 ) => {
@@ -34,7 +38,9 @@ const sendEmail = async (
       'X-Mailin-custom': 'custom_header_1:custom_value_1|custom_header_2:custom_value_2'
     }
   };
-
+  if (ccEmails && Array.isArray(ccEmails) && ccEmails.length > 0) {
+    sendSmtpEmail.cc = ccEmails.map(email => ({ email }));
+  }
   // Add attachment only if both name and content are provided
   if (attachmentName && attachment) {
     sendSmtpEmail.attachment = [{
