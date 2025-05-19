@@ -1,37 +1,48 @@
-// controllers/fileController.js
-const multer = require('multer');
 const path = require('path');
+const multer = require('multer');
 const fs = require('fs');
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      const folderName = req.body.folder || 'default';
-      const dest = path.join(__dirname, '..', 'uploads', folderName);
+// Multer storage config with dynamic folder and filename
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const folder = req.params.folder;
+    const uploadDir = path.join(__dirname, '../uploads', folder);
 
-      // Create folder if it doesn't exist
-      fs.mkdirSync(dest, { recursive: true });
-
-      cb(null, dest);
-    },
-    filename: (req, file, cb) => {
-      const originalExt = path.extname(file.originalname);
-      const customName = req.body.filename || Date.now().toString();
-      cb(null, customName + originalExt);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
-  })
+
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const originalExt = path.extname(file.originalname); // keep original extension
+    const requestedName = req.query.filename;
+    const safeName = requestedName
+      ? `${requestedName}${originalExt}`
+      : `${Date.now()}-${file.originalname}`;
+    cb(null, safeName);
+  }
 });
 
-const uploadFile = (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
+const upload = multer({ storage });
 
-  res.status(200).json({
-    message: 'File uploaded successfully',
-    filePath: req.file.path,
-    fileName: req.file.filename
+const uploadHandler = (req, res) => {
+  upload.single('file')(req, res, function (err) {
+    if (err) {
+      return res.status(500).json({ error: 'Upload failed', details: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const folder = req.params.folder;
+    res.status(200).json({
+      nonDisplayMessage: 'File uploaded successfully',
+      filePath: `/uploads/${folder}/${req.file.filename}`
+    });
   });
 };
 
-module.exports = { upload, uploadFile };
+module.exports = {
+  uploadHandler
+};

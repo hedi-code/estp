@@ -21,9 +21,9 @@ export const messageInterceptorInterceptor: HttpInterceptorFn = (req, next) => {
           if (body.message) {
             messageService.add({
               severity: 'success',  // 'success' for positive messages
-              summary: 'Success',
+              summary: '',
               detail: body.message,
-              life: 20000
+              life: 10000
             });
           }
 
@@ -33,7 +33,7 @@ export const messageInterceptorInterceptor: HttpInterceptorFn = (req, next) => {
               severity: 'error',  // 'error' for failure messages
               summary: '',
               detail: body.error,
-              life: 20000
+              life: 10000
             });
           }
         }
@@ -43,7 +43,7 @@ export const messageInterceptorInterceptor: HttpInterceptorFn = (req, next) => {
         const detail = error.error?.message || error.error?.error || 'An unexpected error occurred';
         messageService.add({
           severity: 'error',
-          life: 20000,
+          life: 10000,
           summary: '',
           detail
         });

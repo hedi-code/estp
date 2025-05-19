@@ -1,8 +1,8 @@
-// routes/fileRoutes.js
 const express = require('express');
 const router = express.Router();
-const { upload, uploadFile } = require('../controllers/fileController');
+const { uploadHandler } = require('../controllers/fileController');
 
-router.post('/upload', upload.single('file'), uploadFile);
+// Upload to dynamic folder like /api/upload/bc1 or /api/upload/factures
+router.post('/:folder', uploadHandler);
 
 module.exports = router;
