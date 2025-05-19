@@ -188,7 +188,7 @@
           <p-dialog header="Votre commande" [modal]="true" [(visible)]="visible" [style]="{ width: '50%' }">
             <app-facture-bc1 id="contentToExport" (createBc1Event)="createBC1()" #factureBc1
               [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
-              [nomFichierBc1]="entreprise?.id + '_BC1'" [entreprise]="entreprise"></app-facture-bc1>
+              [nomFichierBc1]="entreprise?.id + '_BC1'" [entreprise]="entreprise" [fait]="reservationForm.get('faitA')?.value"></app-facture-bc1>
             <p-button label="Valider" severity="primary" (click)="createBC1()" styleClass="w-full" />
           </p-dialog>
         </div>
