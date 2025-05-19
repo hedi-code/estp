@@ -53,7 +53,7 @@ app.use("/api/option1", option1Routes);
 app.use("/api/secteur", secteurRoutes);
 app.use("/api/commande1", commande1Routes);
 app.use("/api/commande1Options", commande1OptionsRoutes);
-app.use('/api/files', fileRoutes); // <- Use file routes under /api/files
+app.use('/api/upload', fileRoutes); // <- Use file routes under /api/files
 
 
 

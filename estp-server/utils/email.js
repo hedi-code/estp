@@ -16,26 +16,43 @@ const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
  * @param {string} subject - The subject of the email
  * @param {string} htmlText - The HTML content of the email
  */
-const sendEmail = async(senderEmail, receiverEmail, receiverName, subject, htmlText) => {
-    const sendSmtpEmail = {
-        sender: { email: senderEmail },
-        to: [{ email: receiverEmail, name: receiverName }],
-        subject: subject,
-        htmlContent: htmlText,
-        headers: {
-            'X-Mailin-custom': 'custom_header_1:custom_value_1|custom_header_2:custom_value_2'
-        }
-    };
+const sendEmail = async (
+  senderEmail,
+  receiverEmail,
+  receiverName,
+  subject,
+  htmlText,
+  attachmentName = null,
+  attachment = null
+) => {
+  const sendSmtpEmail = {
+    sender: { email: senderEmail },
+    to: [{ email: receiverEmail, name: receiverName }],
+    subject: subject,
+    htmlContent: htmlText,
+    headers: {
+      'X-Mailin-custom': 'custom_header_1:custom_value_1|custom_header_2:custom_value_2'
+    }
+  };
 
-    return apiInstance.sendTransacEmail(sendSmtpEmail)
-        .then(data => {
-            console.log('Email sent successfully:', data);
-            return data;
-        })
-        .catch(error => {
-            console.error('Error sending email:', error);
-            throw error;
-        });
-}
+  // Add attachment only if both name and content are provided
+  if (attachmentName && attachment) {
+    sendSmtpEmail.attachment = [{
+      name: attachmentName,
+      content: attachment,
+    }];
+  }
+
+  return apiInstance.sendTransacEmail(sendSmtpEmail)
+    .then(data => {
+      console.log('Email sent successfully:', data);
+      return data;
+    })
+    .catch(error => {
+      console.error('Error sending email:', error);
+      throw error;
+    });
+};
+
 
 module.exports = { sendEmail };

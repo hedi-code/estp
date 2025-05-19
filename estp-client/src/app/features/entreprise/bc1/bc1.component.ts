@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, signal, ViewChild } from '@angular/core';
 import { Pack1Service } from '../../forum/services/pack1.service';
 import { environment } from './../../../../environments/environment';
 import { Pack } from '../../forum/models/pack1.model';
@@ -13,6 +13,12 @@ import { ContactService } from '../../forum/models/contact.service';
 import { Contact } from '../../forum/models/contact.model';
 import { Commande1Service } from '../../forum/services/commande1.service';
 import { Commande1 } from '../../forum/models/commande1.model';
+import { FileService } from '../../../core/services/file.service';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { FactureBc1Component } from './facture-bc1/facture-bc1.component';
+import { Commande1OptionsService } from '../../forum/services/commande1-options.service';
+
 
 
 @Component({
@@ -34,9 +40,17 @@ export class Bc1Component implements OnInit {
   reservationForm!: FormGroup;
   entreprise: Entreprise | undefined;
   contactPrincipal: Contact | undefined;
+  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('factureBc1') factureBc1!: FactureBc1Component;
+
+  private ctx!: CanvasRenderingContext2D;
+  private isDrawing = false;
+  private lastX = 0;
+  private lastY = 0;
 
 
-  constructor(private commande1Service:Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
+
+  constructor(private commande1OptionService: Commande1OptionsService, private commande1Service: Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
 
   ngOnInit() {
     this.reservationForm = this.fb.group({
@@ -50,7 +64,7 @@ export class Bc1Component implements OnInit {
       telResponsable: ['', Validators.required],
       faitA: ['', Validators.required],
       emailResponsable: ['', [Validators.required, Validators.email]]
-    });    this.pack1Service.getAllPacks().subscribe({
+    }); this.pack1Service.getAllPacks().subscribe({
       next: (response) => {
         this.pack1s = response;
         console.log(this.pack1s)
@@ -74,7 +88,7 @@ export class Bc1Component implements OnInit {
         console.error('Error fetching options:', err);
       }
     });
-    
+
     this.entrepriseService.getEntrepriseById(Number(this.cookieService.getEntrepriseId())).subscribe(e => {
       this.entreprise = e
       const adr = this.entreprise.fct_adresse?.split('-');
@@ -84,7 +98,7 @@ export class Bc1Component implements OnInit {
         codePostale: adr?.at(1) ?? '',
         ville: adr?.at(2) ?? '',
         telephone_standard: e.telephone_standard ?? '',
-        
+
       });
       this.contactService.getContact(e.contact_principal_id ?? 9999).subscribe(c => {
         this.contactPrincipal = c;
@@ -96,7 +110,7 @@ export class Bc1Component implements OnInit {
         });
       })
     });
-    
+
 
   }
 
@@ -133,20 +147,19 @@ export class Bc1Component implements OnInit {
     }
   }
 
-  updateContactPrincipal(){
-    if(
+  updateContactPrincipal() {
+    if (
       this.reservationForm.touched && this.reservationForm.get('nomResponsable')?.value &&
-       this.reservationForm.get('prenomResponsable')?.value &&
-       this.reservationForm.get('telResponsable')?.value &&
-       this.reservationForm.get('emailResponsable')?.value 
-    )
-    {
-      if(!!this.contactPrincipal){
+      this.reservationForm.get('prenomResponsable')?.value &&
+      this.reservationForm.get('telResponsable')?.value &&
+      this.reservationForm.get('emailResponsable')?.value
+    ) {
+      if (!!this.contactPrincipal) {
         this.contactPrincipal.nom = this.reservationForm.get('nomResponsable')?.value;
         this.contactPrincipal.telephone1 = this.reservationForm.get('telResponsable')?.value;
         this.contactPrincipal.prenom = this.reservationForm.get('prenomResponsable')?.value;
         this.contactPrincipal.email = this.reservationForm.get('emailResponsable')?.value;
-        this.contactService.updateContact(this.contactPrincipal.id??9999, this.contactPrincipal).subscribe()
+        this.contactService.updateContact(this.contactPrincipal.id ?? 9999, this.contactPrincipal).subscribe()
       }
     }
   }
@@ -154,11 +167,7 @@ export class Bc1Component implements OnInit {
 
 
 
-  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
-  private ctx!: CanvasRenderingContext2D;
-  private isDrawing = false;
-  private lastX = 0;
-  private lastY = 0;
+
 
   ngAfterViewInit() {
     const canvas = this.canvasRef.nativeElement;
@@ -187,7 +196,7 @@ export class Bc1Component implements OnInit {
     this.ctx.moveTo(this.lastX, this.lastY);
     this.ctx.lineTo(offsetX, offsetY);
     this.ctx.stroke();
-    
+
     this.lastX = offsetX;
     this.lastY = offsetY;
   }
@@ -209,26 +218,23 @@ export class Bc1Component implements OnInit {
   saveCanvas() {
     const dataUrl = this.canvasRef.nativeElement.toDataURL();
     console.log('Signature saved:', dataUrl);
-     if (this.entreprise) {
-
+    if (this.entreprise) {
       this.entreprise.telephone_standard = this.reservationForm.get('telephone_standard')?.value;
       this.entreprise.nom = this.reservationForm.get('nom')?.value
       this.entreprise.adresse = this.reservationForm.get('rue')?.value + '-' + this.reservationForm.get('codePostale')?.value + '-' + this.reservationForm.get('ville')?.value
-
     }
     this.visible = true
     this.savedSignature = dataUrl
   }
 
-  getOffreOption(offre: string){
+  getOffreOption(offre: string) {
     return offre.split('+');
   }
-  createBC1(){
-
-    this.updateEntreprise();  
+  async createBC1() {
+    this.updateEntreprise();
     this.updateContactPrincipal();
-    this.commandeService.commandeBs.subscribe(c=>{
-      let cm:Commande1 = {
+    this.commandeService.commandeBs.subscribe(async c => {
+      let cm: Commande1 = {
         entreprise_id: Number(this.cookieService.getEntrepriseId()),
         reduc_pct: 0,
         reduc_lin: 0,
@@ -241,8 +247,29 @@ export class Bc1Component implements OnInit {
         created: new Date(),
         modified: new Date()
       }
-      this.commande1Service.createCommande1(cm).subscribe()
+      this.commande1Service.createCommande1(cm).subscribe(
+        {
+          next: (response) => {
+            this.commandeService.commandeBs.subscribe(async c => {
+              console.log(c)
+                 c.option.forEach(op => {
+                  console.log(op)
+                this.commande1OptionService.createCommande1Option({ option1_id: op.id, qty: op.qteCommande ?? 1, commande1_id: response.id }).subscribe()
+              })
+              await this.factureBc1.generatedPdf("bc1", this.entreprise?.id + '_BC1', "contentToExport")
+
+           
+            })
+
+          },
+          error: () => {
+          }
+        }
+      )
     })
 
+  }
+  fakeSubmit() {
+    console.log("form submitted")
   }
 }

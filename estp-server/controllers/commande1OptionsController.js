@@ -7,8 +7,8 @@ exports.createCommande1Option = (req, res) => {
 
   const query = "INSERT INTO commande1_options (commande1_id, option1_id, qty) VALUES (?, ?, ?)";
   db.query(query, [commande1_id, option1_id, qty], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error creating option" });
-    res.status(201).json({ message: "Option added successfully", id: result.insertId });
+    if (err) return res.status(500).json({ error: err });
+    res.status(201).json({ nonDisplayMessage: "Option added successfully", id: result.insertId });
   });
 };
 
