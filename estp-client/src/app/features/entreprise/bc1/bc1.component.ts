@@ -11,6 +11,8 @@ import { AuthCookieService } from '../../../core/services/auth-cookie.service';
 import { Entreprise } from '../entreprise.model';
 import { ContactService } from '../../forum/models/contact.service';
 import { Contact } from '../../forum/models/contact.model';
+import { Commande1Service } from '../../forum/services/commande1.service';
+import { Commande1 } from '../../forum/models/commande1.model';
 
 
 @Component({
@@ -34,7 +36,7 @@ export class Bc1Component implements OnInit {
   contactPrincipal: Contact | undefined;
 
 
-  constructor(private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
+  constructor(private commande1Service:Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
 
   ngOnInit() {
     this.reservationForm = this.fb.group({
@@ -63,7 +65,7 @@ export class Bc1Component implements OnInit {
       next: (data) => {
         this.options = data;  // Assign data to options array
         this.options.forEach(option => {
-          if ([94, 105, 106, 107, 108, 109].includes(option.id)) {
+          if ([94, 105, 106, 107, 108, 109, 113, 114].includes(option.id)) {
             this.optionQuantities[option.id] = 1;
           }
         });
@@ -75,11 +77,12 @@ export class Bc1Component implements OnInit {
     
     this.entrepriseService.getEntrepriseById(Number(this.cookieService.getEntrepriseId())).subscribe(e => {
       this.entreprise = e
+      const adr = this.entreprise.fct_adresse?.split('-');
       this.reservationForm.patchValue({
-        nom: e.nom ?? '',
-        rue: '',
-        codePostale: '',
-        ville: '',
+        nom: e.fct_nom ?? e.nom,
+        rue: adr?.at(0) ?? '',
+        codePostale: adr?.at(1) ?? '',
+        ville: adr?.at(2) ?? '',
         telephone_standard: e.telephone_standard ?? '',
         
       });
@@ -114,16 +117,20 @@ export class Bc1Component implements OnInit {
     }
   }
 
-  updateEntreprise(){
-    if (this.reservationForm.touched && this.reservationForm.get('rue')?.value && 
-      this.reservationForm.get('telephone_standard')?.value && 
-      this.reservationForm.get('nom')?.value && 
-      this.reservationForm.get('ville')?.value && 
-      this.reservationForm.get('codePostale')?.value){
-        if(!!this.entreprise){
-         this.entrepriseService.updateEntreprise(this.entreprise?.id ?? 99999, this.entreprise).subscribe();
-        }
+  updateEntreprise() {
+    if (this.reservationForm.touched && this.reservationForm.get('rue')?.value &&
+      this.reservationForm.get('telephone_standard')?.value &&
+      this.reservationForm.get('nom')?.value &&
+      this.reservationForm.get('ville')?.value &&
+      this.reservationForm.get('codePostale')?.value) {
+      if (!!this.entreprise) {
+        this.entreprise.fct_adresse = this.reservationForm.get('rue')?.value + '-' +
+          this.reservationForm.get('codePostale')?.value + '-' +
+          this.reservationForm.get('ville')?.value
+        this.entreprise.fct_nom = this.reservationForm.get('nom')?.value
+        this.entrepriseService.updateEntreprise(this.entreprise?.id ?? 99999, this.entreprise).subscribe();
       }
+    }
   }
 
   updateContactPrincipal(){
@@ -139,7 +146,7 @@ export class Bc1Component implements OnInit {
         this.contactPrincipal.telephone1 = this.reservationForm.get('telResponsable')?.value;
         this.contactPrincipal.prenom = this.reservationForm.get('prenomResponsable')?.value;
         this.contactPrincipal.email = this.reservationForm.get('emailResponsable')?.value;
-        this.contactService.updateContact(this.contactPrincipal.id??9999, this.contactPrincipal)
+        this.contactService.updateContact(this.contactPrincipal.id??9999, this.contactPrincipal).subscribe()
       }
     }
   }
@@ -215,5 +222,27 @@ export class Bc1Component implements OnInit {
 
   getOffreOption(offre: string){
     return offre.split('+');
+  }
+  createBC1(){
+
+    this.updateEntreprise();  
+    this.updateContactPrincipal();
+    this.commandeService.commandeBs.subscribe(c=>{
+      let cm:Commande1 = {
+        entreprise_id: Number(this.cookieService.getEntrepriseId()),
+        reduc_pct: 0,
+        reduc_lin: 0,
+        pack1_id: c.surfacePrix,
+        valide: false,
+        total_ht: this.commandeService.getPrice(),
+        total_ht_avt_remise: this.commandeService.getPrice(),
+        validation_lieu: this.reservationForm.get('faitA')?.value,
+        id: 0,
+        created: new Date(),
+        modified: new Date()
+      }
+      this.commande1Service.createCommande1(cm).subscribe()
+    })
+
   }
 }

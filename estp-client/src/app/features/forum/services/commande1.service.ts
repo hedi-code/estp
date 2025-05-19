@@ -11,7 +11,7 @@ import { environment } from './../../../../environments/environment';
   providedIn: 'root',
 })
 export class Commande1Service {
-  private apiUrl = `${environment.apiUrl}/api/commande1s`;
+  private apiUrl = `${environment.apiUrl}/api/commande1`;
 
   constructor(private http: HttpClient) {}
 

@@ -65,28 +65,24 @@
         <div class="grid">
           <ng-container *ngFor="let option of options">
             <div class="col-12 sm:col-6 md:col-4 lg:col-4" *ngIf="!option?.name?.toLowerCase()?.includes('offre')">
-              <p-card header="{{ option.name }}" subheader="{{ option.prix_ht }} € HT {{[113,114].includes(option.id) ? '/ mètre linéaire' : ''}}">
+              <p-card styleClass="h-full" header="{{ option.name }}" subheader="{{ option.prix_ht }} € HT {{[113,114].includes(option.id) ? '/ mètre linéaire' : ''}}">
                 <ng-template pTemplate="header">
                   <img alt="Card" [src]="baseUrl+'/api' + option.img" class="w-full border-round-top-md" />
                 </ng-template>
-                <p>{{ option.description || 'Pas de description' }}</p>
-
+                  <p>{{ option.description || 'Pas de description' }}</p>
                 <ng-template pTemplate="footer">
-                  <div class="flex flex-column w-full gap-2">
-                    <div class="flex justify-content-between align-items-center gap-2 w-full">
-                      <p-inputNumber *ngIf="[94, 105, 106, 107, 108, 109].includes(option.id)"
+                      <p-inputNumber *ngIf="[94, 105, 106, 107, 108, 109, 113, 114].includes(option.id)"
                         [(ngModel)]="optionQuantities[option.id]" [showButtons]="true" buttonLayout="horizontal"
                         inputId="horizontal" spinnerMode="horizontal" [step]="1" [min]="1" [max]="option.qmax"
-                        class="flex-grow-1 w-full" styleClass="w-full" inputStyleClass="w-full"
+                        class="flex-grow-1 w-full mb-2" styleClass="w-full" inputStyleClass="w-full"
                         decrementButtonClass="p-button-secondary outlined"
                         incrementButtonClass="p-button-secondary  outlined" incrementButtonIcon="pi pi-plus"
                         decrementButtonIcon="pi pi-minus" mode="decimal" />
-                    </div>
                     <p-button label="Ajouter" class="w-full" styleClass="w-full"
                       (click)="addOption(option.id, optionQuantities[option.id])"></p-button>
-                  </div>
-                </ng-template>
 
+                </ng-template>
+                
               </p-card>
             </div>
             <div class="border-round-md grid shadow-1 col-12 m-2"
@@ -190,7 +186,7 @@
           <p-dialog header="Votre commande" [modal]="true" [(visible)]="visible" [style]="{ width: '50%' }">
             <app-facture-bc1 [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
               [nomFichierBc1]="entreprise?.id + '_BC1'" [entreprise]="entreprise"></app-facture-bc1>
-            <p-button label="Valider" severity="primary" (onClick)="visible = false" styleClass="w-full" />
+            <p-button label="Valider" severity="primary" (onClick)="visible = false;createBC1()" styleClass="w-full" />
           </p-dialog>
         </div>
       </div>
