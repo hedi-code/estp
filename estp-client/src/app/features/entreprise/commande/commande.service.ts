@@ -31,6 +31,7 @@ export class CommandeService {
   if(!!pack)
     this.commande.pack = pack;
     this.getPrice()
+    this.commandeBs.next(this.commande)
   }
 
   getPrice() {
@@ -41,11 +42,14 @@ export class CommandeService {
     if (!!this.commande.option)
       this.commande.option.forEach(c => prix = prix + Number(c.prix_ht) * Number(c.qteCommande))
     this.prixTotal.next(prix);
+    return prix;
   }
   addOption(option: Option1) {
     this.commande.option.push(option)
     this.commandeBs.next(this.commande);
     this.getPrice()
+    this.commandeBs.next(this.commande)
+
   }
   deleteOption(index: number) {
     if (index > -1 && index < this.commande.option.length) {
