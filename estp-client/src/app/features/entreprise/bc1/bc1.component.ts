@@ -18,7 +18,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { FactureBc1Component } from './facture-bc1/facture-bc1.component';
 import { Commande1OptionsService } from '../../forum/services/commande1-options.service';
-import { take } from 'rxjs';
+import { concatMap, forkJoin, lastValueFrom, take } from 'rxjs';
 
 
 
@@ -231,50 +231,52 @@ export class Bc1Component implements OnInit {
   getOffreOption(offre: string) {
     return offre.split('+');
   }
- async createBC1() {
+
+async createBC1() {
   this.updateEntreprise();
   this.updateContactPrincipal();
 
-  this.commandeService.commandeBs.pipe(take(1)).subscribe(async c => {
-    const cm: Commande1 = {
-      entreprise_id: Number(this.cookieService.getEntrepriseId()),
-      reduc_pct: 0,
-      reduc_lin: 0,
-      pack1_id: c.surfacePrix,
-      valide: false,
-      total_ht: this.commandeService.getPrice(),
-      total_ht_avt_remise: this.commandeService.getPrice(),
-      validation_lieu: this.reservationForm.get('faitA')?.value,
-      id: 0,
-      created: new Date(),
-      modified: new Date()
-    };
+  const c = await lastValueFrom(this.commandeService.commandeBs.pipe(take(1)));
 
-    try {
-      // 🔸 Ensure PDF is generated BEFORE proceeding
-      await this.factureBc1.generatedPdf("bc1", this.entreprise?.id + '_BC1', "contentToExport");
-      console.log("PDF generated");
+  const cm: Commande1 = {
+    entreprise_id: Number(this.cookieService.getEntrepriseId()),
+    reduc_pct: 0,
+    reduc_lin: 0,
+    pack1_id: c.surfacePrix,
+    valide: false,
+    total_ht: this.commandeService.getPrice(),
+    total_ht_avt_remise: this.commandeService.getPrice(),
+    validation_lieu: this.reservationForm.get('faitA')?.value,
+    id: 0,
+    created: new Date(),
+    modified: new Date()
+  };
 
-      // 🔸 Only runs after PDF is done
-      this.commande1Service.createCommande1(cm).subscribe({
-        next: (response) => {
-          c.option.forEach(op => {
-            this.commande1OptionService.createCommande1Option({
-              option1_id: op.id,
-              qty: op.qteCommande ?? 1,
-              commande1_id: response.id
-            }).subscribe();
-          });
-        },
-        error: (err) => {
-          console.error("Erreur lors de la création de commande1", err);
-        }
-      });
-    } catch (err) {
-      console.error("Erreur lors de la génération du PDF", err);
-    }
-  });
+  try {
+    // 🔸 Step 1: Wait for PDF generation
+    await this.factureBc1.generatedPdf("bc1", this.entreprise?.id + '_BC1', "contentToExport");
+    console.log("✅ PDF generated");
+
+    // 🔸 Step 2: Create commande1 and wait
+    const commandeResponse = await lastValueFrom(this.commande1Service.createCommande1(cm));
+
+    // 🔸 Step 3: Create all options in parallel and wait
+    const optionObservables = c.option.map(op =>
+      this.commande1OptionService.createCommande1Option({
+        option1_id: op.id,
+        qty: op.qteCommande ?? 1,
+        commande1_id: commandeResponse.id
+      })
+    );
+    await lastValueFrom(forkJoin(optionObservables));
+
+    console.log('✅ Commande1 and all options created successfully');
+
+  } catch (err) {
+    console.error("❌ Error during BC1 creation", err);
+  }
 }
+
   fakeSubmit() {
     console.log("form submitted")
   }
