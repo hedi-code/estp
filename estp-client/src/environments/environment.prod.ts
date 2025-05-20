@@ -1,5 +1,5 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://new.app.forumestp.fr',
+    apiUrl: 'https://app.forumestp.fr',
   };
   
