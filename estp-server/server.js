@@ -22,16 +22,14 @@ const app = express();
 const corsOptions = {
   origin: ['*', 
     'http://localhost:4200',
-    'https://test.new.app.forumestp.fr', 
-    'https://www.test.new.app.forumestp.fr',
-    'http://test.new.app.forumestp.fr', 
-    'http://www.test.new.app.forumestp.fr', 
-    'https://www.new.app.forumestp.fr', 
-    'https://new.app.forumestp.fr',
     'https://test.app.forumestp.fr',
     'http://test.app.forumestp.fr',
-'https://www.test.app.forumestp.fr',
-'http://www.test.app.forumestp.fr'  // Allow requests from this origin
+    'https://www.test.app.forumestp.fr',
+    'http://www.test.app.forumestp.fr',  // Allow requests from this origin
+    'https://app.forumetp.fr',
+    'http://app.forumetp.fr',
+    'https://www.app.forumetp.fr',
+    'http://www.app.forumetp.fr'  // Allow requests from this origin
   ], 
 
   credentials: true,  // Allow credentials (cookies) to be included in the request
