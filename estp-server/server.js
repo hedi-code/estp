@@ -20,16 +20,23 @@ const cors = require('cors');
 dotenv.config();
 const app = express();
 const corsOptions = {
-  origin: ['*', 
-    'http://localhost:4200',
+  origin: [ 
+    'http://localhost:4200',    
+    'http://localhost:4201',
+    'http://localhost:4300',
     'https://test.app.forumestp.fr',
     'http://test.app.forumestp.fr',
     'https://www.test.app.forumestp.fr',
-    'http://www.test.app.forumestp.fr',  // Allow requests from this origin
+    'http://www.test.app.forumestp.fr',
     'https://app.forumetp.fr',
     'http://app.forumetp.fr',
     'https://www.app.forumetp.fr',
-    'http://www.app.forumetp.fr'  // Allow requests from this origin
+    'http://www.app.forumetp.fr',
+    'https://app.forumestp.fr',
+    'https://www.app.forumestp.fr',
+    'http://app.forumestp.fr',
+    'http://www.app.forumestp.fr'
+
   ], 
 
   credentials: true,  // Allow credentials (cookies) to be included in the request
