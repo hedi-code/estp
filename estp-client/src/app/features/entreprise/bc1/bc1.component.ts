@@ -224,6 +224,12 @@ export class Bc1Component implements OnInit {
       this.entreprise.nom = this.reservationForm.get('nom')?.value
       this.entreprise.adresse = this.reservationForm.get('rue')?.value + '-' + this.reservationForm.get('codePostale')?.value + '-' + this.reservationForm.get('ville')?.value
     }
+    if(this.contactPrincipal) {
+          this.contactPrincipal.nom = this.reservationForm.get('nomResponsable')?.value
+          this.contactPrincipal.prenom = this.reservationForm.get('prenomResponsable')?.value
+          this.contactPrincipal.telephone1 = this.reservationForm.get('telResponsable')?.value
+          this.contactPrincipal.email = this.reservationForm.get('emailResponsable')?.value
+    }
     this.visible = true
     this.savedSignature = dataUrl
   }
@@ -255,7 +261,6 @@ async createBC1() {
   try {
     // 🔸 Step 1: Wait for PDF generation
     await this.factureBc1.generatedPdf("bc1", this.entreprise?.id + '_BC1', "contentToExport");
-    console.log("✅ PDF generated");
 
     // 🔸 Step 2: Create commande1 and wait
     const commandeResponse = await lastValueFrom(this.commande1Service.createCommande1(cm));
