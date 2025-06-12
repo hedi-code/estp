@@ -1,0 +1,108 @@
+<div class="card p-3 bg-white mt-3 mr-3">
+  <h3 class="text-blue-400 p-2">Liste des BC1</h3>
+
+  <p-table [value]="commandes" dataKey="id" [rows]="10" 
+           [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="true"
+           columnResizeMode="expand" [paginator]="true">
+
+    <!-- Header -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
+        <th pSortableColumn="entreprise_id">Entreprise <p-sortIcon field="entreprise_id" /></th>
+        <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
+        <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
+        <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
+        <th pSortableColumn="created">Créé le <p-sortIcon field="created" /></th>
+        <th pSortableColumn="validation_lieu">Lieu de validation <p-sortIcon field="validation_lieu" /></th>
+        <th>Actions</th>
+      </tr>
+      <tr>
+        <th><p-columnFilter type="text" field="id" /></th>
+        <th><p-columnFilter type="text" field="entreprise_id" /></th>
+        <th><p-columnFilter type="text" field="pack" /></th>
+        <th></th>
+        <th><p-columnFilter type="text" field="total_ht" /></th>
+        <th><p-columnFilter type="text" field="created" /></th>
+        <th><p-columnFilter type="text" field="validation_lieu" /></th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <!-- Body -->
+    <ng-template pTemplate="body" let-cmd>
+      <tr>
+        <td>{{ cmd.id }}</td>
+        <td>{{ cmd.entreprise?.nom ?? '-' }}</td>
+        <td>{{ cmd.packDescription ?? '-' }}</td>
+        <td>
+            <ng-container *ngIf="cmd.valide">
+                    <p-tag icon="pi pi-check" severity="success" value="Oui" />
+            </ng-container>
+            <ng-container *ngIf="!cmd.valide">
+                <p-tag icon="pi pi-times" severity="warning" value="Non" />
+            </ng-container>
+        </td>
+        <td>{{ cmd.total_ht }}</td>
+        <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
+        <td>{{ cmd.validation_lieu ?? '-' }}</td>
+        <td>
+            <button pButton [text]="true" severity="success" type="button" tooltipPosition="bottom" *ngIf="!cmd.valide" pTooltip="Valider BC1" icon="pi pi-check-circle" (click)="validerCommande($event, cmd)"></button>
+            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="cmd.valide" pTooltip="Consulter facture" icon="pi pi-receipt"></button>
+            <button pButton [text]="true" type="button" tooltipPosition="bottom"  *ngIf="cmd.valide" pTooltip="Envoyer facture" icon="pi pi-file-export"></button>
+            <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter" icon="pi pi-eye" (click)="showDetailsDialog(cmd)"></button>
+            <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom" pTooltip="Supprimer"  icon="pi pi-trash" (click)="deleteCommande($event,cmd)"></button>    <p-confirmPopup />
+
+            <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></button>
+            <button pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil"></button>
+        </td>
+       
+      </tr>
+    </ng-template>
+
+  </p-table>
+    <p-dialog 
+    header="Details BC1" 
+    [modal]="true"
+    [(visible)]="detailsDialog" 
+    [style]="{ width: '50rem' }" 
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
+    [maximizable]="true">
+
+    <h6>Pack</h6>
+    {{detailsCommande?.packDescription || 'Pas de pack'}}
+    <h6>Options</h6>
+
+<p-table [value]="detailsOptions">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th >ID </th>
+      <th >Titre </th>
+      <th >Prix HT </th>
+      <th>Image</th>
+      <th >Qte</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-opt>
+    <tr>
+      <td>{{ opt.id }}</td>
+      <td>{{ opt.name ?? '-' }}</td>
+      <td>{{ opt.prix_ht ?? '-' }} €</td>
+      <td>
+        <img *ngIf="opt.img" [src]="opt.img" alt="img" width="40" height="40" />
+        <span *ngIf="!opt.img">-</span>
+      </td>
+      <td>{{ opt.qteCommande }}</td>
+    </tr>
+  </ng-template>
+</p-table>
+<h6>Total HT</h6>    {{detailsCommande?.total_ht || 'Pas de pack'}} €
+<h6>Total HT</h6>    {{getTotalTva(detailsCommande?.total_ht || 0)}} €
+ <div class="flex justify-content-end gap-2">
+        <p-button label="Cancel" severity="secondary" (onClick)="detailsDialog = false" />
+        <p-button label="Save" (onClick)="detailsDialog = false" />
+    </div>
+</p-dialog>
+</div>

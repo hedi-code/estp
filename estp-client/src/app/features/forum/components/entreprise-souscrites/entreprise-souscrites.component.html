@@ -1,0 +1,113 @@
+<div class="card p-3 bg-white mt-3 mr-3">
+    <h3 class="text-blue-400 p-2">Entreprises</h3>
+    <p-table [value]="entreprises" dataKey="id" [rows]="10" styleClass="w-full"
+    [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="true" 
+    columnResizeMode="expand" 
+    [paginator]="true"
+>
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="id" style="width:25%">
+                    Id <p-sortIcon field="id" />
+                </th>
+                <th pSortableColumn="nom" style="width:25%">
+                    Nom <p-sortIcon field="nom" />
+                </th>
+                  <th pSortableColumn="siren" style="width:25%">
+                    Siren <p-sortIcon field="siren" />
+                </th>
+                 <!-- <th pSortableColumn="created" style="width:25%">
+                    Créer le  <p-sortIcon field="created" />
+                </th>
+                 <th pSortableColumn="modified" style="width:25%">
+                    Modifiée le <p-sortIcon field="modified" />
+                </th> -->
+                 <th pSortableColumn="fct_nom" style="width:25%">
+                    Nom de facturation <p-sortIcon field="fct_nom" />
+                </th>
+                 <th pSortableColumn="fct_adresse" style="width:25%">
+                    Adresse de facturation <p-sortIcon field="fct_adresse" />
+                </th>
+                 <th pSortableColumn="adresse" style="width:25%">
+                    Adresse <p-sortIcon field="adresse" />
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <p-columnFilter type="text" field="id" [showClearButton]="false" />
+                </th>
+                <th>
+                    <p-columnFilter type="text" field="nom" [showClearButton]="false" />
+                </th>
+                <th>
+                    <p-columnFilter type="text" field="siren" [showClearButton]="false" />
+                </th>
+                <!-- <th>
+                    <p-columnFilter type="text" field="created" [showClearButton]="false" />
+                </th>
+                <th>
+                    <p-columnFilter type="text" field="modified" [showClearButton]="false" />
+                </th> -->
+                <th>
+                    <p-columnFilter type="text" field="fct_nom" [showClearButton]="false" />
+                </th>
+                <th>
+                    <p-columnFilter type="text" field="fct_adresse" [showClearButton]="false" />
+                </th>
+                <th>
+                    <p-columnFilter type="text" field="adresse" [showClearButton]="false" />
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-entreprise let-editing="editing">
+            <tr>
+                <td>
+                    
+                            {{ entreprise.id  || '-'}}
+                    
+                </td>
+                <td>
+                            {{ entreprise.nom  || '-'}}
+                        
+                    
+                </td>
+                <td>
+                    
+                     
+                            {{ entreprise.siren  || '-'}}
+                    
+                </td>
+                <!-- <td>
+                    
+                     
+                            {{ entreprise.created  || '-'}}
+                    
+                </td>
+                <td>
+                    
+                       
+                            {{ entreprise.modified  || '-'}}
+                    
+                </td> -->
+                <td>
+                    
+                        
+                            {{ entreprise.fct_nom  || '-'}}
+                    
+                </td>
+                <td >
+                    
+                      
+                            {{ entreprise.fct_adresse  || '-'}}
+                    
+                </td>
+                <td >
+                    
+                       
+                            {{entreprise.adresse || '-'}}
+                    
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

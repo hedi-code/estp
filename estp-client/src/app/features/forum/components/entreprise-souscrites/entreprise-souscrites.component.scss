@@ -1,0 +1,9 @@
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.3rem 0.5rem;   /* Reduce cell padding */
+  font-size: 0.85rem;       /* Smaller text */
+}
+
+::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
+}
