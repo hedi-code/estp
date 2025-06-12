@@ -12,7 +12,7 @@ export interface Commande1 {
   validation_lieu: string | null;
 }
 export interface Commande1Option {
-  id?: number;               // Optional for creation
+  id?: number;
   commande1_id: number;
   option1_id: number;
   qty: number;

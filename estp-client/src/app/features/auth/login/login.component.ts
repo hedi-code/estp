@@ -46,7 +46,12 @@ export class LoginComponent implements OnInit{
           if (rememberMe) {
             localStorage.setItem('email', email);
           }
-          this.router.navigate(['/entreprise']);
+          if(response.user.role =='user'){
+
+            this.router.navigate(['/entreprise']);
+          }
+        else{        this.router.navigate(['forum'])
+}
         },
         error: (error) => {
         }

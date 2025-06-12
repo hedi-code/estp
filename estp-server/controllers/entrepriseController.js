@@ -39,10 +39,12 @@ exports.getEntrepriseByUserId = (req, res) => {
 exports.createEntreprise = (req, res) => {
   const {
     contact_principal_id, user_id, commercial_id, secteur_id,
-    nom, logo, siren, adresse, created, modified,
+    nom, logo, siren, adresse,
     telephone_standard, telephone_fax, siteweb,
     fct_adresse, fct_nom, has_participated, activity
   } = req.body;
+
+  const now = new Date();
 
   const insertQuery = `
     INSERT INTO entreprises (
@@ -55,7 +57,7 @@ exports.createEntreprise = (req, res) => {
 
   const values = [
     contact_principal_id, user_id, commercial_id, secteur_id,
-    nom, logo, siren, adresse, created, modified,
+    nom, logo, siren, adresse, now, now,
     telephone_standard, telephone_fax, siteweb,
     fct_adresse, fct_nom, has_participated, activity
   ];
@@ -71,41 +73,42 @@ exports.createEntreprise = (req, res) => {
   });
 };
 
+
 // Update entreprise
 exports.updateEntreprise = (req, res) => {
   const { id } = req.params;
-  const data = req.body;
-
   const {
     contact_principal_id, user_id, commercial_id, secteur_id,
-    nom, logo, siren, adresse, created, modified,
+    nom, logo, siren, adresse,
     telephone_standard, telephone_fax, siteweb,
     fct_adresse, fct_nom, has_participated, activity
   } = req.body;
-  
+
+  const now = new Date(); // Today's date for modified
+
   const updateQuery = `
     UPDATE entreprises SET
       contact_principal_id = ?, user_id = ?, commercial_id = ?, secteur_id = ?,
-      nom = ?, logo = ?, siren = ?, adresse = ?, created = ?, modified = ?,
+      nom = ?, logo = ?, siren = ?, adresse = ?, modified = ?,
       telephone_standard = ?, telephone_fax = ?, siteweb = ?,
       fct_adresse = ?, fct_nom = ?, has_participated = ?, activity = ?
     WHERE id = ?
   `;
-  
+
   const values = [
     contact_principal_id, user_id, commercial_id, secteur_id,
-    nom, logo, siren, adresse, created, modified,
+    nom, logo, siren, adresse, now,
     telephone_standard, telephone_fax, siteweb,
     fct_adresse, fct_nom, has_participated, activity,
-    req.params.id
+    id
   ];
-  
+
   db.query(updateQuery, values, (err, result) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
     res.json({ nonDisplayMessage: 'Entreprise mise à jour', affectedRows: result.affectedRows });
   });
-  
 };
+
 
 // Delete entreprise
 exports.deleteEntreprise = (req, res) => {

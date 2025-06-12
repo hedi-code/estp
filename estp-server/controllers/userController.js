@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const jwt = require("jsonwebtoken");
+const bcrypt = require('bcryptjs');
 
 // Get user by ID
 exports.getUserById = (req, res) => {
@@ -11,14 +13,25 @@ exports.getUserById = (req, res) => {
 };
 
 // Create new user
-exports.createUser = (req, res) => {
-  const { email, password, first_name, last_name, role, step = 0, verified = 0 } = req.body;
+exports.createUser = async (req, res) => {
+  const { email, password, first_name, last_name, role, step = 0, verified = 1 } = req.body;
   const created = new Date();
   const modified = new Date();
-
+ const emailRegex = /^(?!.*@estp).*^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Format email invalide" });
+  }
+   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        error: "Mot de passe requis (min 6 caractères, un symbole, un caractère majuscule, un caractère miniscule)",
+      });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
   db.query(
     'INSERT INTO users (email, password, first_name, last_name, role, created, modified, step, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [email, password, first_name, last_name, role, created, modified, step, verified],
+    [email, hashedPassword, first_name, last_name, role, created, modified, step, verified],
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
       res.status(201).json({ message: 'User created', id: result.insertId });

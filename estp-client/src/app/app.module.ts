@@ -35,14 +35,25 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { authInterceptorInterceptor } from './core/interceptors/auth-interceptor.interceptor';
 import { messageInterceptorInterceptor } from './core/interceptors/message-interceptor.interceptor';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
 import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/facture-bc1.component';
 import { apiInterceptorProvider } from './core/interceptors/api.interceptor';
 import { LoaderComponent } from './core/components/loader/loader.component';
-
+import { MenuitemComponent } from './features/forum/components/menuitem/menuitem.component';
+import { MenuComponent } from './features/forum/components/menu/menu.component';
+import { LayoutComponent } from './features/forum/layout/layout.component';
+import { ToBeDevelopedComponent } from './features/forum/components/to-be-developed/to-be-developed.component';
+import { EntrepriseSouscritesComponent } from './features/forum/components/entreprise-souscrites/entreprise-souscrites.component';
+import { Bc1SouscritsComponent } from './features/forum/components/bc1-souscrits/bc1-souscrits.component';
+import { Bc2SouscritsComponent } from './features/forum/components/bc2-souscrits/bc2-souscrits.component';
+import { TagModule } from 'primeng/tag';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToolbarModule } from 'primeng/toolbar';
+import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmPopupModule } from 'primeng/confirmpopup';
 
 
 
@@ -63,8 +74,15 @@ import { LoaderComponent } from './core/components/loader/loader.component';
     VerifyAcccountComponent,
     ValidatePasswordComponent,
     FactureBc1Component,
-    LoaderComponent
-  ],
+    LoaderComponent,
+    MenuitemComponent,
+    MenuComponent,
+    LayoutComponent,
+    ToBeDevelopedComponent,
+    EntrepriseSouscritesComponent,
+    Bc1SouscritsComponent,
+    Bc2SouscritsComponent,
+    ],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -85,15 +103,19 @@ import { LoaderComponent } from './core/components/loader/loader.component';
     HttpClientModule,
     ToastModule,
     InputNumberModule,
-    DialogModule
-
-    
+    DialogModule,
+    TableModule,
+    TagModule,
+    ConfirmDialogModule,
+    ToolbarModule,
+    TooltipModule,
+    ConfirmPopupModule
   ],
   providers: [provideAnimations(),apiInterceptorProvider, provideHttpClient(
     withInterceptors([authInterceptorInterceptor])
   ),  provideHttpClient(
     withInterceptors([authInterceptorInterceptor, messageInterceptorInterceptor])  // Add messageInterceptor here
-  ),MessageService],
+  ),MessageService, ConfirmationService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

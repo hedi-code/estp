@@ -26,6 +26,9 @@ export class Commande1OptionsService {
   getCommande1OptionById(id: number): Observable<Commande1Option> {
     return this.http.get<Commande1Option>(`${this.apiUrl}/${id}`);
   }
+  getCommande1OptionByCommandeId(id: number): Observable<Commande1Option[]> {
+    return this.http.get<Commande1Option[]>(`${this.apiUrl}/commande/${id}`);
+  }
 
   updateCommande1Option(id: number, data: Commande1Option): Observable<Commande1Option> {
     return this.http.put<Commande1Option>(`${this.apiUrl}/${id}`, data);

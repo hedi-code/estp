@@ -12,6 +12,7 @@ router.get("/", commande1OptionsController.getAllCommande1Options);
 
 // Get a single commande1 option by ID
 router.get("/:id", commande1OptionsController.getCommande1OptionById);
+router.get("/commande/:id", commande1OptionsController.getCommande1OptionByCommandeId);
 
 // Update a commande1 option by ID
 router.put("/:id", commande1OptionsController.updateCommande1Option);

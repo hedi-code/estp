@@ -31,6 +31,17 @@ exports.getCommande1OptionById = (req, res) => {
   });
 };
 
+exports.getCommande1OptionByCommandeId = (req, res) => {
+  const { id } = req.params;
+
+  const query = "SELECT * FROM commande1_options WHERE commande1_id = ?";
+  db.query(query, [id], (err, result) => {
+    if (err) return res.status(500).json({ nonDisplayError: "Error fetching option" });
+    if (result.length === 0) return res.json([]);
+    res.json(result);
+  });
+};
+
 exports.updateCommande1Option = (req, res) => {
   const { id } = req.params;
   const { qty } = req.body;

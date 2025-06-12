@@ -184,19 +184,27 @@ exports.login = (req, res) => {
     }
     const entreprise = await entrepriseController._getEntrepriseByUserId(results[0].id);
     const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.cookie('user_id', results[0].id, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-      maxAge: 24 * 60 * 60 * 1000
-    });
-    res.cookie('entreprise_id', entreprise.id, {
+    if(entreprise){
+       res.cookie('entreprise_id', entreprise.id, {
       httpOnly: false,
       secure: false,
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('contact_principal_id', entreprise.contact_principal_id, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+     res.cookie('step', results[0].step, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+    }
+    res.cookie('user_id', results[0].id, {
       httpOnly: false,
       secure: false,
       sameSite: 'Lax',
@@ -220,12 +228,6 @@ exports.login = (req, res) => {
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
-    res.cookie('step', results[0].step, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'Lax',
-      maxAge: 24 * 60 * 60 * 1000
-    });
     if (rememberMe) {
       res.cookie('email', results[0].email, {
         httpOnly: false,
@@ -234,6 +236,12 @@ exports.login = (req, res) => {
         maxAge: 24 * 60 * 60 * 1000
       });
       res.cookie('password', password, {
+        httpOnly: false,
+        secure: false,
+        sameSite: 'Lax',
+        maxAge: 24 * 60 * 60 * 1000
+      });
+      res.cookie('role', results[0].role, {
         httpOnly: false,
         secure: false,
         sameSite: 'Lax',
