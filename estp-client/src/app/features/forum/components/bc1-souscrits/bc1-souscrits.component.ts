@@ -12,6 +12,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Commande1OptionsService } from '../../services/commande1-options.service';
 import { Option1Service } from '../../services/option1.service';
 import { Option1 } from '../../models/option1.model';
+import { environment } from '../../../../../environments/environment';
 
 
 interface CommandeWithEntreprise extends Commande1 {
@@ -38,6 +39,8 @@ export class Bc1SouscritsComponent implements OnInit {
   detailsCommande: CommandeWithEntreprise | undefined;
   optionsBc1: Option1[]=[];
   detailsOptions: Option1[]=[];
+  baseUrl: String = environment.apiUrl
+
 
   constructor(
     private commandeService: Commande1Service,

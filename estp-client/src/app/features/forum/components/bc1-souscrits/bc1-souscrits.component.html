@@ -52,8 +52,7 @@
             <button pButton [text]="true" type="button" tooltipPosition="bottom"  *ngIf="cmd.valide" pTooltip="Envoyer facture" icon="pi pi-file-export"></button>
             <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter" icon="pi pi-eye" (click)="showDetailsDialog(cmd)"></button>
             <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom" pTooltip="Supprimer"  icon="pi pi-trash" (click)="deleteCommande($event,cmd)"></button>    <p-confirmPopup />
-
-            <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></button>
+            <a pButton [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'" [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></a>
             <button pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil"></button>
         </td>
        

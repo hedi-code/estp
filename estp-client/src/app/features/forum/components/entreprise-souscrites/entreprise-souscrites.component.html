@@ -16,6 +16,9 @@
                   <th pSortableColumn="siren" style="width:25%">
                     Siren <p-sortIcon field="siren" />
                 </th>
+                  <th pSortableColumn="commercial" style="width:25%">
+                    Commercial <p-sortIcon field="commercial" />
+                </th>
                  <!-- <th pSortableColumn="created" style="width:25%">
                     Créer le  <p-sortIcon field="created" />
                 </th>
@@ -31,6 +34,9 @@
                  <th pSortableColumn="adresse" style="width:25%">
                     Adresse <p-sortIcon field="adresse" />
                 </th>
+                  <th style="width:25%">
+                    Assigner/Changer
+                </th>
             </tr>
             <tr>
                 <th>
@@ -41,6 +47,9 @@
                 </th>
                 <th>
                     <p-columnFilter type="text" field="siren" [showClearButton]="false" />
+                </th>
+                <th>
+                    <p-columnFilter type="text" field="commercial" [showClearButton]="false" />
                 </th>
                 <!-- <th>
                     <p-columnFilter type="text" field="created" [showClearButton]="false" />
@@ -56,6 +65,8 @@
                 </th>
                 <th>
                     <p-columnFilter type="text" field="adresse" [showClearButton]="false" />
+                </th>
+                <th>
                 </th>
             </tr>
         </ng-template>
@@ -76,6 +87,15 @@
                      
                             {{ entreprise.siren  || '-'}}
                     
+                </td>
+                <td>
+                    
+                    <ng-container *ngIf="entreprise.commercial_id">
+                        {{getCommercialData(entreprise.commercial_id)?.first_name}} {{getCommercialData(entreprise.commercial_id)?.last_name}}
+                    </ng-container>
+                    <ng-container *ngIf="!entreprise.commercial_id">
+                        -
+                    </ng-container>
                 </td>
                 <!-- <td>
                     
@@ -107,7 +127,38 @@
                             {{entreprise.adresse || '-'}}
                     
                 </td>
+                <td>
+                                <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
+
+                </td>
             </tr>
         </ng-template>
     </p-table>
 </div>
+<p-dialog header="Assigner entreprise" [modal]="true" [(visible)]="assignModel" [style]="{ width: '25rem' }">
+   <p-table 
+  [value]="commercials" 
+  selectionMode="single"
+  dataKey="id"
+  [paginator]="true"
+  [rows]="10"
+  [responsiveLayout]="'scroll'">
+  
+  <ng-template pTemplate="header">
+    <tr>
+      <th>ID</th>
+      <th>Email</th>
+      <th>Nom/Prénom</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-user>
+    <tr [pSelectableRow]="user" (dblclick)="onRowDoubleClick(user)">
+      <td>{{ user.id }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.last_name }} {{ user.first_name }}</td>
+    </tr>
+  </ng-template>
+</p-table>
+
+</p-dialog>
