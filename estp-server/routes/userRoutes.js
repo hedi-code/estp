@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController'); // Assuming your controller file is in the 'controllers' folder
 
+// Route to get all users with role = 'comm'
+router.get('/commercials', userController.getCommercials);
 // Route to get user by ID
 router.get('/:id', userController.getUserById);
 
@@ -10,5 +12,9 @@ router.post('/', userController.createUser);
 
 // Route to update the 'step' column only
 router.put('/updateStep/:id', userController.updateStep);
+
+router.get('/', userController.getAllUsers);
+
+
 
 module.exports = router;

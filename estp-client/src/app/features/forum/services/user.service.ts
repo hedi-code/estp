@@ -22,4 +22,14 @@ export class UserService {
   updateStep(id: number, step: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/updateStep/${id}`, { step });
   }
+
+    // Get all users
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}`);
+  }
+
+  // Get users with role = 'comm'
+  getCommercials(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/commercials`);
+  }
 }

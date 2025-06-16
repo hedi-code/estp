@@ -11,6 +11,22 @@ exports.getUserById = (req, res) => {
     res.json(result[0]);
   });
 };
+// Get all users
+exports.getAllUsers = (req, res) => {
+  db.query('SELECT * FROM users', (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(result);
+  });
+};
+
+// Get all users where role = 'comm'
+exports.getCommercials = (req, res) => {
+  db.query('SELECT * FROM users WHERE role = ?', ['comm'], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.length === 0) return res.status(404).json({ message: 'No commercial users found' });
+    res.json(result);
+  });
+};
 
 // Create new user
 exports.createUser = async (req, res) => {

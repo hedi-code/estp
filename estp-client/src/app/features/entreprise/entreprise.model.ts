@@ -1,5 +1,5 @@
 export interface Entreprise {
-    id?: number;
+    id?: number | undefined;
     contact_principal_id?: number;
     user_id?: number;
     commercial_id?: number;
