@@ -228,6 +228,12 @@ exports.login = (req, res) => {
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
+      res.cookie('role', results[0].role, {
+        httpOnly: false,
+        secure: false,
+        sameSite: 'Lax',
+        maxAge: 24 * 60 * 60 * 1000
+      });
     if (rememberMe) {
       res.cookie('email', results[0].email, {
         httpOnly: false,
@@ -236,12 +242,6 @@ exports.login = (req, res) => {
         maxAge: 24 * 60 * 60 * 1000
       });
       res.cookie('password', password, {
-        httpOnly: false,
-        secure: false,
-        sameSite: 'Lax',
-        maxAge: 24 * 60 * 60 * 1000
-      });
-      res.cookie('role', results[0].role, {
         httpOnly: false,
         secure: false,
         sameSite: 'Lax',

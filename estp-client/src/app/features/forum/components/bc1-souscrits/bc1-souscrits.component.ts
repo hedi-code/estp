@@ -13,6 +13,7 @@ import { Commande1OptionsService } from '../../services/commande1-options.servic
 import { Option1Service } from '../../services/option1.service';
 import { Option1 } from '../../models/option1.model';
 import { environment } from '../../../../../environments/environment';
+import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
 
 
 interface CommandeWithEntreprise extends Commande1 {
@@ -49,7 +50,8 @@ export class Bc1SouscritsComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private commandeOptionService: Commande1OptionsService,
-    private optionService: Option1Service
+    private optionService: Option1Service,
+    private cookieService: AuthCookieService
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +73,9 @@ export class Bc1SouscritsComponent implements OnInit {
           pack: pack.find(p => (p.surfaces?.find(s=> s.surface_id == cmd.pack1_id) )),
           packDescription: this.getPackDesrcription(cmd.pack1_id ?? -1, pack.find(p => (p.surfaces?.find(s=> s.surface_id == cmd.pack1_id) )))
         }));
+         if(this.cookieService.getRole() == "comm"){
+          this.commandes = this.commandes.filter(c => c.entreprise?.commercial_id == Number(this.cookieService.getUserId()))
+        }
         this.optionsBc1 = options
       },
       error: (err) => console.log(err)
