@@ -29,8 +29,12 @@ export class LoginComponent implements OnInit{
      if(!!this.cookieService.getEmail() && !!this.cookieService.getPassword()){
       this.authService.login(this.cookieService.getEmail() || '', this.cookieService.getPassword() || '', true).subscribe({
         next: (response) => {
-          this.router.navigate(['/entreprise']);
-        },
+  if(response.user.role =='user'){
+
+            this.router.navigate(['/entreprise']);
+          }
+        else{        this.router.navigate(['forum'])
+}        },
         error: (error) => {
         }
       });
