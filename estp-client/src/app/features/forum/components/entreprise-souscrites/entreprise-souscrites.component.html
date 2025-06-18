@@ -34,7 +34,7 @@
                  <th pSortableColumn="adresse" style="width:25%">
                     Adresse <p-sortIcon field="adresse" />
                 </th>
-                  <th style="width:25%">
+                  <th style="width:25%" *ngIf="role=='rescom'">
                     Assigner/Changer
                 </th>
             </tr>
@@ -127,7 +127,7 @@
                             {{entreprise.adresse || '-'}}
                     
                 </td>
-                <td>
+                <td *ngIf="role=='rescom'">
                                 <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
 
                 </td>
@@ -135,7 +135,7 @@
         </ng-template>
     </p-table>
 </div>
-<p-dialog header="Assigner entreprise" [modal]="true" [(visible)]="assignModel" [style]="{ width: '25rem' }">
+<p-dialog *ngIf="role=='rescom'" header="Assigner entreprise" [modal]="true" [(visible)]="assignModel" [style]="{ width: '25rem' }">
    <p-table 
   [value]="commercials" 
   selectionMode="single"

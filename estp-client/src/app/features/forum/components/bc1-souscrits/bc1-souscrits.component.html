@@ -48,11 +48,11 @@
         <td>{{ cmd.validation_lieu ?? '-' }}</td>
         <td>
             <button pButton [text]="true" severity="success" type="button" tooltipPosition="bottom" *ngIf="!cmd.valide" pTooltip="Valider BC1" icon="pi pi-check-circle" (click)="validerCommande($event, cmd)"></button>
-            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="cmd.valide" pTooltip="Consulter facture" icon="pi pi-receipt"></button>
-            <button pButton [text]="true" type="button" tooltipPosition="bottom"  *ngIf="cmd.valide" pTooltip="Envoyer facture" icon="pi pi-file-export"></button>
+            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="role=='tres' && cmd.valide"  pTooltip="Consulter facture" icon="pi pi-receipt"></button>
+            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="role=='tres' && cmd.valide" pTooltip="Envoyer facture" icon="pi pi-file-export"></button>
             <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter" icon="pi pi-eye" (click)="showDetailsDialog(cmd)"></button>
             <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom" pTooltip="Supprimer"  icon="pi pi-trash" (click)="deleteCommande($event,cmd)"></button>    <p-confirmPopup />
-            <a pButton [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'" [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></a>
+            <a pButton target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'" [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></a>
             <button pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil"></button>
         </td>
        

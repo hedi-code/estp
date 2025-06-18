@@ -41,6 +41,7 @@ export class Bc1SouscritsComponent implements OnInit {
   optionsBc1: Option1[]=[];
   detailsOptions: Option1[]=[];
   baseUrl: String = environment.apiUrl
+  role: String | null=''
 
 
   constructor(
@@ -55,6 +56,7 @@ export class Bc1SouscritsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+  this.role = this.cookieService.getRole();
    this.initData();
   }
   initData(){

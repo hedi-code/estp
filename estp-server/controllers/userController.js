@@ -21,7 +21,7 @@ exports.getAllUsers = (req, res) => {
 
 // Get all users where role = 'comm'
 exports.getCommercials = (req, res) => {
-  db.query('SELECT * FROM users WHERE role = ?', ['comm'], (err, result) => {
+  db.query('SELECT * FROM users WHERE role = ? OR role = ?', ['rescom','comm'], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.length === 0) return res.status(404).json({ message: 'No commercial users found' });
     res.json(result);

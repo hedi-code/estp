@@ -19,12 +19,14 @@ export class EntrepriseSouscritesComponent implements OnInit {
   commercials: User[] = [];
   cmdAssigner: Entreprise | undefined;
   assignModel = false;
+  role: String | null = ''
   
 
   constructor(private entrepriseService: EntrepriseService, private userService: UserService, private cookieService: AuthCookieService, private messageService: MessageService) {
 
   }
   ngOnInit(): void {
+    this.role = this.cookieService.getRole();
     this.entrepriseService.getAllEntreprises().subscribe({
       next: (response) => {
         if(this.cookieService.getRole() == "comm"){
