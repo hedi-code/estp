@@ -17,7 +17,7 @@ export class MenuComponent {
         items: [
           { label: 'Entreprises', icon: 'pi pi-fw pi-id-card', routerLink: ['/forum/entreprise'] },
           { label: 'BC1', icon: 'pi pi-fw pi-check-square', routerLink: ['/forum/bc1'] },
-          // { label: 'BC2', icon: 'pi pi-fw pi-mobile', class: 'rotated-icon', routerLink: ['/forum/bc2'] },
+          { label: 'BC2', icon: 'pi pi-fw pi-mobile', class: 'rotated-icon', routerLink: ['/forum/bc2'] },
           // { label: 'Fiche signaletique', icon: 'pi pi-fw pi-table', routerLink: ['/uikit/table'] },
           // { label: 'Exposants', icon: 'pi pi-fw pi-list', routerLink: ['/uikit/list'] },
           // { label: 'Pancartes', icon: 'pi pi-fw pi-share-alt', routerLink: ['/uikit/tree'] },

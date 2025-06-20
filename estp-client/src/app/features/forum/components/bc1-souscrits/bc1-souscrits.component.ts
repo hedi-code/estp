@@ -44,6 +44,17 @@ export class Bc1SouscritsComponent implements OnInit {
   role: String | null=''
 
 
+  modifyDialog: boolean = false;
+  modifyCommande:CommandeWithEntreprise | undefined;
+  modifyPackId: number | undefined;
+  modifyPackOptions: any | undefined;
+  modifyPackSurface: number | undefined;
+  modificationsOptions: Option1[]=[];
+  modifyTotalHt: number | undefined = 0
+
+  
+
+
   constructor(
     private commandeService: Commande1Service,
     private entrepriseService: EntrepriseService,
@@ -67,6 +78,7 @@ export class Bc1SouscritsComponent implements OnInit {
       options: this.optionService.getAllOptions()
     }).subscribe({
       next: ({ commandes, entreprises, pack, options }) => {
+        this.optionsBc1 = options
         this.entreprises = entreprises;
         this.pack = pack
         this.commandes = commandes.map(cmd => ({
@@ -78,7 +90,6 @@ export class Bc1SouscritsComponent implements OnInit {
          if(this.cookieService.getRole() == "comm"){
           this.commandes = this.commandes.filter(c => c.entreprise?.commercial_id == Number(this.cookieService.getUserId()))
         }
-        this.optionsBc1 = options
       },
       error: (err) => console.log(err)
     });
@@ -90,7 +101,7 @@ export class Bc1SouscritsComponent implements OnInit {
   }
   return ret;
   }
-  getCommandeOption(){
+  getCommandeOptionConsultation(){
     this.detailsOptions = [];
     this.commandeOptionService.getCommande1OptionByCommandeId(this.detailsCommande?.id ?? -1).subscribe(response => {
       if(response && Array.isArray(response)){
@@ -102,8 +113,32 @@ export class Bc1SouscritsComponent implements OnInit {
       }
     })
   }
+  getCommandeOptionModification(){
+    this.modificationsOptions = [];
+    this.optionsBc1.forEach(option => option.qteCommande = 0);
+    this.commandeOptionService.getCommande1OptionByCommandeId(this.modifyCommande?.id ?? -1).subscribe(response => {
+      if(response && Array.isArray(response)){
+        response.forEach(element => {
+          let option:Option1 = this.optionsBc1.find(o=> o.id == element.option1_id) ?? {id: -1}
+          option.qteCommande = element.qty
+          this.modificationsOptions.push(option);
+        });
+      }
+    })
+  }
   saveCommande(){
   }
+  modifierOption(opt:Option1){
+    if(opt.qteCommande && opt.qteCommande > 0){
+      this.modificationsOptions.push(opt);
+    }
+    else{
+      this.modificationsOptions.splice(this.modificationsOptions.findIndex(o => o.id == opt.id),1);
+    }
+    this.getModifyCommandePrix()
+    console.log(this.modificationsOptions);
+  }
+
   deleteCommande(event: Event,cmd:Commande1){
      this.confirmationService.confirm({
             target: event.target as EventTarget,
@@ -147,10 +182,35 @@ export class Bc1SouscritsComponent implements OnInit {
   showDetailsDialog(cmd:CommandeWithEntreprise) {
     this.detailsDialog = true
     this.detailsCommande = cmd;
-    this.getCommandeOption();
+    this.getCommandeOptionConsultation();
   }
 
   getTotalTva(total :number){
     return total*1.2;
   }
+  openModifyDialog(cmd:CommandeWithEntreprise){
+    this.modifyCommande = cmd;
+    this.modifyTotalHt = cmd.total_ht;
+    this.modifyDialog = true;
+    this.getCommandeOptionModification();
+    this.modifyPackSurface = cmd.pack1_id ?? 999;
+    this.modifyPackId = cmd.pack?.pack_id ?? 9999;
+    this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+  }
+getPackForCommande(){
+  if(this.modifyCommande){
+    this.modifyCommande.pack1_id = 9999
+  }
+    this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+}
+
+getModifyCommandePrix(){
+  this.modifyTotalHt = 0;
+  this.modifyTotalHt = Number(this.modifyPackOptions.find((p: { surface_id: number | null | undefined; }) => p.surface_id == this.modifyCommande?.pack1_id)?.prix);
+  this.modificationsOptions.forEach(o=>{
+    if(o && this.modifyTotalHt){
+      this.modifyTotalHt += (o.qteCommande ?? 0) * (o.prix_ht ?? 0)
+    }
+  })
+}
 }
