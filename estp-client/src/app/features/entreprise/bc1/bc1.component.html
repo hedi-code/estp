@@ -4,7 +4,9 @@
       <div class="col-9 p-3 pt-4">
         <div class="grid flex-wrap p-4">
           <ng-container *ngFor="let pack of pack1s; let i = index">
-            <h1 class="uppercase">{{pack.titre}}</h1>
+           
+            <ng-container *ngIf="pack.pack_id!==202">
+   <h1 class="uppercase">{{pack.titre}}</h1>
             <div class="border-2 border-round-xl border-solid border-primary grid flex">
 
 
@@ -48,8 +50,9 @@
               </div>
 
             </div>
+            </ng-container>
           </ng-container>
-
+          
         </div>
       </div>
       <app-commande class="col-3 h-full"></app-commande>
