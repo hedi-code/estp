@@ -1,5 +1,8 @@
 <div class="card p-3 bg-white mt-3 mr-3">
-    <h3 class="text-blue-400 p-2">Entreprises</h3>
+    <div class="flex justify-content-between align-items-center">
+        <h3 class="text-blue-400 p-2">Entreprises</h3>
+        <p-button  icon="pi pi-plus" label="Ajouter une entreprise" (click)="openCreateDialog()"></p-button>
+    </div>
     <p-table [value]="entreprises" dataKey="id" [rows]="10" styleClass="w-full"
     [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="true" 
     columnResizeMode="expand" 
@@ -161,4 +164,136 @@
   </ng-template>
 </p-table>
 
+</p-dialog>
+<p-dialog header="Inscrire une entreprise" [(visible)]="createDialog" [modal]="true" [style]="{width: '50rem'}"
+[maximizable]="true">
+
+        <!-- Register Form -->
+        <form [formGroup]="registerForm" class="p-4">
+
+            <!-- Heading -->
+
+           
+                    <!-- Last Name -->
+                    <div class="field">
+                        <label for="lastname">Nom</label>
+                        <input pInputText id="lastname" formControlName="lastname" placeholder="Entrez le nom"
+                            class="w-full" />
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="field">
+                        <label for="firstname">Prénom</label>
+                        <input pInputText id="firstname" formControlName="firstname" placeholder="Entrez le prénom"
+                            class="w-full" />
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="field">
+                        <label for="phonenumber">Numéro de téléphone</label>
+                        <input pInputText id="phonenumber" formControlName="phonenumber"
+                            placeholder="Entrez le numéro de téléphone" class="w-full" />
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field">
+                        <label for="email">Email (Qui sera l'identifiant de connexion)</label>
+                        <input pInputText id="email" formControlName="email" placeholder="Entrez l'email"
+                            class="w-full" />
+                    </div>
+                
+              
+                    <!-- Company Name -->
+                    <div class="field">
+                        <label for="companyName">Nom de l'entreprise</label>
+                        <input pInputText id="companyName" formControlName="companyName"
+                            placeholder="Entrez le nom de l'entreprise" class="w-full" />
+
+                    </div>
+
+                    <!-- Company SIREN -->
+                    <div class="field">
+                        <label for="companySiren">{{ labelSiren }}</label>
+                        <input pInputText id="companySiren" formControlName="companySiren"
+                            placeholder="Entrez le numéro SIREN" class="w-full" />
+
+                    </div>
+
+                    <!-- Is in France -->
+                    <div class="field-checkbox mb-3">
+                        <p-checkbox formControlName="isNotInFrance" [binary]="true" inputId="isNotInFrance" (click)="onCheckboxChange()"></p-checkbox>
+                        <label for="isNotInFrance">Vous n'etes pas en France</label>
+                    </div>
+
+                    <!-- Function in Company -->
+                    <div class="field">
+                        <label for="functionInCompany">Fonction dans l'entreprise</label>
+                        <input pInputText id="functionInCompany" formControlName="functionInCompany"
+                            placeholder="Entrez la fonction" class="w-full" />
+
+                    </div>
+                   
+              
+                    <!-- Password -->
+                    <div class="field">
+                        <label for="password">Mot de passe</label>
+                        <input pInputText id="password" formControlName="password"
+                            placeholder="Entrez le mot de passe" class="w-full" type="password" />
+
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="field">
+                        <label for="confirmPassword">Confirmer le mot de passe</label>
+                        <input pInputText id="confirmPassword" formControlName="confirmPassword"
+                            placeholder="Confirmez le mot de passe" class="w-full" type="password" />
+
+                    </div>
+                    <!-- Submit -->
+
+              
+            <p-message *ngIf="registerForm.get('lastname')?.invalid && registerForm.get('lastname')?.touched"
+            severity="error" text="Nom requis" styleClass="w-full mt-1"></p-message>
+
+        <p-message *ngIf="registerForm.get('firstname')?.invalid && registerForm.get('firstname')?.touched"
+            severity="error" text="Prénom requis" styleClass="w-full mt-1"></p-message>
+
+        <p-message *ngIf="registerForm.get('phonenumber')?.invalid && registerForm.get('phonenumber')?.touched"
+            severity="error" text="Numéro de téléphone requis" styleClass="w-full mt-1"></p-message>
+
+        <p-message *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" severity="error"
+            text="Email requis ou format invalide" styleClass="w-full mt-1">
+        </p-message>
+
+        <p-message *ngIf="registerForm.get('companyName')?.invalid && registerForm.get('companyName')?.touched"
+            severity="error" text="Nom de l'entreprise requis" styleClass="w-full mt-1"></p-message>
+
+        <p-message *ngIf="registerForm.get('companySiren')?.invalid && registerForm.get('companySiren')?.touched"
+            severity="error" text="Numéro SIREN requis" styleClass="w-full mt-1"></p-message>
+
+        <p-message
+            *ngIf="registerForm.get('functionInCompany')?.invalid && registerForm.get('functionInCompany')?.touched"
+            severity="error" text="Fonction requise" styleClass="w-full mt-1"></p-message>
+
+        <p-message *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            severity="error" text="Mot de passe requis (min 10 caractères, un symbole, un caractère majuscule, un caractère miniscule)" styleClass="w-full mt-1">
+        </p-message>
+        
+        <p-message
+            *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+            severity="error" text="Les mots de passe doivent correspondre" styleClass="w-full mt-1">
+        </p-message>
+        </form>
+         <ng-template pTemplate="footer">
+             <p-button 
+             label="Annuler" 
+             [outlined]="true" 
+             severity="primary" 
+             (onClick)="createDialog = false" 
+             />
+             <p-button 
+                 label="Confirmer" 
+                 (click)="onSubmit()" 
+                 [disabled]="registerForm.invalid"/>
+        </ng-template>
 </p-dialog>
