@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Commande1Service } from '../../services/commande1.service';
-import { Commande1 } from '../../models/commande1.model';
+import { Commande1, Commande1Option } from '../../models/commande1.model';
 import { EntrepriseService } from '../../../entreprise/entreprise.service';
 import { Entreprise } from '../../../entreprise/entreprise.model';
 import { forkJoin } from 'rxjs';
@@ -45,12 +45,13 @@ export class Bc1SouscritsComponent implements OnInit {
 
 
   modifyDialog: boolean = false;
-  modifyCommande:CommandeWithEntreprise | undefined;
+  modifyCommande:Commande1 | undefined;
   modifyPackId: number | undefined;
   modifyPackOptions: any | undefined;
   modifyPackSurface: number | undefined;
   modificationsOptions: Option1[]=[];
   modifyTotalHt: number | undefined = 0
+  modificationCommandeOption: Commande1Option[]=[]
 
   
 
@@ -118,10 +119,12 @@ export class Bc1SouscritsComponent implements OnInit {
     this.optionsBc1.forEach(option => option.qteCommande = 0);
     this.commandeOptionService.getCommande1OptionByCommandeId(this.modifyCommande?.id ?? -1).subscribe(response => {
       if(response && Array.isArray(response)){
+        this.modificationCommandeOption = response;
         response.forEach(element => {
           let option:Option1 = this.optionsBc1.find(o=> o.id == element.option1_id) ?? {id: -1}
-          option.qteCommande = element.qty
-          this.modificationsOptions.push(option);
+            option.qteCommande = element.qty
+            this.modificationsOptions.push(option);
+          
         });
       }
     })
@@ -129,13 +132,20 @@ export class Bc1SouscritsComponent implements OnInit {
   saveCommande(){
   }
   modifierOption(opt:Option1){
-    if(opt.qteCommande && opt.qteCommande > 0){
+    // if(opt.qteCommande && opt.qteCommande >= 0 ){
+    //   this.modificationsOptions.push(opt);
+    // }
+    // else{
+    //   this.modificationsOptions.splice(this.modificationsOptions.findIndex(o => o.id == opt.id),1);
+    // }
+    // this.getModifyCommandePrix()
+    // console.log(this.modificationsOptions);
+    
+      
       this.modificationsOptions.push(opt);
-    }
-    else{
-      this.modificationsOptions.splice(this.modificationsOptions.findIndex(o => o.id == opt.id),1);
-    }
-    this.getModifyCommandePrix()
+      
+      this.getModifyCommandePrix()
+    
     console.log(this.modificationsOptions);
   }
 
@@ -213,4 +223,33 @@ getModifyCommandePrix(){
     }
   })
 }
+  validerOptionPackCommande() {
+    if (this.modifyCommande) {
+      if(this.modifyTotalHt){
+      this.modifyCommande.total_ht = this.modifyTotalHt}
+      this.commandeService.updateCommande1(this.modifyCommande?.id ?? -1, this.modifyCommande).subscribe({
+        error: (err) => console.log(err)
+      });
+      this.modificationsOptions.forEach(o => {
+        if (o.qteCommande == 0) {
+          this.commandeOptionService.deleteCommande1Option(this.modificationCommandeOption.find(op => op.option1_id === o.id)?.id ?? -1).subscribe({
+            error: (err) => console.log(err)
+          });
+        }
+        else if (o.qteCommande && o.qteCommande >  0){
+          let option: Commande1Option | undefined = this.modificationCommandeOption.find(op => op.option1_id === o.id);
+          if(option){
+             option.qty = o.qteCommande || -1;
+          this.commandeOptionService.updateCommande1Option(option.id ?? -1, option).subscribe({
+            error: (err) => console.log(err)
+          });
+          }
+          else{
+            this.commandeOptionService.createCommande1Option({commande1_id: this.modifyCommande?.id ?? -1, option1_id: o.id, qty: o.qteCommande}).subscribe()
+          }
+        }
+       
+      })
+    }
+  }
 }

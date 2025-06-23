@@ -115,7 +115,7 @@
 </p-dialog>
 </div>
  <p-dialog 
-    header="Modifier le BC1 pour {{modifyCommande?.entreprise?.nom}}" 
+    header="Modifier le BC1" 
     [modal]="true"
     [(visible)]="modifyDialog" 
     [style]="{ width: '50rem' }" 
@@ -225,6 +225,7 @@
                 styleClass="mt-2"
                 label="Valider" 
                 severity="primary" 
+                (click)="validerOptionPackCommande()"
               />
         </div>
     </div>
