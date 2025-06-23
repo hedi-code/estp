@@ -6,8 +6,8 @@ const entrepriseController = require('./entrepriseController');
 
 
 exports.register = async (req, res) => {
-  const { email, password, first_name, last_name } = req.body;
-
+  const { email, password, first_name, last_name, verified } = req.body;
+  const verificationCompte = verified ? 1 : 0;
   const emailRegex = /^(?!.*@estp).*^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: "Format email invalide" });
@@ -28,13 +28,12 @@ exports.register = async (req, res) => {
     const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     db.query(
-      "INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)",
-      [email, hashedPassword, first_name, last_name],
+      "INSERT INTO users (email, password, first_name, last_name, verified) VALUES (?, ?, ?, ?, ?)",
+      [email, hashedPassword, first_name, last_name, verificationCompte],
       (err, result) => {
         if (err) return res.status(500).json({ error: err });
-
-        // Send verification email
-        sendEmail(
+        if(!verified){
+       sendEmail(
           "ne-pas-repondre@forumestp.fr",
           email,
           `${first_name} ${last_name}`,
@@ -104,6 +103,7 @@ exports.register = async (req, res) => {
 </html>
 `
         );
+        }
 
         // Return the new user info (without password)
         const newUser = {
@@ -113,8 +113,14 @@ exports.register = async (req, res) => {
           last_name,
           verified: false
         };
+        if(verificationCompte == 0){
 
-        res.status(201).json({ message: "Un email d'activation a été envoyé à votre compte, merci de l'activer.", user: newUser });
+          res.status(201).json({ message: "Un email d'activation a été envoyé à votre compte, merci de l'activer.", user: newUser });
+        }
+      else{
+                res.status(201).json({ message: "Création réussite", user: newUser });
+
+      }
       }
     );
   });

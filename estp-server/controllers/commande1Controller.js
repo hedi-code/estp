@@ -30,6 +30,7 @@ exports.createCommande1 = (req, res) => {
     total_ht_avt_remise = 0.00,
     total_ht = 0.00,
     validation_lieu = null,
+    valide = 0
   } = req.body;
 
   const now = new Date();
@@ -48,7 +49,7 @@ exports.createCommande1 = (req, res) => {
 
       // Step 3: If no commande exists, proceed to insert a new one
       db.query(
-        `INSERT INTO commande1s (entreprise_id, pack1_id, reduc_pct, reduc_lin, total_ht_avt_remise, total_ht, created, modified, validation_lieu)
+        `INSERT INTO commande1s (entreprise_id, pack1_id, reduc_pct, reduc_lin, total_ht_avt_remise, total_ht, created, modified, validation_lieu, valide)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entreprise_id,
@@ -60,6 +61,7 @@ exports.createCommande1 = (req, res) => {
           now,
           now,
           validation_lieu,
+          valide
         ],
         (err, result) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
@@ -74,7 +76,7 @@ exports.createCommande1 = (req, res) => {
                 const attachmentPath = path.join(__dirname, '../uploads/bc1/', `${entreprise_id}_BC1.pdf`);
                 try {
 
-                  await waitForFile(attachmentPath, 10000); // 10s timeout
+                  await waitForFile(attachmentPath, 20000); // 10s timeout
                   const attachmentBuffer = fs.readFileSync(attachmentPath);
                   const base64Attachment = attachmentBuffer.toString('base64');
                   const htmlContent =
@@ -120,6 +122,15 @@ exports.getCommande1ById = (req, res) => {
   });
 };
 
+exports.getCommande1ByEntrepriseId = (req, res) => {
+  const id = req.params.id;
+
+  db.query("SELECT * FROM commande1s WHERE id = ?", [id], (err, result) => {
+    if (err) return res.status(500).json({ error: "Erreur base de données" });
+    if (result.length === 0) return res.status(404).json({ error: "Commande non trouvée" });
+    res.json(result[0]);
+  });
+};
 exports.updateCommande1 = (req, res) => {
   const id = req.params.id;
   const {
@@ -130,6 +141,35 @@ exports.updateCommande1 = (req, res) => {
     total_ht,
     validation_lieu,
     valide
+  } = req.body;
+
+  const modified = new Date();
+
+  db.query(
+    `UPDATE commande1s 
+     SET pack1_id = ?, reduc_pct = ?, reduc_lin = ?, total_ht_avt_remise = ?, total_ht = ?, validation_lieu = ?, valide = ?, modified = ?
+     WHERE id = ?`,
+    [
+      pack1_id,
+      reduc_pct,
+      reduc_lin,
+      total_ht_avt_remise,
+      total_ht,
+      validation_lieu,
+      valide,
+      modified,
+      id
+    ],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Erreur base de données" });
+      res.json({ message: "Commande mise à jour" });
+    }
+  );
+};
+exports.updateCommande1Pack = (req, res) => {
+  const id = req.params.id;
+  const {
+    pack1_id,
   } = req.body;
 
   const modified = new Date();
@@ -171,3 +211,4 @@ exports.getAllCommande1s = (req, res) => {
     res.json(results);
   });
 };
+
