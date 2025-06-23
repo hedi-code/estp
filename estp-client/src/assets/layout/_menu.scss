@@ -1,19 +1,24 @@
 @use 'mixins' as *;
 
 .layout-sidebar {
-    position: absolute;
     width: 20rem;
     height: 70rem;
     z-index: 1;
     overflow-y: auto;
     user-select: none;
-    transition:
-        transform var(--layout-section-transition-duration),
-        left var(--layout-section-transition-duration);
+    overflow-x: hidden;  // important
+    transition: width 0.3s ease, opacity 0.3s ease;
+
     background-color: var(--surface-overlay);
     border-radius: var(--content-border-radius);
     padding: 0.5rem 1.5rem;
     background-color: white;
+      &.collapsed {
+    width: 0 !important;
+    padding: 0 !important; // Optional: Remove padding when collapsed
+    overflow: hidden;  // prevent content overflow when collapsed
+
+  }
 }
 
 .layout-menu {

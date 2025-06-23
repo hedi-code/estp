@@ -11,7 +11,8 @@ import { Router } from '@angular/router';
 })
 export class LayoutComponent {
   nom: string =''
-
+  sideMenuOpen: boolean= true
+  icon: string = 'pi pi-times'
   constructor(public layoutService:LayoutService, private authCookieService: AuthCookieService, private router:Router){}
 ngOnInit(){
       this.nom = this.authCookieService.getFirstName() + " " + this.authCookieService.getLastName();
@@ -19,5 +20,14 @@ ngOnInit(){
   logout(){
     this.authCookieService.logout()
     this.router.navigateByUrl('');
+  }
+  toggleMenu(){
+    this.sideMenuOpen = !this.sideMenuOpen
+    if(this.sideMenuOpen){
+      this.icon = 'pi pi-times'
+    }
+    else{
+            this.icon = 'pi pi-bars'
+    }
   }
 }

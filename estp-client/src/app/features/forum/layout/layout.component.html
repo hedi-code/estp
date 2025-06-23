@@ -1,9 +1,17 @@
-    <div class="bg-white flex justify-content-end sticky align-items-center px-4 py-3 border-bottom-1 border-200">Connecté en tant que {{nom}}<button (click)="logout()" label="Se déconnecter" class="ml-2 p-button-danger"
-        pButton size="small" icon="pi pi-times" [outlined]="true" severity="danger"></button>
+<div class="bg-white flex justify-content-between sticky align-items-center p-3 border-bottom-1 border-200">
+    <p-button icon="{{icon}}" pTooltip="Fermer/Ouvrir le menu" text="true" (click)="toggleMenu()"></p-button>
+    <div class="flex align-items-center">
+
+        <div>Connecté en tant que {{nom}}</div><button (click)="logout()" label="Se déconnecter"
+            class="ml-2 p-button-danger" pButton size="small" icon="pi pi-times" [outlined]="true"
+            severity="danger"></button>
+    </div>
 </div>
-    <div class="layout-sidebar">
-    <app-menu></app-menu>
-</div>
-    <div class="layout-main" style="padding-left: 21rem;">
+<div class="flex">
+    <div class="layout-sidebar" [class.collapsed]="!sideMenuOpen">
+        <app-menu></app-menu>
+    </div>
+    <div class="w-full ml-4">
         <router-outlet></router-outlet>
     </div>
+</div>
