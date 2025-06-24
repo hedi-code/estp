@@ -37,22 +37,22 @@ export class Bc1SouscritsComponent implements OnInit {
   detailsDialog: boolean = false;
   commandes: CommandeWithEntreprise[] = [];
   entreprises: Entreprise[] = [];
-  pack: Pack[]=[]
+  pack: Pack[] = []
   detailsCommande: CommandeWithEntreprise | undefined;
-  optionsBc1: Option1[]=[];
-  detailsOptions: Option1[]=[];
+  optionsBc1: Option1[] = [];
+  detailsOptions: Option1[] = [];
   baseUrl: String = environment.apiUrl
-  role: String | null=''
+  role: String | null = ''
 
 
   modifyDialog: boolean = false;
-  modifyCommande:CommandeWithEntreprise | undefined;
+  modifyCommande: CommandeWithEntreprise | undefined;
   modifyPackId: number | undefined;
   modifyPackOptions: any | undefined;
   modifyPackSurface: number | undefined;
-  modificationsOptions: Option1[]=[];
+  modificationsOptions: Option1[] = [];
   modifyTotalHt: number | undefined = 0
-  modificationCommandeOption: Commande1Option[]=[]
+  modificationCommandeOption: Commande1Option[] = []
   modificationContact: Contact | undefined;
 
   factureVisible: boolean = false;
@@ -70,14 +70,14 @@ export class Bc1SouscritsComponent implements OnInit {
     private cookieService: AuthCookieService,
     private contactService: ContactService,
     private emailService: EmailService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-  this.role = this.cookieService.getRole();
-   this.initData();
+    this.role = this.cookieService.getRole();
+    this.initData();
   }
-  initData(){
-     forkJoin({
+  initData() {
+    forkJoin({
       commandes: this.commandeService.getAllCommande1s(),
       entreprises: this.entrepriseService.getAllEntreprises(),
       pack: this.packService.getAllPacks(),
@@ -90,53 +90,53 @@ export class Bc1SouscritsComponent implements OnInit {
         this.commandes = commandes.map(cmd => ({
           ...cmd,
           entreprise: entreprises.find(e => e.id === cmd.entreprise_id),
-          pack: pack.find(p => (p.surfaces?.find(s=> s.surface_id == cmd.pack1_id) )),
-          packDescription: this.getPackDesrcription(cmd.pack1_id ?? -1, pack.find(p => (p.surfaces?.find(s=> s.surface_id == cmd.pack1_id) )))
+          pack: pack.find(p => (p.surfaces?.find(s => s.surface_id == cmd.pack1_id))),
+          packDescription: this.getPackDesrcription(cmd.pack1_id ?? -1, pack.find(p => (p.surfaces?.find(s => s.surface_id == cmd.pack1_id))))
         }));
-         if(this.cookieService.getRole() == "comm"){
+        if (this.cookieService.getRole() == "comm") {
           this.commandes = this.commandes.filter(c => c.entreprise?.commercial_id == Number(this.cookieService.getUserId()))
         }
       },
       error: (err) => console.log(err)
     });
   }
-  getPackDesrcription(cmdPackId:number,pack?: Pack){
-    let ret: string="";
-    if(pack){
-      ret = pack.titre+" "+ pack.surfaces?.find(s=> s.surface_id == cmdPackId)?.surface + "m² (" + pack.surfaces?.find(s=> s.surface_id == cmdPackId)?.prix + " €)"
+  getPackDesrcription(cmdPackId: number, pack?: Pack) {
+    let ret: string = "";
+    if (pack) {
+      ret = pack.titre + " " + pack.surfaces?.find(s => s.surface_id == cmdPackId)?.surface + "m² (" + pack.surfaces?.find(s => s.surface_id == cmdPackId)?.prix + " €)"
+    }
+    return ret;
   }
-  return ret;
-  }
-  getCommandeOptionConsultation(){
+  getCommandeOptionConsultation() {
     this.detailsOptions = [];
     this.commandeOptionService.getCommande1OptionByCommandeId(this.detailsCommande?.id ?? -1).subscribe(response => {
-      if(response && Array.isArray(response)){
+      if (response && Array.isArray(response)) {
         response.forEach(element => {
-          let option:Option1 = this.optionsBc1.find(o=> o.id == element.option1_id) ?? {id: -1}
+          let option: Option1 = this.optionsBc1.find(o => o.id == element.option1_id) ?? { id: -1 }
           option.qteCommande = element.qty
           this.detailsOptions.push(option);
         });
       }
     })
   }
-  getCommandeOptionModification(){
+  getCommandeOptionModification() {
     this.modificationsOptions = [];
     this.optionsBc1.forEach(option => option.qteCommande = 0);
     this.commandeOptionService.getCommande1OptionByCommandeId(this.modifyCommande?.id ?? -1).subscribe(response => {
-      if(response && Array.isArray(response)){
+      if (response && Array.isArray(response)) {
         this.modificationCommandeOption = response;
         response.forEach(element => {
-          let option:Option1 = this.optionsBc1.find(o=> o.id == element.option1_id) ?? {id: -1}
-            option.qteCommande = element.qty
-            this.modificationsOptions.push(option);
-          
+          let option: Option1 = this.optionsBc1.find(o => o.id == element.option1_id) ?? { id: -1 }
+          option.qteCommande = element.qty
+          this.modificationsOptions.push(option);
+
         });
       }
     })
   }
-  saveCommande(){
+  saveCommande() {
   }
-  modifierOption(opt:Option1){
+  modifierOption(opt: Option1) {
     // if(opt.qteCommande && opt.qteCommande >= 0 ){
     //   this.modificationsOptions.push(opt);
     // }
@@ -145,109 +145,110 @@ export class Bc1SouscritsComponent implements OnInit {
     // }
     // this.getModifyCommandePrix()
     // console.log(this.modificationsOptions);
-    
-      
-      this.modificationsOptions.push(opt);
-      
-      this.getModifyCommandePrix()
-    
+
+
+    this.modificationsOptions.push(opt);
+
+    this.getModifyCommandePrix()
+
     console.log(this.modificationsOptions);
   }
 
-  deleteCommande(event: Event,cmd:Commande1){
-     this.confirmationService.confirm({
-            target: event.target as EventTarget,
-            message: 'Voulez vous supprimer ce BC1 ?',
-            icon: 'pi pi-info-circle',
-            acceptLabel: 'Confirmer',
-            rejectLabel: 'Annuler',
-            acceptButtonStyleClass: 'p-button-danger p-button-sm',
-            accept: () => {
-              this.commandeService.deleteCommande1(cmd.id).subscribe(response => {
-               this.initData();
-              });
-            },
-            reject: () => {
-                this.messageService.add({ severity: 'error', summary: 'Annulé', detail: 'Supression annulé', life: 2000 });
-            }
-        });
-    }
-  
-  validerCommande(event: Event, cmd:Commande1){
+  deleteCommande(event: Event, cmd: Commande1) {
     this.confirmationService.confirm({
-            target: event.target as EventTarget,
-            message: 'Voulez vous valider ce BC1 ?',
-            icon: 'pi pi-info-circle',
-            acceptLabel: 'Confirmer',
-            rejectLabel: 'Annuler',
-            acceptButtonStyleClass: 'p-button-sm',
-            accept: () => {
-              let commandeModifier: Commande1 = cmd;
-              commandeModifier.valide = true;
-              this.commandeService.updateCommande1(cmd.id,commandeModifier).subscribe(response => {
-                this.initData();
-              });
-            },
-            reject: () => {
-                this.messageService.add({ severity: 'error', summary: 'Annulé', detail: 'Validation annulé', life: 2000 });
-            }
+      target: event.target as EventTarget,
+      message: 'Voulez vous supprimer ce BC1 ?',
+      icon: 'pi pi-info-circle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger p-button-sm',
+      accept: () => {
+        this.commandeService.deleteCommande1(cmd.id).subscribe(response => {
+          this.initData();
         });
+      },
+      reject: () => {
+        this.messageService.add({ severity: 'error', summary: 'Annulé', detail: 'Supression annulé', life: 2000 });
+      }
+    });
   }
-  
-  showDetailsDialog(cmd:CommandeWithEntreprise) {
+
+  validerCommande(event: Event, cmd: Commande1) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Voulez vous valider ce BC1 ?',
+      icon: 'pi pi-info-circle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-sm',
+      accept: () => {
+        let commandeModifier: Commande1 = cmd;
+        commandeModifier.valide = true;
+        this.commandeService.updateCommande1(cmd.id, commandeModifier).subscribe(response => {
+          this.initData();
+        });
+      },
+      reject: () => {
+        this.messageService.add({ severity: 'error', summary: 'Annulé', detail: 'Validation annulé', life: 2000 });
+      }
+    });
+  }
+
+  showDetailsDialog(cmd: CommandeWithEntreprise) {
     this.detailsDialog = true
     this.detailsCommande = cmd;
     this.getCommandeOptionConsultation();
   }
 
-  getTotalTva(total :number){
-    return total*1.2;
+  getTotalTva(total: number) {
+    return total * 1.2;
   }
-  openModifyDialog(cmd:CommandeWithEntreprise){
+  openModifyDialog(cmd: CommandeWithEntreprise) {
     this.modifyCommande = cmd;
     this.modifyTotalHt = cmd.total_ht;
     this.modifyDialog = true;
     this.getCommandeOptionModification();
     this.modifyPackSurface = cmd.pack1_id ?? 999;
     this.modifyPackId = cmd.pack?.pack_id ?? 9999;
-    this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+    this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
   }
-    async openFactureDialog(cmd:CommandeWithEntreprise){
-      let testPack:any
+  async openFactureDialog(cmd: CommandeWithEntreprise) {
+    let testPack: any
     this.modifyCommande = cmd;
-    if(this.modifyCommande.pack && this.modifyCommande.pack.surfaces){
-      testPack = this.modifyCommande.pack.surfaces.find(p=>p.surface_id === this.modifyCommande?.pack1_id)
-      this.modifyCommande.pack.selectedOption = {surface_id: testPack?.surface_id, surface: testPack?.surface, prix: Number(testPack?.prix)}
+    if (this.modifyCommande.pack && this.modifyCommande.pack.surfaces) {
+      testPack = this.modifyCommande.pack.surfaces.find(p => p.surface_id === this.modifyCommande?.pack1_id)
+      this.modifyCommande.pack.selectedOption = { surface_id: testPack?.surface_id, surface: testPack?.surface, prix: Number(testPack?.prix) }
     }
-  
+
     this.modifyTotalHt = cmd.total_ht;
     this.getCommandeOptionModification();
     this.modifyPackSurface = cmd.pack1_id ?? 999;
     this.modifyPackId = cmd.pack?.pack_id ?? 9999;
-    this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+    this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
     this.modificationContact = await this.getContactPrincipalNom();
     this.factureVisible = true;
   }
-getPackForCommande(){
-  if(this.modifyCommande){
-    this.modifyCommande.pack1_id = 9999
-  }
-    this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
-}
-
-getModifyCommandePrix(){
-  this.modifyTotalHt = 0;
-  this.modifyTotalHt = Number(this.modifyPackOptions.find((p: { surface_id: number | null | undefined; }) => p.surface_id == this.modifyCommande?.pack1_id)?.prix);
-  this.modificationsOptions.forEach(o=>{
-    if(o && this.modifyTotalHt){
-      this.modifyTotalHt += (o.qteCommande ?? 0) * (o.prix_ht ?? 0)
+  getPackForCommande() {
+    if (this.modifyCommande) {
+      this.modifyCommande.pack1_id = 9999
     }
-  })
-}
+    this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+  }
+
+  getModifyCommandePrix() {
+    this.modifyTotalHt = 0;
+    this.modifyTotalHt = Number(this.modifyPackOptions.find((p: { surface_id: number | null | undefined; }) => p.surface_id == this.modifyCommande?.pack1_id)?.prix);
+    this.modificationsOptions.forEach(o => {
+      if (o && this.modifyTotalHt) {
+        this.modifyTotalHt += (o.qteCommande ?? 0) * (o.prix_ht ?? 0)
+      }
+    })
+  }
   validerOptionPackCommande() {
     if (this.modifyCommande) {
-      if(this.modifyTotalHt){
-      this.modifyCommande.total_ht = this.modifyTotalHt}
+      if (this.modifyTotalHt) {
+        this.modifyCommande.total_ht = this.modifyTotalHt
+      }
       this.commandeService.updateCommande1(this.modifyCommande?.id ?? -1, this.modifyCommande).subscribe({
         error: (err) => console.log(err)
       });
@@ -257,51 +258,89 @@ getModifyCommandePrix(){
             error: (err) => console.log(err)
           });
         }
-        else if (o.qteCommande && o.qteCommande >  0){
+        else if (o.qteCommande && o.qteCommande > 0) {
           let option: Commande1Option | undefined = this.modificationCommandeOption.find(op => op.option1_id === o.id);
-          if(option){
-             option.qty = o.qteCommande || -1;
-          this.commandeOptionService.updateCommande1Option(option.id ?? -1, option).subscribe({
-            error: (err) => console.log(err)
-          });
+          if (option) {
+            option.qty = o.qteCommande || -1;
+            this.commandeOptionService.updateCommande1Option(option.id ?? -1, option).subscribe({
+              error: (err) => console.log(err)
+            });
           }
-          else{
-            this.commandeOptionService.createCommande1Option({commande1_id: this.modifyCommande?.id ?? -1, option1_id: o.id, qty: o.qteCommande}).subscribe()
+          else {
+            this.commandeOptionService.createCommande1Option({ commande1_id: this.modifyCommande?.id ?? -1, option1_id: o.id, qty: o.qteCommande }).subscribe()
           }
         }
-       
+
       })
     }
   }
-async getContactPrincipalNom(): Promise<Contact | undefined> {
-  const id = this.modifyCommande?.entreprise?.contact_principal_id ?? -1;
-  try {
-    const contact = await firstValueFrom(this.contactService.getContact(id));
-    return contact;
-  } catch (error) {
-    console.error('Error fetching contact:', error);
-    return ;
+  async getContactPrincipalNom(): Promise<Contact | undefined> {
+    const id = this.modifyCommande?.entreprise?.contact_principal_id ?? -1;
+    try {
+      const contact = await firstValueFrom(this.contactService.getContact(id));
+      return contact;
+    } catch (error) {
+      console.error('Error fetching contact:', error);
+      return;
+    }
   }
-}
-  async envoyerFacture(){
-  try {
-    // 🔸 Step 1: Wait for PDF generation
-    await this.factureBc1.generatedPdf("facture", "festp.2025."+this.modifyCommande?.entreprise_id+".fct1", "contentToExport");
-    await lastValueFrom(
-    this.emailService.sendInvoice({
-      senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
-      receiverEmail: "hedibensafegine7@gmail.com",
-      receiverName: "hedi",
-      subject: "test",
-      htmlText: "teset email",
-      ccEmails: ["hedibensafegine.noxaved@gmail.com"],
-      attachmentName: "festp.2025." + this.modifyCommande?.entreprise_id + ".fct1.pdf"
-    }));
-  }catch (err) {
-    console.error("❌ Error during BC1 creation", err);
+  async envoyerFacture() {
+    try {
+      // 🔸 Step 1: Wait for PDF generation
+      await this.factureBc1.generatedPdf("facture", "festp.2025." + this.factureBc1.modifyCommandeFact?.entreprise_id + ".fct1", "contentToExport").then(
+        ()=>{
+  lastValueFrom(
+        this.emailService.sendInvoice({
+          senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
+          receiverEmail: this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
+          receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
+          subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
+          htmlText: `
+      <p>Cher(e) <strong>${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}</strong>,</p>
+
+<p>J’espère que vous allez bien.</p>
+
+<p>
+Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement tout le nécessaire pour que votre journée au Forum soit une réussite.
+</p>
+
+<p>
+Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 45e édition</strong>.
+</p>
+
+<p>
+Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${(this.modifyCommande?.total_ht ?? 0)*1.2/2}€</strong> avant le <strong>10/09/2025</strong>.
+<br/>
+Le solde restant de <strong>${(this.modifyCommande?.total_ht ?? 0)*1.2/2}€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
+</p>
+
+<p>
+Nous vous remercions par avance pour le respect de ces échéances nécessaires à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n’hésitez pas à me contacter directement.
+</p>
+
+<p>Merci pour votre confiance et votre collaboration.</p>
+
+<p>Cordialement,</p>
+
+<p>
+<strong>Kahina SAIBI</strong><br />
+Trésorière FORUM ESTP<br />
+0781616766<br />
+<a href="mailto:kahina.saibi@forumestp.fr">kahina.saibi@forumestp.fr</a>
+</p>
+
+      `,
+          ccEmails: ["kahina.saibi@forumestp.fr"],
+          attachmentName: "festp.2025." + this.modifyCommande?.entreprise_id + ".fct1.pdf"
+        }));
+        }
+      );
+     
+    } catch (err) {
+      console.error("❌ Error during BC1 creation", err);
+    }
   }
-}
-openModifierFactureDialog(){
-  this.factureBc1.visible = true
-}
+  openModifierFactureDialog() {
+    this.factureBc1.visible = true
+  }
 }
