@@ -58,9 +58,10 @@ export class FactureBc1Component implements OnInit {
         html2canvas(element, {
           scale: 2,
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff' // ensure no transparency
         }).then(canvas => {
-          const imgData = canvas.toDataURL('image/png');
+          const imgData = canvas.toDataURL('image/jpeg');
 
           const imgOriginalWidth = canvas.width;
           const imgOriginalHeight = canvas.height;

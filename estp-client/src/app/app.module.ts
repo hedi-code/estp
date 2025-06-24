@@ -54,6 +54,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
+import { Bc1SouscritFactureComponent } from './features/forum/components/bc1-souscrits/bc1-souscrit-facture/bc1-souscrit-facture.component';
 
 
 
@@ -82,6 +83,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
     EntrepriseSouscritesComponent,
     Bc1SouscritsComponent,
     Bc2SouscritsComponent,
+    Bc1SouscritFactureComponent,
     ],
   imports: [
     BrowserModule,

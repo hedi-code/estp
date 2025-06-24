@@ -1,9 +1,11 @@
-<div class="card p-3 bg-white mt-3 mr-3">
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
   <h3 class="text-blue-400 p-2">Liste des BC1</h3>
 
-  <p-table [value]="commandes" dataKey="id" [rows]="10" 
-           [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="true"
-           columnResizeMode="expand" [paginator]="true">
+  <p-table [value]="commandes" dataKey="id" [rows]="10" styleClass="w-full"
+    [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="false" 
+    columnResizeMode="expand" 
+    [paginator]="true"
+>
             <ng-template pTemplate="emptymessage">
     <tr>
       <td colspan="8" style="text-align: center; color: #999;">Pas de donnés</td>
@@ -51,10 +53,9 @@
         <td>{{ cmd.total_ht }}</td>
         <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
         <td>{{ cmd.validation_lieu ?? '-' }}</td>
-        <td>
+        <td class="flex justify-content-between">
             <button pButton [text]="true" severity="success" type="button" tooltipPosition="bottom" *ngIf="!cmd.valide" pTooltip="Valider BC1" icon="pi pi-check-circle" (click)="validerCommande($event, cmd)"></button>
-            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="role=='tres' && cmd.valide"  pTooltip="Consulter facture" icon="pi pi-receipt"></button>
-            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="role=='tres' && cmd.valide" pTooltip="Envoyer facture" icon="pi pi-file-export"></button>
+            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="role=='tres' && cmd.valide"  pTooltip="Gestion de facture" icon="pi pi-receipt" (click)="openFactureDialog(cmd)"></button>
             <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter" icon="pi pi-eye" (click)="showDetailsDialog(cmd)"></button>
             <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom" pTooltip="Supprimer"  icon="pi pi-trash" (click)="deleteCommande($event,cmd)"></button>    <p-confirmPopup />
             <a pButton target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'" [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></a>
@@ -232,3 +233,21 @@
         </ng-template>
  </p-dialog>
 
+<p-dialog header="Facture" [responsive]="false" [(visible)]="factureVisible" [modal]="true"  [style]="{width: '1000px'}" 
+[maximizable]="true">
+ <app-bc1-souscrit-facture
+  [modifyCommandeFact]="modifyCommande"
+  [modifyPackId]="modifyPackId"
+  [modifyPackOptions]="modifyPackOptions"
+  [modifyPackSurface]="modifyPackSurface"
+  [modificationsOptions]="modificationsOptions"
+  [modifyTotalHt]="modifyTotalHt"
+  [modificationCommandeOption]="modificationCommandeOption"
+  [modificationContact]="modificationContact"
+  (envoyerFactureEvent)="envoyerFacture()"
+  id="contentToExport" #factureBc1
+ ></app-bc1-souscrit-facture>
+   <p-button label="Modifier" severity="primary" outlined="true" (click)="openModifierFactureDialog()" styleClass="w-6" />
+   <p-button label="Envoyer" severity="primary" (click)="envoyerFacture()" styleClass="w-6" />
+
+</p-dialog>

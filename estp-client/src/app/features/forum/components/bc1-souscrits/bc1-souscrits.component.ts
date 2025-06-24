@@ -3,7 +3,7 @@ import { Commande1Service } from '../../services/commande1.service';
 import { Commande1, Commande1Option } from '../../models/commande1.model';
 import { EntrepriseService } from '../../../entreprise/entreprise.service';
 import { Entreprise } from '../../../entreprise/entreprise.model';
-import { forkJoin } from 'rxjs';
+import { firstValueFrom, forkJoin, lastValueFrom } from 'rxjs';
 import { Pack1Service } from '../../services/pack1.service';
 import { Pack } from '../../models/pack1.model';
 import { ButtonModule } from 'primeng/button';
@@ -14,6 +14,10 @@ import { Option1Service } from '../../services/option1.service';
 import { Option1 } from '../../models/option1.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
+import { ContactService } from '../../models/contact.service';
+import { Contact } from '../../models/contact.model';
+import { Bc1SouscritFactureComponent } from './bc1-souscrit-facture/bc1-souscrit-facture.component';
+import { EmailService } from '../../../../core/services/email.service';
 
 
 interface CommandeWithEntreprise extends Commande1 {
@@ -32,11 +36,8 @@ interface CommandeWithEntreprise extends Commande1 {
 export class Bc1SouscritsComponent implements OnInit {
   detailsDialog: boolean = false;
   commandes: CommandeWithEntreprise[] = [];
-  commande: CommandeWithEntreprise | undefined;
   entreprises: Entreprise[] = [];
   pack: Pack[]=[]
-  selectedCommandes: CommandeWithEntreprise[] = []
-  submitted: boolean = false;
   detailsCommande: CommandeWithEntreprise | undefined;
   optionsBc1: Option1[]=[];
   detailsOptions: Option1[]=[];
@@ -45,15 +46,17 @@ export class Bc1SouscritsComponent implements OnInit {
 
 
   modifyDialog: boolean = false;
-  modifyCommande:Commande1 | undefined;
+  modifyCommande:CommandeWithEntreprise | undefined;
   modifyPackId: number | undefined;
   modifyPackOptions: any | undefined;
   modifyPackSurface: number | undefined;
   modificationsOptions: Option1[]=[];
   modifyTotalHt: number | undefined = 0
   modificationCommandeOption: Commande1Option[]=[]
+  modificationContact: Contact | undefined;
 
-  
+  factureVisible: boolean = false;
+  @ViewChild('factureBc1') factureBc1!: Bc1SouscritFactureComponent;
 
 
   constructor(
@@ -64,7 +67,9 @@ export class Bc1SouscritsComponent implements OnInit {
     private messageService: MessageService,
     private commandeOptionService: Commande1OptionsService,
     private optionService: Option1Service,
-    private cookieService: AuthCookieService
+    private cookieService: AuthCookieService,
+    private contactService: ContactService,
+    private emailService: EmailService
   ) {}
 
   ngOnInit(): void {
@@ -207,6 +212,22 @@ export class Bc1SouscritsComponent implements OnInit {
     this.modifyPackId = cmd.pack?.pack_id ?? 9999;
     this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
   }
+    async openFactureDialog(cmd:CommandeWithEntreprise){
+      let testPack:any
+    this.modifyCommande = cmd;
+    if(this.modifyCommande.pack && this.modifyCommande.pack.surfaces){
+      testPack = this.modifyCommande.pack.surfaces.find(p=>p.surface_id === this.modifyCommande?.pack1_id)
+      this.modifyCommande.pack.selectedOption = {surface_id: testPack?.surface_id, surface: testPack?.surface, prix: Number(testPack?.prix)}
+    }
+  
+    this.modifyTotalHt = cmd.total_ht;
+    this.getCommandeOptionModification();
+    this.modifyPackSurface = cmd.pack1_id ?? 999;
+    this.modifyPackId = cmd.pack?.pack_id ?? 9999;
+    this.modifyPackOptions =  this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+    this.modificationContact = await this.getContactPrincipalNom();
+    this.factureVisible = true;
+  }
 getPackForCommande(){
   if(this.modifyCommande){
     this.modifyCommande.pack1_id = 9999
@@ -252,4 +273,35 @@ getModifyCommandePrix(){
       })
     }
   }
+async getContactPrincipalNom(): Promise<Contact | undefined> {
+  const id = this.modifyCommande?.entreprise?.contact_principal_id ?? -1;
+  try {
+    const contact = await firstValueFrom(this.contactService.getContact(id));
+    return contact;
+  } catch (error) {
+    console.error('Error fetching contact:', error);
+    return ;
+  }
+}
+  async envoyerFacture(){
+  try {
+    // 🔸 Step 1: Wait for PDF generation
+    await this.factureBc1.generatedPdf("facture", "festp.2025."+this.modifyCommande?.entreprise_id+".fct1", "contentToExport");
+    await lastValueFrom(
+    this.emailService.sendInvoice({
+      senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
+      receiverEmail: "hedibensafegine7@gmail.com",
+      receiverName: "hedi",
+      subject: "test",
+      htmlText: "teset email",
+      ccEmails: ["hedibensafegine.noxaved@gmail.com"],
+      attachmentName: "festp.2025." + this.modifyCommande?.entreprise_id + ".fct1.pdf"
+    }));
+  }catch (err) {
+    console.error("❌ Error during BC1 creation", err);
+  }
+}
+openModifierFactureDialog(){
+  this.factureBc1.visible = true
+}
 }
