@@ -94,7 +94,7 @@ exports.createCommande1 = (req, res) => {
                     "<p>Vous pourrez y réserver votre mobilier, votre électricité, vos places de parking… <br /> Tout ce qui permettra de rendre cette expérience inoubliable.</p>" +
                     "<p>Si vous rencontrez des difficultés pour remplir ce formulaire, veuillez contacter votre commercial référent.</p>" +
                     "<p>Bien cordialement,</p>" +
-                    "<img src=\"https://staging.app.forumetp.fr/img/logo.png\" alt=\"\" style=\"max-width: 100%; max-height: 200px;\" />" +
+                    "<img src=\"https://test.app.forumestp.fr/assets/logo.png\" alt=\"\" style=\"max-width: 100%; max-height: 200px;\" />" +
                     "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex <br />Tél. : +33 9 51 23 97 76</p>" +
                     "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
                   sendEmail("ne-pas-repondre@forumestp.fr", result[0].email, result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC1.pdf`, base64Attachment);

@@ -305,7 +305,7 @@ Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement
 </p>
 
 <p>
-Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 45e édition</strong>.
+Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
 </p>
 
 <p>
@@ -339,6 +339,16 @@ Trésorière FORUM ESTP<br />
     } catch (err) {
       console.error("❌ Error during BC1 creation", err);
     }
+  }
+  async downloadFacture(){
+  await this.factureBc1.generatedPdf("facture", "festp.2025." + this.factureBc1.modifyCommandeFact?.entreprise_id + ".fct1", "contentToExport");
+  const filePath = `${this.baseUrl}/api/uploads/facture/festp.2025.${this.modifyCommande?.entreprise_id}.fct1.pdf`; // public or direct file URL
+  const link = document.createElement('a');
+  link.href = filePath;
+  link.setAttribute('target', '_blank'); // optional: specify file name
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   }
   openModifierFactureDialog() {
     this.factureBc1.visible = true

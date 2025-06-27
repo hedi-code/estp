@@ -104,4 +104,13 @@ export class Bc1SouscritFactureComponent implements OnInit{
 
     })
   }
+
+
+  getDateAcompte(): Date {
+    const today = new Date();
+    let acompteDate = new Date(today);
+    acompteDate.setDate(acompteDate.getDate() + 14);
+
+    return acompteDate;
+  }
 }

@@ -1,71 +1,71 @@
 <div class="card p-3 bg-white mt-3 mr-3 w-full">
   <h3 class="text-blue-400 p-2">Liste des BC1</h3>
 
-  <p-table [value]="commandes" dataKey="id" [rows]="10" styleClass="w-full"
-    [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="false" 
-    columnResizeMode="expand" 
-    [paginator]="true"
+<p-table
+  [value]="commandes"
+  [rows]="10"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  [paginator]="true"
+  filterDisplay="row"
+  styleClass="w-full"
 >
-            <ng-template pTemplate="emptymessage">
+  <ng-template pTemplate="emptymessage">
     <tr>
       <td colspan="8" style="text-align: center; color: #999;">Pas de donnés</td>
     </tr>
   </ng-template>
 
-    <!-- Header -->
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
-        <th pSortableColumn="entreprise_id">Entreprise <p-sortIcon field="entreprise_id" /></th>
-        <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
-        <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
-        <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
-        <th pSortableColumn="created">Créé le <p-sortIcon field="created" /></th>
-        <th pSortableColumn="validation_lieu">Lieu de validation <p-sortIcon field="validation_lieu" /></th>
-        <th>Actions</th>
-      </tr>
-      <tr>
-        <th><p-columnFilter type="text" field="id" /></th>
-        <th><p-columnFilter type="text" field="entreprise_id" /></th>
-        <th><p-columnFilter type="text" field="pack" /></th>
-        <th></th>
-        <th><p-columnFilter type="text" field="total_ht" /></th>
-        <th><p-columnFilter type="text" field="created" /></th>
-        <th><p-columnFilter type="text" field="validation_lieu" /></th>
-        <th></th>
-      </tr>
-    </ng-template>
+  <!-- Header -->
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
+      <th pSortableColumn="entreprise_nom">Entreprise <p-sortIcon field="entreprise_nom" /></th>
+      <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
+      <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
+      <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
+      <th pSortableColumn="created">Créé le <p-sortIcon field="created" /></th>
+      <th pSortableColumn="validation_lieu">Lieu de validation <p-sortIcon field="validation_lieu" /></th>
+      <th>Actions</th>
+    </tr>
+    <tr>
+      <th><p-columnFilter field="id" matchMode="contains" /></th>
+      <th><p-columnFilter field="entreprise_nom" matchMode="contains" /></th>
+      <th><p-columnFilter field="pack" matchMode="contains" /></th>
+      <th></th>
+      <th><p-columnFilter field="total_ht" matchMode="contains" /></th>
+      <th><p-columnFilter field="created" matchMode="contains" /></th>
+      <th><p-columnFilter field="validation_lieu" matchMode="contains" /></th>
+      <th></th>
+    </tr>
+  </ng-template>
 
-    <!-- Body -->
-    <ng-template pTemplate="body" let-cmd>
-      <tr>
-        <td>{{ cmd.id }}</td>
-        <td>{{ cmd.entreprise?.nom ?? '-' }}</td>
-        <td>{{ cmd.packDescription ?? '-' }}</td>
-        <td>
-            <ng-container *ngIf="cmd.valide">
-                    <p-tag icon="pi pi-check" severity="success" value="Oui" />
-            </ng-container>
-            <ng-container *ngIf="!cmd.valide">
-                <p-tag icon="pi pi-times" severity="warning" value="Non" />
-            </ng-container>
-        </td>
-        <td>{{ cmd.total_ht }}</td>
-        <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
-        <td>{{ cmd.validation_lieu ?? '-' }}</td>
-        <td class="flex justify-content-between">
-            <button pButton [text]="true" severity="success" type="button" tooltipPosition="bottom" *ngIf="!cmd.valide" pTooltip="Valider BC1" icon="pi pi-check-circle" (click)="validerCommande($event, cmd)"></button>
-            <button pButton [text]="true" type="button" tooltipPosition="bottom" *ngIf="role=='tres' && cmd.valide"  pTooltip="Gestion de facture" icon="pi pi-receipt" (click)="openFactureDialog(cmd)"></button>
-            <button pButton [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter" icon="pi pi-eye" (click)="showDetailsDialog(cmd)"></button>
-            <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom" pTooltip="Supprimer"  icon="pi pi-trash" (click)="deleteCommande($event,cmd)"></button>    <p-confirmPopup />
-            <a pButton target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'" [text]="true" type="button" tooltipPosition="bottom" pTooltip="Consulter PDF" icon="pi pi-file"></a>
-            <button (click)="openModifyDialog(cmd)" pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil"></button>
-        </td>
-       
-      </tr>
-    </ng-template>
+  <!-- Body -->
+  <ng-template pTemplate="body" let-cmd>
+    <tr>
+      <td>{{ cmd.id }}</td>
+      <td>{{ cmd.entreprise.nom }}</td>
+      <td>{{ cmd.packDescription }}</td>
+      <td>
+        <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>
+        <p-tag *ngIf="!cmd.valide" icon="pi pi-times" severity="warning" value="Non"></p-tag>
+      </td>
+      <td>{{ cmd.total_ht }}</td>
+      <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
+      <td>{{ cmd.validation_lieu }}</td>
+      <td class="flex justify-content-between">
+        <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC1" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
+        <button *ngIf="role == 'tres' && cmd.valide" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
+        <button pButton [text]="true" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" (click)="showDetailsDialog(cmd)"></button>
+        <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
+        <p-confirmPopup />
+        <a pButton [text]="true" icon="pi pi-file" pTooltip="Consulter PDF" tooltipPosition="bottom"
+           target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'"></a>
+        <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
 
-  </p-table>
     <p-dialog 
     header="Details BC1" 
     [modal]="true"
@@ -100,7 +100,7 @@
       <td>{{ opt.name ?? '-' }}</td>
       <td>{{ opt.prix_ht ?? '-' }} €</td>
       <td>
-        <img *ngIf="opt.img" [src]="baseUrl+opt.img" alt="img" width="40" height="40" />
+        <img *ngIf="opt.img" [src]="baseUrl+'/api'+opt.img" alt="img" width="40" height="40" />
         <span *ngIf="!opt.img">-</span>
       </td>
       <td>{{ opt.qteCommande }}</td>
@@ -190,7 +190,7 @@
       <td>{{ opt.name ?? '-' }}</td>
       <td>{{ opt.prix_ht ?? '-' }} €</td>
       <td>
-        <img *ngIf="opt.img" [src]="baseUrl+opt.img" alt="img" width="40" height="40" />
+        <img *ngIf="opt.img" [src]="baseUrl + '/api' + opt.img" alt="img" width="40" height="40" />
         <span *ngIf="!opt.img">-</span>
       </td>
       <td style="width: 25%;">
@@ -233,7 +233,7 @@
         </ng-template>
  </p-dialog>
 
-<p-dialog header="Facture" [responsive]="false" [(visible)]="factureVisible" [modal]="true"  [style]="{width: '1000px'}" 
+<p-dialog header="Facture" [responsive]="false" [(visible)]="factureVisible" [modal]="true"  [style]="{width: '900px'}" 
 [maximizable]="true">
  <app-bc1-souscrit-facture
   [modifyCommandeFact]="modifyCommande"
@@ -247,7 +247,8 @@
   (envoyerFactureEvent)="envoyerFacture()"
   id="contentToExport" #factureBc1
  ></app-bc1-souscrit-facture>
-   <p-button label="Modifier" severity="primary" outlined="true" (click)="openModifierFactureDialog()" styleClass="w-6" />
-   <p-button label="Envoyer" severity="primary" (click)="envoyerFacture()" styleClass="w-6" />
+   <p-button label="Modifier" severity="primary" outlined="true" (click)="openModifierFactureDialog()" styleClass="w-4" />
+   <p-button label="Envoyer" severity="primary" (click)="envoyerFacture()" styleClass="w-4" />
+   <p-button label="PDF facture envoyé" severity="primary" (click)="downloadFacture()" styleClass="w-4" />
 
 </p-dialog>
