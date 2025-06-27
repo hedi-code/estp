@@ -43,15 +43,15 @@
   <ng-template pTemplate="body" let-cmd>
     <tr>
       <td>{{ cmd.id }}</td>
-      <td>{{ cmd.entreprise.nom }}</td>
-      <td>{{ cmd.packDescription }}</td>
+      <td>{{ cmd.entreprise?.nom ?? '-' }}</td>
+      <td>{{ cmd.packDescription ?? '-' }}</td>
       <td>
         <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>
         <p-tag *ngIf="!cmd.valide" icon="pi pi-times" severity="warning" value="Non"></p-tag>
       </td>
       <td>{{ cmd.total_ht }}</td>
       <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
-      <td>{{ cmd.validation_lieu }}</td>
+      <td>{{ cmd.validation_lieu ?? '-' }}</td>
       <td class="flex justify-content-between">
         <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC1" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
         <button *ngIf="role == 'tres' && cmd.valide" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
