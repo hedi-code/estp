@@ -3,9 +3,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Commande1 } from '../models/commande1.model'; // Import the model
+import { Commande1 } from '../models/commande1.model';
 import { environment } from './../../../../environments/environment';
-
 
 @Injectable({
   providedIn: 'root',
@@ -33,5 +32,13 @@ export class Commande1Service {
 
   deleteCommande1(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  setFactureEnvoyee(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/facture-envoyee/${id}`, {});
+  }
+
+  setFacturePayee(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/facture-payee/${id}`, {});
   }
 }

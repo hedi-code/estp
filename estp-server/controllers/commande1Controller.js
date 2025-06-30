@@ -30,27 +30,25 @@ exports.createCommande1 = (req, res) => {
     total_ht_avt_remise = 0.00,
     total_ht = 0.00,
     validation_lieu = null,
-    valide = 0
+    valide = 0,
+    fct_payee = 0,
+    fct_envoyee = 0
   } = req.body;
 
   const now = new Date();
 
-  // Step 1: Check if a commande already exists for this entreprise_id
   db.query(
     `SELECT * FROM commande1s WHERE entreprise_id = ?`,
     [entreprise_id],
     (err, result) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
-
-      // Step 2: If a commande already exists for this entreprise_id, return an error
       if (result.length > 0) {
         return res.status(400).json({ error: "Un bon de commande existe déjà pour cette entreprise." });
       }
 
-      // Step 3: If no commande exists, proceed to insert a new one
       db.query(
-        `INSERT INTO commande1s (entreprise_id, pack1_id, reduc_pct, reduc_lin, total_ht_avt_remise, total_ht, created, modified, validation_lieu, valide)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO commande1s (entreprise_id, pack1_id, reduc_pct, reduc_lin, total_ht_avt_remise, total_ht, created, modified, validation_lieu, valide, fct_payee, fct_envoyee)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entreprise_id,
           pack1_id,
@@ -61,22 +59,20 @@ exports.createCommande1 = (req, res) => {
           now,
           now,
           validation_lieu,
-          valide
+          valide,
+          fct_payee,
+          fct_envoyee
         ],
         (err, result) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
-
-          // Step 4: Respond with success message and the inserted id
           res.status(201).json({ message: "Commande créée avec succès", id: result.insertId });
 
-          // After successful insertion, send the email (as before)
           db.query(`SELECT u.*, e.nom as nomEntreprise FROM users u, entreprises e WHERE u.id = e.user_id AND e.id = ?`, [entreprise_id],
             async (err, result) => {
               if (result.length > 0) {
                 const attachmentPath = path.join(__dirname, '../uploads/bc1/', `${entreprise_id}_BC1.pdf`);
                 try {
-
-                  await waitForFile(attachmentPath, 20000); // 10s timeout
+                  await waitForFile(attachmentPath, 20000);
                   const attachmentBuffer = fs.readFileSync(attachmentPath);
                   const base64Attachment = attachmentBuffer.toString('base64');
                   const htmlContent =
@@ -98,7 +94,6 @@ exports.createCommande1 = (req, res) => {
                     "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex <br />Tél. : +33 9 51 23 97 76</p>" +
                     "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
                   sendEmail("ne-pas-repondre@forumestp.fr", result[0].email, result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC1.pdf`, base64Attachment);
-
                 } catch (err) {
                   console.error("Erreur en attente du PDF avant l'envoi de l'email :", err);
                 }
@@ -111,10 +106,8 @@ exports.createCommande1 = (req, res) => {
   );
 };
 
-
 exports.getCommande1ById = (req, res) => {
   const id = req.params.id;
-
   db.query("SELECT * FROM commande1s WHERE id = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
     if (result.length === 0) return res.status(404).json({ error: "Commande non trouvée" });
@@ -124,13 +117,13 @@ exports.getCommande1ById = (req, res) => {
 
 exports.getCommande1ByEntrepriseId = (req, res) => {
   const id = req.params.id;
-
-  db.query("SELECT * FROM commande1s WHERE id = ?", [id], (err, result) => {
+  db.query("SELECT * FROM commande1s WHERE entreprise_id = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
     if (result.length === 0) return res.status(404).json({ error: "Commande non trouvée" });
     res.json(result[0]);
   });
 };
+
 exports.updateCommande1 = (req, res) => {
   const id = req.params.id;
   const {
@@ -140,14 +133,16 @@ exports.updateCommande1 = (req, res) => {
     total_ht_avt_remise,
     total_ht,
     validation_lieu,
-    valide
+    valide,
+    fct_payee = 0,
+    fct_envoyee = 0
   } = req.body;
 
   const modified = new Date();
 
   db.query(
     `UPDATE commande1s 
-     SET pack1_id = ?, reduc_pct = ?, reduc_lin = ?, total_ht_avt_remise = ?, total_ht = ?, validation_lieu = ?, valide = ?, modified = ?
+     SET pack1_id = ?, reduc_pct = ?, reduc_lin = ?, total_ht_avt_remise = ?, total_ht = ?, validation_lieu = ?, valide = ?, modified = ?, fct_payee = ?, fct_envoyee = ?
      WHERE id = ?`,
     [
       pack1_id,
@@ -158,6 +153,8 @@ exports.updateCommande1 = (req, res) => {
       validation_lieu,
       valide,
       modified,
+      fct_payee,
+      fct_envoyee,
       id
     ],
     (err) => {
@@ -166,39 +163,33 @@ exports.updateCommande1 = (req, res) => {
     }
   );
 };
-exports.updateCommande1Pack = (req, res) => {
+
+exports.setFactureEnvoyee = (req, res) => {
   const id = req.params.id;
-  const {
-    pack1_id,
-  } = req.body;
-
-  const modified = new Date();
-
   db.query(
-    `UPDATE commande1s 
-     SET pack1_id = ?, reduc_pct = ?, reduc_lin = ?, total_ht_avt_remise = ?, total_ht = ?, validation_lieu = ?, valide = ?, modified = ?
-     WHERE id = ?`,
-    [
-      pack1_id,
-      reduc_pct,
-      reduc_lin,
-      total_ht_avt_remise,
-      total_ht,
-      validation_lieu,
-      valide,
-      modified,
-      id
-    ],
+    `UPDATE commande1s SET fct_envoyee = 1 WHERE id = ?`,
+    [id],
     (err) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
-      res.json({ message: "Commande mise à jour" });
+      res.json({ message: "Facture marquée comme envoyée" });
+    }
+  );
+};
+
+exports.setFacturePayee = (req, res) => {
+  const id = req.params.id;
+  db.query(
+    `UPDATE commande1s SET fct_payee = 1 WHERE id = ?`,
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Erreur base de données" });
+      res.json({ message: "Facture marquée comme payée" });
     }
   );
 };
 
 exports.deleteCommande1 = (req, res) => {
   const id = req.params.id;
-
   db.query("DELETE FROM commande1s WHERE id = ?", [id], (err) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
     res.json({ message: "Commande supprimée" });
@@ -211,4 +202,3 @@ exports.getAllCommande1s = (req, res) => {
     res.json(results);
   });
 };
-

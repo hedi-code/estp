@@ -16,6 +16,12 @@ router.get("/:id", commande1Controller.getCommande1ById);
 // Update a commande by ID
 router.put("/:id", commande1Controller.updateCommande1);
 
+// Mark invoice as sent
+router.put("/facture-envoyee/:id", commande1Controller.setFactureEnvoyee);
+
+// Mark invoice as paid
+router.put("/facture-payee/:id", commande1Controller.setFacturePayee);
+
 // Delete a commande by ID
 router.delete("/:id", commande1Controller.deleteCommande1);
 

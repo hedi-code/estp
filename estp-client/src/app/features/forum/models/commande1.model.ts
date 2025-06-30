@@ -10,7 +10,10 @@ export interface Commande1 {
   created: Date;
   modified: Date;
   validation_lieu: string | null;
+  fct_payee?: boolean;
+  fct_envoyee?: boolean;
 }
+
 export interface Commande1Option {
   id?: number;
   commande1_id: number;
