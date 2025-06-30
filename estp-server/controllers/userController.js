@@ -76,3 +76,41 @@ exports.updateStep = (req, res) => {
     }
   );
 };
+
+// Change password (only for non-user roles)
+exports.changePassword = async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ error: "Ancien et nouveau mot de passe requis" });
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{10,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({
+      error: "Le nouveau mot de passe est trop faible (10 caractères, majuscule, minuscule, chiffre, symbole)",
+    });
+  }
+
+  db.query('SELECT * FROM users WHERE id = ?', [id], async (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.length === 0) return res.status(404).json({ error: 'Utilisateur introuvable' });
+
+    const user = result[0];
+    if (user.role === 'user') {
+      return res.status(403).json({ error: "Les utilisateurs standards ne peuvent pas changer le mot de passe directement." });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(401).json({ error: "Ancien mot de passe incorrect" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const modified = new Date();
+
+    db.query('UPDATE users SET password = ?, modified = ? WHERE id = ?', [hashedPassword, modified, id], (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: "Mot de passe mis à jour avec succès" });
+    });
+  });
+};

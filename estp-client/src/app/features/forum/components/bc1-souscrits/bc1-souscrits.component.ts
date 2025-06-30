@@ -292,7 +292,7 @@ export class Bc1SouscritsComponent implements OnInit {
           lastValueFrom(
             this.emailService.sendInvoice({
               senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
-              receiverEmail:  "hedibensafegine.noxaved@gmail.com",
+              receiverEmail:  this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
               receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
               subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
               htmlText: `
@@ -330,7 +330,7 @@ export class Bc1SouscritsComponent implements OnInit {
       </p>
 
       `,
-              ccEmails: ["hedibensafegine7@gmail.com"],
+              ccEmails: ["kahina.saibi@forumestp.fr"],
               attachmentName: "festp.2025." + this.modifyCommande?.entreprise_id + ".fct1.pdf"
             }));
         this.commandeService.setFactureEnvoyee(this.modifyCommande?.id ?? -1).subscribe({
