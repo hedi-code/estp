@@ -19,7 +19,7 @@
   <ng-template pTemplate="header">
     <tr>
       <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
-      <th pSortableColumn="entreprise_nom">Entreprise <p-sortIcon field="entreprise_nom" /></th>
+      <th pSortableColumn="entreprise.nom">Entreprise <p-sortIcon field="entreprise.nom" /></th>
       <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
       <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
       <th pSortableColumn="valide" *ngIf="role == 'tres'">Envoyée <p-sortIcon field="valide" /></th>
@@ -31,7 +31,7 @@
     </tr>
     <tr>
       <th><p-columnFilter field="id" matchMode="contains" /></th>
-      <th><p-columnFilter field="entreprise_nom" matchMode="contains" /></th>
+      <th><p-columnFilter field="entreprise.nom" matchMode="contains" /></th>
       <th><p-columnFilter field="pack" matchMode="contains" /></th>
       <th></th>
       <th *ngIf="role == 'tres'"></th>
@@ -66,14 +66,14 @@
       <td>{{ cmd.validation_lieu ?? '-' }}</td>
       <td class="flex justify-content-between">
         <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC1" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
-        <button *ngIf="role == 'tres' && cmd.valide" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
+        <button *ngIf="role == 'tres'" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
         <button pButton [text]="true" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" (click)="showDetailsDialog(cmd)"></button>
         <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
         <p-confirmPopup />
         <a pButton [text]="true" icon="pi pi-file" pTooltip="Consulter PDF" tooltipPosition="bottom"
            target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'"></a>
         <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
-        <button pButton [text]="true" *ngIf="role == 'tres' && cmd.valide" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
+        <button pButton [text]="true" *ngIf="role == 'tres'" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
       </td>
     </tr>
   </ng-template>
@@ -262,6 +262,6 @@
  ></app-bc1-souscrit-facture>
    <p-button label="Modifier" severity="primary" outlined="true" (click)="openModifierFactureDialog()" styleClass="w-4" />
    <p-button label="Envoyer" severity="primary" (click)="envoyerFacture()" styleClass="w-4" />
-   <p-button label="PDF facture envoyé" severity="primary" (click)="downloadFacture()" styleClass="w-4" />
+   <p-button label="PDF facture" severity="primary" (click)="downloadFacture()" styleClass="w-4" />
 
 </p-dialog>

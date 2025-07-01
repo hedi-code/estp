@@ -18,6 +18,8 @@ import { ContactService } from '../../models/contact.service';
 import { Contact } from '../../models/contact.model';
 import { Bc1SouscritFactureComponent } from './bc1-souscrit-facture/bc1-souscrit-facture.component';
 import { EmailService } from '../../../../core/services/email.service';
+import { cloneDeep } from 'lodash';
+
 
 
 interface CommandeWithEntreprise extends Commande1 {
@@ -214,7 +216,7 @@ export class Bc1SouscritsComponent implements OnInit {
   }
   async openFactureDialog(cmd: CommandeWithEntreprise) {
     let testPack: any
-    this.modifyCommande = cmd;
+    this.modifyCommande = cloneDeep(cmd);
     if (this.modifyCommande.pack && this.modifyCommande.pack.surfaces) {
       testPack = this.modifyCommande.pack.surfaces.find(p => p.surface_id === this.modifyCommande?.pack1_id)
       this.modifyCommande.pack.selectedOption = { surface_id: testPack?.surface_id, surface: testPack?.surface, prix: Number(testPack?.prix) }
@@ -284,76 +286,80 @@ export class Bc1SouscritsComponent implements OnInit {
       return;
     }
   }
-  async envoyerFacture() {
-    try {
-      // 🔸 Step 1: Wait for PDF generation
-      await this.factureBc1.generatedPdf("facture", "festp.2025." + this.factureBc1.modifyCommandeFact?.entreprise_id + ".fct1", "contentToExport").then(
-        () => {
-          lastValueFrom(
-            this.emailService.sendInvoice({
-              senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
-              receiverEmail:  this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
-              receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
-              subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
-              htmlText: `
-      <p>Cher(e) <strong>${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}</strong>,</p>
+ async envoyerFacture() {
+  try {
+    // Step 1: Wait for PDF to be generated and uploaded
+    await this.factureBc1.generatedPdf(
+      "facture",
+      `festp.2025.${this.factureBc1.modifyCommandeFact?.entreprise_id}.fct1`,
+      "contentToExport"
+    );
 
-      <p>J’espère que vous allez bien.</p>
-
-      <p>
-      Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement tout le nécessaire pour que votre journée au Forum soit une réussite.
-      </p>
-
-      <p>
-      Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
-      </p>
-
-      <p>
-      Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> avant le <strong>10/09/2025</strong>.
-      <br/>
-      Le solde restant de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
-      </p>
-
-      <p>
-      Nous vous remercions par avance pour le respect de ces échéances nécessaires à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n’hésitez pas à me contacter directement.
-      </p>
-
-      <p>Merci pour votre confiance et votre collaboration.</p>
-
-      <p>Cordialement,</p>
-
-      <p>
-      <strong>Kahina SAIBI</strong><br />
-      Trésorière FORUM ESTP<br />
-      0781616766<br />
-      <a href="mailto:kahina.saibi@forumestp.fr">kahina.saibi@forumestp.fr</a>
-      </p>
-
+    // Step 2: Send the email with attachment
+    await lastValueFrom(this.emailService.sendInvoice({
+      senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
+      receiverEmail: this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
+      receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
+      subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
+      htmlText: `
+        <p>Cher(e) <strong>${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}</strong>,</p>
+        <p>J’espère que vous allez bien.</p>
+        <p>
+        Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement tout le nécessaire pour que votre journée au Forum soit une réussite.
+        </p>
+        <p>
+        Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
+        </p>
+        <p>
+        Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> avant le <strong>10/09/2025</strong>.
+        <br/>
+        Le solde restant de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
+        </p>
+        <p>
+        Nous vous remercions par avance pour le respect de ces échéances nécessaires à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n’hésitez pas à me contacter directement.
+        </p>
+        <p>Merci pour votre confiance et votre collaboration.</p>
+        <p>Cordialement,</p>
+        <p>
+        <strong>Kahina SAIBI</strong><br />
+        Trésorière FORUM ESTP<br />
+        0781616766<br />
+        <a href="mailto:kahina.saibi@forumestp.fr">kahina.saibi@forumestp.fr</a>
+        </p>
       `,
-              ccEmails: ["kahina.saibi@forumestp.fr"],
-              attachmentName: "festp.2025." + this.modifyCommande?.entreprise_id + ".fct1.pdf"
-            }));
-        this.commandeService.setFactureEnvoyee(this.modifyCommande?.id ?? -1).subscribe({
-      next: (success) => {
-        this.commandes[this.commandes.findIndex(c=>c.id===this.modifyCommande?.id)].fct_envoyee=true;
-      }
-    })}
-      );
+      ccEmails: ["kahina.saibi@forumestp.fr"],
+      attachmentName: `festp.2025.${this.modifyCommande?.entreprise_id}.fct1.pdf`
+    }));
 
-    } catch (err) {
-      console.error("❌ Error during BC1 creation", err);
-    }
+    // Step 3: Set fct_envoyee = true in backend
+    this.commandeService.setFactureEnvoyee(this.modifyCommande?.id ?? -1).subscribe({
+      next: () => {
+        const index = this.commandes.findIndex(c => c.id === this.modifyCommande?.id);
+        if (index !== -1) this.commandes[index].fct_envoyee = true;
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Error during envoyerFacture:", err);
   }
-  async downloadFacture() {
-    await this.factureBc1.generatedPdf("facture", "festp.2025." + this.factureBc1.modifyCommandeFact?.entreprise_id + ".fct1", "contentToExport");
-    const filePath = `${this.baseUrl}/api/uploads/facture/festp.2025.${this.modifyCommande?.entreprise_id}.fct1.pdf`; // public or direct file URL
-    const link = document.createElement('a');
-    link.href = filePath;
-    link.setAttribute('target', '_blank'); // optional: specify file name
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+}
+
+ async downloadFacture() {
+  await this.factureBc1.generatedPdf(
+    "facture",
+    "festp.2025." + this.factureBc1.modifyCommandeFact?.entreprise_id + ".fct1",
+    "contentToExport"
+  );
+
+  const filePath = `${this.baseUrl}/api/uploads/facture/festp.2025.${this.modifyCommande?.entreprise_id}.fct1.pdf`;
+  const link = document.createElement('a');
+  link.href = filePath;
+  link.setAttribute('target', '_blank');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
   setFacturePayee(cmd: Commande1) {
     this.commandeService.setFacturePayee(cmd.id).subscribe({
       next: (success) => {
