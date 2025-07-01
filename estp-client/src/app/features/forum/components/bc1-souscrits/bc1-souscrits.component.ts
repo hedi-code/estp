@@ -57,6 +57,17 @@ export class Bc1SouscritsComponent implements OnInit {
   modificationCommandeOption: Commande1Option[] = []
   modificationContact: Contact | undefined;
 
+  createDialog: boolean = false
+  ajoutEntreprises: Entreprise[]=[];
+  ajoutEntreprise: Entreprise | undefined;
+  ajoutOption: Option1[] = [];
+  ajoutPacks: Pack[] = [];
+  ajoutPack: Pack | undefined;
+  ajoutPackSurfacePrix: any | undefined;
+  ajoutTotalHt: number  = 0
+
+
+
   factureVisible: boolean = false;
   @ViewChild('factureBc1') factureBc1!: Bc1SouscritFactureComponent;
 
@@ -89,6 +100,11 @@ export class Bc1SouscritsComponent implements OnInit {
         this.optionsBc1 = options
         this.entreprises = entreprises;
         this.pack = pack
+
+        const commandeIds = commandes.map(c => c.entreprise_id);
+        this.ajoutEntreprises = entreprises.filter(e => !commandeIds.includes(e.id ?? -1));
+        this.ajoutOption = options;
+        this.ajoutPacks = pack;
         this.commandes = commandes.map(cmd => ({
           ...cmd,
           entreprise: entreprises.find(e => e.id === cmd.entreprise_id),
@@ -205,7 +221,8 @@ export class Bc1SouscritsComponent implements OnInit {
   getTotalTva(total: number) {
     return total * 1.2;
   }
-  openModifyDialog(cmd: CommandeWithEntreprise) {
+  openModifyDialog(cmd?: CommandeWithEntreprise) {
+    if(!!cmd){
     this.modifyCommande = cmd;
     this.modifyTotalHt = cmd.total_ht;
     this.modifyDialog = true;
@@ -213,6 +230,15 @@ export class Bc1SouscritsComponent implements OnInit {
     this.modifyPackSurface = cmd.pack1_id ?? 999;
     this.modifyPackId = cmd.pack?.pack_id ?? 9999;
     this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+    }
+    else{
+ this.modifyTotalHt = 0;
+    this.modifyDialog = true;
+    this.getCommandeOptionModification();
+    this.modifyPackSurface =  -1;
+    this.modifyPackId = -1;
+    this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
+    }
   }
   async openFactureDialog(cmd: CommandeWithEntreprise) {
     let testPack: any
@@ -274,6 +300,7 @@ export class Bc1SouscritsComponent implements OnInit {
         }
 
       })
+      this.commandes[this.commandes.findIndex(c => c.id == this.modifyCommande?.id)].total_ht = this.modifyTotalHt ?? 0
     }
   }
   async getContactPrincipalNom(): Promise<Contact | undefined> {
@@ -369,5 +396,25 @@ export class Bc1SouscritsComponent implements OnInit {
   }
   openModifierFactureDialog() {
     this.factureBc1.visible = true
+  }
+  openCreateDialog(){
+    this.createDialog = true;
+    this.ajoutTotalHt = 0;
+  }
+  calculerCreerPrix(){
+    this.ajoutTotalHt = 0;
+    this.ajoutTotalHt = this.ajoutTotalHt + Number(this.ajoutPackSurfacePrix.prix);
+    this.ajoutOption.forEach(o=> {if(o.qteCommande){this.ajoutTotalHt = this.ajoutTotalHt + ((o.prix_ht ?? 1)*(o.qteCommande ?? 1))}})
+    console.log(this.ajoutTotalHt)
+  }
+  createNouvelleCommande(){
+    this.commandeService.createCommande1({
+      entreprise_id: this.ajoutEntreprise?.id ?? -1,
+      valide: false,
+      total_ht: this.ajoutTotalHt,
+      pack1_id: this.ajoutPackSurfacePrix.surface_id
+    }).subscribe({
+      
+    })
   }
 }

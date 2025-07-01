@@ -5,7 +5,7 @@ import { AuthCookieService } from '../../../../core/services/auth-cookie.service
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.model';
 import { Commande1 } from '../../models/commande1.model';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../auth/auth.service';
 import { ContactService } from '../../models/contact.service';
@@ -32,6 +32,7 @@ export class EntrepriseSouscritesComponent implements OnInit {
   constructor(private fb: FormBuilder, private entrepriseService: EntrepriseService, 
     private authService: AuthService,    private contactService: ContactService,
     private userService: UserService, private cookieService: AuthCookieService, 
+        private confirmationService: ConfirmationService,
     private messageService: MessageService) {
     this.registerForm = this.fb.group({
       lastname: ['', Validators.required],
@@ -171,5 +172,23 @@ export class EntrepriseSouscritesComponent implements OnInit {
       } else {
         console.log('Form is invalid');
       }
+    }
+    deleteEntreprise(event: any, entreprise: Entreprise){
+ this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Voulez vous supprimer cette entreprise ?',
+      icon: 'pi pi-info-circle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger p-button-sm',
+      accept: () => {
+        this.entrepriseService.deleteEntreprise(entreprise.id ?? -1).subscribe(response => {
+          this.entreprises.splice(this.entreprises.findIndex(e => e.id == entreprise.id),1)
+        });
+      },
+      reject: () => {
+        this.messageService.add({ severity: 'error', summary: 'Annulé', detail: 'Supression annulé', life: 2000 });
+      }
+    });
     }
 }

@@ -130,8 +130,10 @@
                             {{entreprise.adresse || '-'}}
                     
                 </td>
-                <td *ngIf="role=='rescom'">
-                                <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
+                <td >
+                                <button *ngIf="role=='rescom'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
+        <p-confirmPopup />
+                                <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom"  pTooltip="Supprimer" icon="pi pi-trash" (click)="deleteEntreprise($event,entreprise)"></button>
 
                 </td>
             </tr>

@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Commande1 } from '../models/commande1.model';
+import { Commande1, NewCommande1 } from '../models/commande1.model';
 import { environment } from './../../../../environments/environment';
 
 @Injectable({
@@ -14,7 +14,7 @@ export class Commande1Service {
 
   constructor(private http: HttpClient) {}
 
-  createCommande1(data: Commande1): Observable<Commande1> {
+  createCommande1(data: NewCommande1): Observable<Commande1> {
     return this.http.post<Commande1>(this.apiUrl, data);
   }
 

@@ -1,6 +1,9 @@
 <div class="card p-3 bg-white mt-3 mr-3 w-full">
-  <h3 class="text-blue-400 p-2">Liste des BC1</h3>
+  <div class="flex justify-content-between align-items-center">
 
+    <h3 class="text-blue-400 p-2">Liste des BC1</h3>
+    <p-button icon="pi pi-plus" label="Créer un BC1" (click)="openCreateDialog()"></p-button>
+  </div>
 <p-table
   [value]="commandes"
   [rows]="10"
@@ -265,3 +268,132 @@
    <p-button label="PDF facture" severity="primary" (click)="downloadFacture()" styleClass="w-4" />
 
 </p-dialog>
+
+ <p-dialog 
+    header="Créer un BC1" 
+    [modal]="true"
+    [(visible)]="createDialog" 
+    [style]="{ width: '50rem' }" 
+    [maximizable]="true">
+        <h3 class="text-blue-400">Entreprise</h3>
+<div class="field">
+        <label for="pack">Nom de l'entreprise</label>
+        <p-dropdown 
+        [options]="ajoutEntreprises" 
+        [(ngModel)]="ajoutEntreprise" 
+        optionLabel="nom" 
+        [filter]="true"
+        filterBy="nom" 
+        [showClear]="true"
+        class="w-full"
+        styleClass="w-full"
+        placeholder="Nom" />
+    </div>
+    <h3 class="text-blue-400">Pack</h3>
+<div class="field">
+        <label for="pack">Type</label>
+        <p-dropdown 
+        [options]="ajoutPacks" 
+        [(ngModel)]="ajoutPack" 
+        optionLabel="type" 
+        class="w-full"
+        styleClass="w-full"
+        placeholder="Pack" />
+    </div>
+<div class="field">
+        <label for="pack">surface/prix</label>
+        <p-dropdown 
+        [options]="ajoutPack?.surfaces" 
+        [(ngModel)]="ajoutPackSurfacePrix"
+        class="w-full"
+        styleClass="w-full"
+        placeholder="Surface/prix" 
+        (onChange)="calculerCreerPrix()"
+        >
+         <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="4" style="text-align: center; color: #999;">Pas de donnéss</td>
+    </tr>
+  </ng-template>
+         <ng-template let-item pTemplate="item">
+    <div class="custom-option">
+      <span class="surface">{{ item.surface }} m²</span>
+      <span class="prix"> - {{ item.prix }} €</span>
+    </div>
+  </ng-template>
+   <ng-template let-item pTemplate="selectedItem">
+    <div class="custom-selected">
+      <span class="surface">{{ item.surface }} m²</span>
+      <span class="prix"> - {{ item.prix }} €</span>
+    </div>
+  </ng-template>
+    </p-dropdown>
+    </div>
+<!-- <h3 class="text-blue-400">Options</h3>
+<p-table [value]="ajoutOption">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="id">ID </th>
+      <th pSortableColumn="name">Titre </th>
+      <th pSortableColumn="prix_ht">Prix HT </th>
+      <th>Image</th>
+      <th>Qte</th>
+    </tr>
+     <tr>
+        <th><p-columnFilter type="text" field="id" /></th>
+        <th><p-columnFilter type="text" field="name" /></th>
+        <th><p-columnFilter type="text" field="prix_ht" /></th>
+        <th></th>
+        <th></th>
+      </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-opt>
+    <tr>
+      <td>{{ opt.id }}</td>
+      <td>{{ opt.name ?? '-' }}</td>
+      <td>{{ opt.prix_ht ?? '-' }} €</td>
+      <td>
+        <img *ngIf="opt.img" [src]="baseUrl + '/api' + opt.img" alt="img" width="40" height="40" />
+        <span *ngIf="!opt.img">-</span>
+      </td>
+      <td style="width: 25%;">
+        <p-inputNumber
+                    [(ngModel)]="opt.qteCommande" [showButtons]="true" buttonLayout="horizontal"
+                    inputId="horizontal" spinnerMode="horizontal" [step]="1" [min]="0" [max]="[94, 105, 106, 107, 108, 109, 113, 114].includes(opt.id) ? opt.qmax : 1"
+                    class="flex-grow-1 w-full mb-2" styleClass="w-full" inputStyleClass="w-full"
+                    decrementButtonClass="p-button-secondary outlined"
+                    incrementButtonClass="p-button-secondary  outlined" incrementButtonIcon="pi pi-plus"
+                    decrementButtonIcon="pi pi-minus" mode="decimal" (ngModelChange)="calculerCreerPrix()"
+                    />
+    </td>
+    </tr>
+  </ng-template>
+</p-table> -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-between align-items-center">
+        <div>
+
+    <h3 class="text-black-400">Total HT: {{ajoutTotalHt || 0}} €</h3>
+    <h3 class="text-black-400">Total TTC: {{(ajoutTotalHt || 0) * 1.2}} €</h3>
+        </div>
+        <div>
+
+            <p-button 
+                label="Anuuler" 
+                [text]="true" 
+                severity="secondary" 
+                styleClass="mt-2"
+                (click)="createDialog = false"
+                />
+                <p-button 
+                styleClass="mt-2"
+                label="Valider" 
+                severity="primary" 
+                (click)="createNouvelleCommande()"
+              />
+        </div>
+    </div>
+        </ng-template> 
+ </p-dialog>
