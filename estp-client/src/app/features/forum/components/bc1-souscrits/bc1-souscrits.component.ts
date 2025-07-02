@@ -314,6 +314,10 @@ export class Bc1SouscritsComponent implements OnInit {
     }
   }
  async envoyerFacture() {
+  const today = new Date();
+const dueDate = new Date(today);
+dueDate.setDate(today.getDate() + 15);
+const formattedDate = dueDate.toLocaleDateString('fr-FR');
   try {
     // Step 1: Wait for PDF to be generated and uploaded
     await this.factureBc1.generatedPdf(
@@ -325,7 +329,7 @@ export class Bc1SouscritsComponent implements OnInit {
     // Step 2: Send the email with attachment
     await lastValueFrom(this.emailService.sendInvoice({
       senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
-      receiverEmail: this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
+      receiverEmail:  "hedibensafegine.noxaved@gmail.com",
       receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
       subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
       htmlText: `
@@ -338,7 +342,7 @@ export class Bc1SouscritsComponent implements OnInit {
         Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
         </p>
         <p>
-        Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> avant le <strong>10/09/2025</strong>.
+        Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> avant le <strong>${formattedDate}</strong>.
         <br/>
         Le solde restant de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
         </p>
@@ -354,7 +358,7 @@ export class Bc1SouscritsComponent implements OnInit {
         <a href="mailto:kahina.saibi@forumestp.fr">kahina.saibi@forumestp.fr</a>
         </p>
       `,
-      ccEmails: ["kahina.saibi@forumestp.fr"],
+      ccEmails: ["hedibensafegine7@gmail.com"],
       attachmentName: `festp.2025.${this.modifyCommande?.entreprise_id}.fct1.pdf`
     }));
 
