@@ -329,7 +329,7 @@ const formattedDate = dueDate.toLocaleDateString('fr-FR');
     // Step 2: Send the email with attachment
     await lastValueFrom(this.emailService.sendInvoice({
       senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
-      receiverEmail:  "hedibensafegine.noxaved@gmail.com",
+      receiverEmail: this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
       receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
       subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
       htmlText: `
@@ -358,7 +358,7 @@ const formattedDate = dueDate.toLocaleDateString('fr-FR');
         <a href="mailto:kahina.saibi@forumestp.fr">kahina.saibi@forumestp.fr</a>
         </p>
       `,
-      ccEmails: ["hedibensafegine7@gmail.com"],
+      ccEmails: ["kahina.saibi@forumestp.fr"],
       attachmentName: `festp.2025.${this.modifyCommande?.entreprise_id}.fct1.pdf`
     }));
 
