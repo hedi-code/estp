@@ -2,9 +2,15 @@
   <div class="flex justify-content-between align-items-center">
 
     <h3 class="text-blue-400 p-2">Liste des BC1</h3>
-    <p-button icon="pi pi-plus" label="Créer un BC1" (click)="openCreateDialog()"></p-button>
+  <div>
+      <p-button icon="pi pi-plus" label="Créer un BC1" (click)="openCreateDialog()"></p-button>
+    <!-- <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button> -->
+  </div>
+
+
   </div>
 <p-table
+  #dt
   [value]="commandes"
   [rows]="10"
   [rowsPerPageOptions]="[10, 25, 50]"
@@ -123,8 +129,8 @@
     </tr>
   </ng-template>
 </p-table>
-<h3 class="text-blue-400">Total HT</h3>    {{detailsCommande?.total_ht || 'Pas de pack'}} €
-<h3 class="text-blue-400">Total HT</h3>    {{getTotalTva(detailsCommande?.total_ht || 0)}} €
+<h3 class="text-blue-400">Total HT</h3>    {{detailsCommande?.total_ht || 'Pas de pack' | number: '1.2-2'}} €
+<h3 class="text-blue-400">Total TTC</h3>    {{getTotalTva(detailsCommande?.total_ht || 0 )| number: '1.2-2'}} €
  <div class="flex justify-content-end gap-2">
         <p-button label="Cancel" severity="secondary" (onClick)="detailsDialog = false" />
         <p-button label="Save" (onClick)="detailsDialog = false" />
@@ -226,8 +232,8 @@
     <div class="flex justify-content-between align-items-center">
         <div>
 
-    <h3 class="text-black-400">Total HT: {{modifyTotalHt}} €</h3>
-    <h3 class="text-black-400">Total TTC: {{(modifyTotalHt || 0) * 1.2}} €</h3>
+    <h3 class="text-black-400">Total HT: {{modifyTotalHt | number: '1.2-2'}} €</h3>
+    <h3 class="text-black-400">Total TTC: {{(modifyTotalHt || 0) * 1.2 | number: '1.2-2'}} €</h3>
         </div>
         <div>
 
@@ -397,3 +403,13 @@
     </div>
         </ng-template> 
  </p-dialog>
+
+  <p-dialog header="header" [(visible)]="bc1DialogVisible" [modal]="true" [style]="{ width: '960px' }" [baseZIndex]="-1">
+    <app-facture-bc1 style="z-index: -1;" id="contentToExport"  #factureBc1 *ngIf="modifyCommande && modifyCommande.entreprise && modificationContact"
+                  [signature]="" [contactPrincipal]="modificationContact" [prixTotal]="modifyTotalHt ?? 0"
+                  [nomFichierBc1]="modifyCommande.entreprise.id + '_BC1'" [entreprise]="modifyCommande.entreprise" [fait]=""></app-facture-bc1>
+        <p-button icon="pi pi-plus" label="Regénérer le BC1" (click)="regenerateBC1Pdf()" styleClass="w-full"></p-button>
+
+  </p-dialog>
+
+ 

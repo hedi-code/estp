@@ -51,6 +51,9 @@ export class CommandeService {
     this.commandeBs.next(this.commande)
 
   }
+  deleteOptionById(option: Option1){
+    this.deleteOption(this.commande.option.findIndex(o=>o.id == option.id))
+  }
   deleteOption(index: number) {
     if (index > -1 && index < this.commande.option.length) {
       this.commande.option.splice(index, 1);

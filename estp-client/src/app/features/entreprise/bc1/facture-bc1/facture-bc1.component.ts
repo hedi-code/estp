@@ -28,7 +28,7 @@ export class FactureBc1Component implements OnInit {
   today: Date = new Date();
   commande: Commande | undefined;
   surfacePrix: any;
-  prixTotal: number = 0;
+  @Input()prixTotal: number = 0;
   @Input() showButton: boolean = true;
   @Output() createBc1Event = new EventEmitter<void>();
 

@@ -19,6 +19,8 @@ import { Contact } from '../../models/contact.model';
 import { Bc1SouscritFactureComponent } from './bc1-souscrit-facture/bc1-souscrit-facture.component';
 import { EmailService } from '../../../../core/services/email.service';
 import { cloneDeep } from 'lodash';
+import { Table } from 'primeng/table';
+import { Commande, CommandeService } from '../../../entreprise/commande/commande.service';
 
 
 
@@ -36,6 +38,7 @@ interface CommandeWithEntreprise extends Commande1 {
   styleUrl: './bc1-souscrits.component.scss'
 })
 export class Bc1SouscritsComponent implements OnInit {
+  pdfBc1Commande:Commande | undefined
   detailsDialog: boolean = false;
   commandes: CommandeWithEntreprise[] = [];
   entreprises: Entreprise[] = [];
@@ -66,11 +69,12 @@ export class Bc1SouscritsComponent implements OnInit {
   ajoutPackSurfacePrix: any | undefined;
   ajoutTotalHt: number  = 0
 
+  @ViewChild('dt') table!: Table;
 
 
   factureVisible: boolean = false;
   @ViewChild('factureBc1') factureBc1!: Bc1SouscritFactureComponent;
-
+bc1DialogVisible: boolean = false;
 
   constructor(
     private commandeService: Commande1Service,
@@ -82,7 +86,8 @@ export class Bc1SouscritsComponent implements OnInit {
     private optionService: Option1Service,
     private cookieService: AuthCookieService,
     private contactService: ContactService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private commandeGenService: CommandeService
   ) { }
 
   ngOnInit(): void {
@@ -221,23 +226,16 @@ export class Bc1SouscritsComponent implements OnInit {
   getTotalTva(total: number) {
     return total * 1.2;
   }
-  openModifyDialog(cmd?: CommandeWithEntreprise) {
+  async openModifyDialog(cmd?: CommandeWithEntreprise) {
     if(!!cmd){
     this.modifyCommande = cmd;
     this.modifyTotalHt = cmd.total_ht;
-    this.modifyDialog = true;
     this.getCommandeOptionModification();
     this.modifyPackSurface = cmd.pack1_id ?? 999;
     this.modifyPackId = cmd.pack?.pack_id ?? 9999;
     this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
-    }
-    else{
- this.modifyTotalHt = 0;
+    this.modificationContact = await this.getContactPrincipalNom();
     this.modifyDialog = true;
-    this.getCommandeOptionModification();
-    this.modifyPackSurface =  -1;
-    this.modifyPackId = -1;
-    this.modifyPackOptions = this.pack.find(p => p.pack_id == this.modifyPackId)?.surfaces;
     }
   }
   async openFactureDialog(cmd: CommandeWithEntreprise) {
@@ -302,6 +300,22 @@ export class Bc1SouscritsComponent implements OnInit {
       })
       this.commandes[this.commandes.findIndex(c => c.id == this.modifyCommande?.id)].total_ht = this.modifyTotalHt ?? 0
     }
+    if(this.modifyCommande){
+        this.commandeGenService.addPack(this.pack.find(p => p.pack_id == this.modifyPackId) ?? {},this.modifyCommande.pack1_id ?? -1);
+       this.modificationsOptions.forEach(o=> {
+      if(o && o.qteCommande && o.qteCommande > 0){
+      
+      this.commandeGenService.deleteOptionById(o)
+      this.commandeGenService.addOption(o)
+    }});
+      this.bc1DialogVisible = true;
+
+    }
+  }
+  async regenerateBC1Pdf(){
+      await this.factureBc1.generatedPdf("bc1",this.modifyCommande?.entreprise?.id+"_BC1","contentToExport");
+      this.messageService.add({ severity: 'success', summary: '', detail: 'BC1 regénéré', life: 2000 });
+
   }
   async getContactPrincipalNom(): Promise<Contact | undefined> {
     const id = this.modifyCommande?.entreprise?.contact_principal_id ?? -1;
@@ -421,4 +435,43 @@ const formattedDate = dueDate.toLocaleDateString('fr-FR');
       
     })
   }
+exportCSV() {
+  if (!this.commandes?.length) {
+    console.warn('Aucune donnée à exporter');
+    return;
+  }
+
+  const headers = ['ID', 'Entreprise', 'Pack', 'Total HT', 'Créé le'];
+  const rows = this.commandes.map(cmd => ({
+    id: cmd.id,
+    entreprise: cmd.entreprise?.nom ?? '',
+    pack: cmd.packDescription ?? '',
+    total_ht: cmd.total_ht ?? '',
+    created: cmd.created ? new Date(cmd.created).toLocaleString('fr-FR') : ''
+  }));
+
+  const csv = this.convertToCSV(rows, headers);
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'commandes.csv';
+  link.click();
+}
+
+convertToCSV(data: any[], headers: string[]): string {
+  const replacer = (key: any, value: any) => value === null || value === undefined ? '' : value;
+  const headerKeys = Object.keys(data[0]);
+
+  const csvRows = [
+    headers.join(';'),
+    ...data.map(row =>
+      headerKeys.map(field => JSON.stringify(row[field], replacer)).join(';')
+    )
+  ];
+
+  return csvRows.join('\r\n');
+}
+
+
 }

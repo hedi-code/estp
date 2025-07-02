@@ -15,7 +15,7 @@ exports.createCommande1Option = (req, res) => {
 exports.getAllCommande1Options = (req, res) => {
   const query = "SELECT * FROM commande1_options";
   db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: "Error fetching options" });
+    if (err) return res.status(500).json({ nonDisplayMessage: "Error fetching options" });
     res.json(results);
   });
 };
@@ -25,8 +25,8 @@ exports.getCommande1OptionById = (req, res) => {
 
   const query = "SELECT * FROM commande1_options WHERE id = ?";
   db.query(query, [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error fetching option" });
-    if (result.length === 0) return res.status(404).json({ error: "Option not found" });
+    if (err) return res.status(500).json({ nonDisplayMessage: "Error fetching option" });
+    if (result.length === 0) return res.status(404).json({ nonDisplayMessage: "Option not found" });
     res.json(result[0]);
   });
 };
@@ -48,8 +48,8 @@ exports.updateCommande1Option = (req, res) => {
 
   const query = "UPDATE commande1_options SET qty = ? WHERE id = ?";
   db.query(query, [qty, id], (err) => {
-    if (err) return res.status(500).json({ error: "Error updating option" });
-    res.json({ message: "Option updated successfully" });
+    if (err) return res.status(500).json({ nonDisplayMessage: "Error updating option" });
+    res.json({ nonDisplayMessage: "Option updated successfully" });
   });
 };
 
@@ -58,7 +58,7 @@ exports.deleteCommande1Option = (req, res) => {
 
   const query = "DELETE FROM commande1_options WHERE id = ?";
   db.query(query, [id], (err) => {
-    if (err) return res.status(500).json({ error: "Error deleting option" });
-    res.json({ message: "Option deleted successfully" });
+    if (err) return res.status(500).json({ nonDisplayMessage: "Error deleting option" });
+    res.json({ nonDisplayMessage: "Option deleted successfully" });
   });
 };
