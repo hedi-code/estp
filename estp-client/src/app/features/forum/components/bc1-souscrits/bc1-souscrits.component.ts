@@ -426,13 +426,19 @@ const formattedDate = dueDate.toLocaleDateString('fr-FR');
     console.log(this.ajoutTotalHt)
   }
   createNouvelleCommande(){
+
     this.commandeService.createCommande1({
       entreprise_id: this.ajoutEntreprise?.id ?? -1,
       valide: false,
       total_ht: this.ajoutTotalHt,
       pack1_id: this.ajoutPackSurfacePrix.surface_id
     }).subscribe({
-      
+      next: (resp)=>{ this.initData()
+            this.ajoutPackSurfacePrix = null;
+    this.ajoutPack = undefined;
+    this.ajoutEntreprise = undefined;
+    this.ajoutTotalHt = 0;
+      }
     })
   }
 exportCSV() {
