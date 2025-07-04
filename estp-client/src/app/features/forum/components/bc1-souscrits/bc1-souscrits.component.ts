@@ -347,7 +347,7 @@ const formattedDate = dueDate.toLocaleDateString('fr-FR');
       senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
       receiverEmail: this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
       receiverName: `${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}`,
-      subject: this.modificationContact?.email ? "Facture du BC1" : "ERREUR FACTURATION",
+      subject: this.modificationContact?.email ? "Facture BC1-Forum ESTP 2025" : "ERREUR FACTURATION",
       htmlText: `
         <p>Cher(e) <strong>${this.factureBc1.modificationContact?.prenom} ${this.factureBc1.modificationContact?.nom}</strong>,</p>
         <p>J’espère que vous allez bien.</p>
