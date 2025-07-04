@@ -21,6 +21,7 @@ import { EmailService } from '../../../../core/services/email.service';
 import { cloneDeep } from 'lodash';
 import { Table } from 'primeng/table';
 import { Commande, CommandeService } from '../../../entreprise/commande/commande.service';
+import { DecimalPipe } from '@angular/common';
 
 
 
@@ -87,7 +88,8 @@ bc1DialogVisible: boolean = false;
     private cookieService: AuthCookieService,
     private contactService: ContactService,
     private emailService: EmailService,
-    private commandeGenService: CommandeService
+    private commandeGenService: CommandeService,
+    private decimalPipe: DecimalPipe
   ) { }
 
   ngOnInit(): void {
@@ -356,9 +358,9 @@ const formattedDate = dueDate.toLocaleDateString('fr-FR');
         Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct1</strong> relative à votre bon de commande <strong>BC1</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
         </p>
         <p>
-        Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> avant le <strong>${formattedDate}</strong>.
+        Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${this.decimalPipe.transform(((this.modifyCommande?.total_ht ?? 0) * 1.2 / 2),'1.2-2') }€</strong> avant le <strong>${formattedDate}</strong>.
         <br/>
-        Le solde restant de <strong>${(this.modifyCommande?.total_ht ?? 0) * 1.2 / 2}€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
+        Le solde restant de <strong>${this.decimalPipe.transform(((this.modifyCommande?.total_ht ?? 0) * 1.2 / 2),'1.2-2') }€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
         </p>
         <p>
         Nous vous remercions par avance pour le respect de ces échéances nécessaires à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n’hésitez pas à me contacter directement.

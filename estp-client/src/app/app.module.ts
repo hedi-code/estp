@@ -55,6 +55,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { Bc1SouscritFactureComponent } from './features/forum/components/bc1-souscrits/bc1-souscrit-facture/bc1-souscrit-facture.component';
+import { DecimalPipe } from '@angular/common';
 
 
 
@@ -113,7 +114,7 @@ import { Bc1SouscritFactureComponent } from './features/forum/components/bc1-sou
     TooltipModule,
     ConfirmPopupModule
   ],
-  providers: [provideAnimations(),apiInterceptorProvider, provideHttpClient(
+  providers: [provideAnimations(),apiInterceptorProvider, DecimalPipe, provideHttpClient(
     withInterceptors([authInterceptorInterceptor])
   ),  provideHttpClient(
     withInterceptors([authInterceptorInterceptor, messageInterceptorInterceptor])  // Add messageInterceptor here
