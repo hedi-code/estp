@@ -31,8 +31,8 @@
       <th pSortableColumn="entreprise.nom">Entreprise <p-sortIcon field="entreprise.nom" /></th>
       <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
       <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
-      <th pSortableColumn="valide" *ngIf="role == 'tres'">Envoyée <p-sortIcon field="valide" /></th>
-      <th pSortableColumn="valide" *ngIf="role == 'tres'">Payée <p-sortIcon field="valide" /></th>
+      <th pSortableColumn="valide" *ngIf="role === 'tres' || role === 'pres'">Envoyée <p-sortIcon field="valide" /></th>
+      <th pSortableColumn="valide" *ngIf="role === 'tres' || role === 'pres'">Payée <p-sortIcon field="valide" /></th>
       <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
       <th pSortableColumn="created">Créé le <p-sortIcon field="created" /></th>
       <th pSortableColumn="validation_lieu">Lieu de validation <p-sortIcon field="validation_lieu" /></th>
@@ -43,8 +43,8 @@
       <th><p-columnFilter field="entreprise.nom" matchMode="contains" /></th>
       <th><p-columnFilter field="pack" matchMode="contains" /></th>
       <th></th>
-      <th *ngIf="role == 'tres'"></th>
-      <th *ngIf="role == 'tres'"></th>
+      <th *ngIf="role === 'tres' || role === 'pres'"></th>
+      <th *ngIf="role === 'tres' || role === 'pres'"></th>
       <th><p-columnFilter field="total_ht" matchMode="contains" /></th>
       <th><p-columnFilter field="created" matchMode="contains" /></th>
       <th><p-columnFilter field="validation_lieu" matchMode="contains" /></th>
@@ -62,11 +62,11 @@
         <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>
         <p-tag *ngIf="!cmd.valide" icon="pi pi-times" severity="warning" value="Non"></p-tag>
       </td>
-      <td *ngIf="role == 'tres'">
+      <td *ngIf="role === 'tres' || role === 'pres'">
         <p-tag *ngIf="cmd.fct_envoyee" icon="pi pi-check" severity="success" value="Oui"></p-tag>
         <p-tag *ngIf="!cmd.fct_envoyee" icon="pi pi-times" severity="warning" value="Non"></p-tag>
       </td>
-      <td *ngIf="role == 'tres'">
+      <td *ngIf="role === 'tres' || role === 'pres'">
         <p-tag *ngIf="cmd.fct_payee" icon="pi pi-check" severity="success" value="Oui"></p-tag>
         <p-tag *ngIf="!cmd.fct_payee" icon="pi pi-times" severity="warning" value="Non"></p-tag>
       </td>
@@ -75,14 +75,14 @@
       <td>{{ cmd.validation_lieu ?? '-' }}</td>
       <td class="flex justify-content-between">
         <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC1" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
-        <button *ngIf="role == 'tres'" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
+        <button *ngIf="role === 'tres' || role === 'pres'" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
         <button pButton [text]="true" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" (click)="showDetailsDialog(cmd)"></button>
         <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
         <p-confirmPopup />
         <a pButton [text]="true" icon="pi pi-file" pTooltip="Consulter PDF" tooltipPosition="bottom"
            target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'"></a>
         <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
-        <button pButton [text]="true" *ngIf="role == 'tres'" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
+        <button pButton [text]="true" *ngIf="role === 'tres' || role === 'pres'" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
       </td>
     </tr>
   </ng-template>
