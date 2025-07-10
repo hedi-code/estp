@@ -12,6 +12,7 @@ const commande1Routes = require("./routes/commande1Routes");
 const commande1OptionsRoutes = require("./routes/commande1OptionsRoutes");
 const fileRoutes = require('./routes/fileRoutes'); // <- Import file routes
 const emailRoutes = require('./routes/emailRoutes'); // <- Import file routes
+const bookRoutes = require('./routes/bookRoutes'); // <- Import file routes
 
 
 
@@ -66,6 +67,7 @@ app.use("/api/commande1", commande1Routes);
 app.use("/api/commande1Options", commande1OptionsRoutes);
 app.use('/api/upload', fileRoutes); // <- Use file routes under /api/files
 app.use('/api/email', emailRoutes); // <- Use file routes under /api/files
+app.use('/api/book', bookRoutes); // <- Use file routes under /api/files
 
 
 

@@ -28,11 +28,11 @@
   <ng-template pTemplate="header">
     <tr>
       <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
-      <th pSortableColumn="entreprise.nom">Entreprise <p-sortIcon field="entreprise.nom" /></th>
+      <th pSortableColumn="entreprise.nom" style="width: 200px;">Entreprise <p-sortIcon field="entreprise.nom" /></th>
       <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
       <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
-      <th pSortableColumn="valide" *ngIf="role === 'tres' || role === 'pres'">Envoyée <p-sortIcon field="valide" /></th>
-      <th pSortableColumn="valide" *ngIf="role === 'tres' || role === 'pres'">Payée <p-sortIcon field="valide" /></th>
+      <th pSortableColumn="fct_envoyee" *ngIf="role === 'tres' || role === 'pres'">Envoyée <p-sortIcon field="valide" /></th>
+      <th pSortableColumn="fct_payee" *ngIf="role === 'tres' || role === 'pres'">Payée <p-sortIcon field="valide" /></th>
       <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
       <th pSortableColumn="created">Créé le <p-sortIcon field="created" /></th>
       <th pSortableColumn="validation_lieu">Lieu de validation <p-sortIcon field="validation_lieu" /></th>
@@ -56,7 +56,7 @@
   <ng-template pTemplate="body" let-cmd>
     <tr>
       <td>{{ cmd.id }}</td>
-      <td>{{ cmd.entreprise?.nom ?? '-' }}</td>
+      <td style="padding-right: 150px;">{{ cmd.entreprise?.nom ?? '-' }}</td>
       <td>{{ cmd.packDescription ?? '-' }}</td>
        <td>
         <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>

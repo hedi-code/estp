@@ -19,6 +19,9 @@ import html2canvas from 'html2canvas';
 import { FactureBc1Component } from './facture-bc1/facture-bc1.component';
 import { Commande1OptionsService } from '../../forum/services/commande1-options.service';
 import { concatMap, forkJoin, lastValueFrom, take } from 'rxjs';
+import { BookService } from '../../forum/services/book.service';
+import { Book } from '../../forum/models/book.model';
+import { ConfirmationService } from 'primeng/api';
 
 
 
@@ -41,6 +44,11 @@ export class Bc1Component implements OnInit {
   reservationForm!: FormGroup;
   entreprise: Entreprise | undefined;
   contactPrincipal: Contact | undefined;
+
+  bookForm!: FormGroup;
+  selectedFile: File | null = null;
+previewUrl: string | null = null;
+
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('factureBc1') factureBc1!: FactureBc1Component;
 
@@ -51,9 +59,21 @@ export class Bc1Component implements OnInit {
 
 
 
-  constructor(private commande1OptionService: Commande1OptionsService, private commande1Service: Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
+  constructor(    private commande1OptionService:Commande1OptionsService, private confirmationService: ConfirmationService,
+  private bookService: BookService,private fileService: FileService, private commande1Service: Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
 
   ngOnInit() {
+     this.bookForm = this.fb.group({
+      nom: ['', Validators.required],
+      description: [''],
+      nombre_collaborateurs: [null],
+      implantation: [''],
+      activite: [''],
+      slogan: [''],
+      site_web: [''],
+      logo_url: [''],
+   
+    });
     this.reservationForm = this.fb.group({
       nom: ['', Validators.required],
       rue: ['', Validators.required],
@@ -101,8 +121,12 @@ export class Bc1Component implements OnInit {
         telephone_standard: e.telephone_standard ?? '',
 
       });
+      this.bookForm.patchValue({nom: e.nom ?? ''})
       this.contactService.getContact(e.contact_principal_id ?? 9999).subscribe(c => {
         this.contactPrincipal = c;
+        this.bookForm.patchValue({
+          contact: c.nom +' ' +c.prenom
+        })
         this.reservationForm.patchValue({
           nomResponsable: c.nom,
           prenomResponsable: c.prenom,
@@ -280,9 +304,70 @@ async createBC1() {
   } catch (err) {
     console.error("❌ Error during BC1 creation", err);
   }
+  this.visible = false;
+  this.activeIndex = 3
 }
+  onFileSelected(event: any): void {
+    const file = event.files[0];
+    if (!file) return;
 
-  fakeSubmit() {
-    console.log("form submitted")
+    this.selectedFile = file;
+    console.log( this.selectedFile)
+
+  }
+
+   onSubmitBook(event: Event): void {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Dés que vous validez, vous n\'aurez plus la possibilité de modifier votre book ?',
+      header: 'Confirmation',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      icon: 'pi pi-exclamation-triangle',
+      acceptIcon:"none",
+      rejectIcon:"none",
+      rejectButtonStyleClass:"p-button-outlined p-button-danger",
+      acceptButtonStyleClass: 'p-button-primary p-button-sm',
+      accept: () => {
+         const book: Book = this.bookForm.value;
+    book.entreprise_id = Number(this.cookieService.getEntrepriseId())
+    book.valide_forum = false
+    book.valide_entreprise = false;
+    const entrepriseId = book.entreprise_id;
+    const nomEntreprise = this.bookForm.get('nom')?.value;
+    const originalName = this.selectedFile?.name ?? '';
+    const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
+    const renamedFilename = `${entrepriseId}.${extension}`;
+    if(this.entreprise?.nom !== nomEntreprise && this.entreprise){
+      this.entreprise.nom = nomEntreprise
+      this.entrepriseService.updateEntreprise(entrepriseId, this.entreprise).subscribe();
+    }
+    
+        // Create book after successful file upload
+        this.bookService.create(book).subscribe({
+          next: () => {
+            if(this.selectedFile){
+               this.fileService.uploadFile(this.selectedFile, 'logos', entrepriseId.toString()).subscribe({
+      next: (res) => {
+        book.logo_url = `${this.baseUrl}/api/uploads/logos/${renamedFilename}`;
+      },
+      error: (e) => {
+        console.log(e);
+        
+      }
+    });
+            }
+          },
+          error: (e) => {
+            console.error(e)
+          }
+        });
+    // Upload logo first
+   
+      },
+      reject: () => {
+      }
+    });
+   
   }
 }

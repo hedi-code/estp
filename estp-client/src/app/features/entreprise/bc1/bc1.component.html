@@ -124,7 +124,7 @@
   </p-tabPanel>
 
   <p-tabPanel [disabled]="true" header="III. Votre reservation">
-    <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5" (submit)="fakeSubmit()">
+    <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
       <h2 class="mb-4">Facturation</h2>
 
       <div class="field">
@@ -241,9 +241,74 @@
   </p-tabPanel>
 
   <p-tabPanel [disabled]="true" header="IV. Page de book">
-    <p>En cours de developpement....</p>
+<form [formGroup]="bookForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
+  <h2 class="mb-4">Informations de book</h2>
+
+  <div class="field">
+    <label for="nom">Nom</label>
+    <input pInputText id="nom" formControlName="nom" placeholder="Nom du livre" class="w-full" />
+  </div>
+
+  <div class="grid">
+    <div class="field col-6">
+      <label for="description">Description</label>
+      <textarea pInputTextarea formControlName="description" id="description" class="w-full" rows="3" maxlength="300"
+        placeholder="Courte description (300 caractères max)"></textarea>
+    </div>
+
+    <div class="field col-6">
+      <label for="activite">Activité</label>
+      <textarea pInputTextarea formControlName="activite" id="activite" class="w-full" rows="3" maxlength="385"
+        placeholder="Domaine d'activité (385 caractères max)"></textarea>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="field col-6">
+      <label for="nombre_collaborateurs">Nombre de collaborateurs</label>
+      <input pInputText type="number" formControlName="nombre_collaborateurs" class="w-full"
+        placeholder="Ex : 120" />
+    </div>
+
+    <div class="field col-6">
+      <label for="implantation">Implantation</label>
+      <input pInputText formControlName="implantation" class="w-full" placeholder="Ex : Paris" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="slogan">Slogan</label>
+    <input pInputText formControlName="slogan" class="w-full" placeholder="Slogan de l'entreprise" />
+  </div>
+
+  <div class="field">
+    <label for="site_web">Site Web</label>
+    <input pInputText type="url" formControlName="site_web" class="w-full" placeholder="https://..." />
+  </div>
+
+  <div class="field">
+    <label for="logo">Logo de l'entreprise</label>
+<p-fileUpload 
+    mode="advanced"
+    chooseIcon="pi pi-upload" 
+    (onSelect)="onFileSelected($event)" 
+    [multiple]="false" 
+     name="demo[]" 
+    url="https://www.primefaces.org/cdn/api/upload.php" 
+    accept="image/*" 
+    chooseLabel="Choisir logo"
+    showUploadButton="false"
+    showCancelButton="false"
+    maxFileSize="1000000">
+        
+</p-fileUpload>    
+  </div>
+</form>
+
     <div class="mb-3 flex justify-content-between">
       <button pButton label="Retour" (click)="activeIndex = 2" class="p-button-outlined"></button>
+      <button pButton label="Valider" (click)="onSubmitBook($event)"></button>
     </div>
   </p-tabPanel>
 </p-tabView>
+<p-confirmDialog />
