@@ -335,11 +335,13 @@ async createBC1() {
     book.valide_entreprise = false;
     const entrepriseId = book.entreprise_id;
     const nomEntreprise = this.bookForm.get('nom')?.value;
+    const siteEntreprise = this.bookForm.get('site_web')?.value;
     const originalName = this.selectedFile?.name ?? '';
     const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
     const renamedFilename = `${entrepriseId}.${extension}`;
-    if(this.entreprise?.nom !== nomEntreprise && this.entreprise){
+    if(this.entreprise && this.entreprise?.nom !== nomEntreprise || this.entreprise?.siteweb !== siteEntreprise && this.entreprise){
       this.entreprise.nom = nomEntreprise
+      this.entreprise.siteweb = siteEntreprise
       this.entrepriseService.updateEntreprise(entrepriseId, this.entreprise).subscribe();
     }
     
