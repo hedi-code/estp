@@ -99,4 +99,11 @@ export class FactureBc1Component implements OnInit {
 
     })
   }
+    getDateAcompte(): Date {
+    const today = new Date();
+    let acompteDate = new Date(today);
+    acompteDate.setDate(acompteDate.getDate() + 15);
+
+    return acompteDate;
+  }
 }
