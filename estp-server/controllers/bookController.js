@@ -43,7 +43,7 @@ exports.createBook = (req, res) => {
     entreprise_id,
     description, nombre_collaborateurs, implantation,
     activite, slogan, site_web,
-    logo_url, valide_forum, valide_entreprise
+    logo_url, valide_forum, valide_entreprise, chiffreAff
   } = req.body;
 
   const now = new Date();
@@ -64,8 +64,8 @@ exports.createBook = (req, res) => {
       INSERT INTO book (
         entreprise_id, description, nombre_collaborateurs, implantation,
         activite, slogan, site_web,
-        logo_url, valide_forum, valide_entreprise, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        logo_url, valide_forum, valide_entreprise, created_at, updated_at, chiffreAff
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -99,7 +99,7 @@ exports.updateBook = (req, res) => {
     entreprise_id,
     description, nombre_collaborateurs, implantation,
     activite, slogan, site_web,
-    logo_url, valide_forum, valide_entreprise
+    logo_url, valide_forum, valide_entreprise, chiffreAff
   } = req.body;
 
   const now = new Date();
@@ -108,14 +108,14 @@ exports.updateBook = (req, res) => {
     UPDATE book SET
       entreprise_id = ?, description = ?, nombre_collaborateurs = ?, implantation = ?,
       activite = ?, slogan = ?, site_web = ?,
-      logo_url = ?, valide_forum = ?, valide_entreprise = ?, updated_at = ?
+      logo_url = ?, valide_forum = ?, valide_entreprise = ?, updated_at = ?, chiffreAff = ?
     WHERE id = ?
   `;
 
   const values = [
     entreprise_id, description, nombre_collaborateurs, implantation,
     activite, slogan, site_web,
-    logo_url, !!valide_forum, !!valide_entreprise, now, id
+    logo_url, !!valide_forum, !!valide_entreprise, now, chiffreAff, id 
   ];
 
   db.query(updateQuery, values, (err, result) => {

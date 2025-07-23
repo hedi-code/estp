@@ -13,6 +13,9 @@ router.get("/", commande1Controller.getAllCommande1s);
 // Get a single commande by ID
 router.get("/:id", commande1Controller.getCommande1ById);
 
+// Get commandes by entreprise ID
+router.get("/entreprise/:id", commande1Controller.getCommande1ByEntrepriseId);
+
 // Update a commande by ID
 router.put("/:id", commande1Controller.updateCommande1);
 

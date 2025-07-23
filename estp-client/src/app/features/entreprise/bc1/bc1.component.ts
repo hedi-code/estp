@@ -63,12 +63,20 @@ previewUrl: string | null = null;
   private bookService: BookService,private fileService: FileService, private commande1Service: Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
 
   ngOnInit() {
+    this.commande1Service.getCommande1ByEntrepriseId(Number(this.cookieService.getEntrepriseId())).subscribe({
+      next: (response) => {
+        if(response && response.id){
+          this.activeIndex = 3
+        }
+      }
+    })
      this.bookForm = this.fb.group({
       nom: ['', Validators.required],
       description: [''],
       nombre_collaborateurs: [null],
       implantation: [''],
       activite: [''],
+      chiffreAff: [''],
       slogan: [''],
       site_web: [''],
       logo_url: [''],

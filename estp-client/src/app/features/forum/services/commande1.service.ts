@@ -18,6 +18,12 @@ export class Commande1Service {
     return this.http.post<Commande1>(this.apiUrl, data);
   }
 
+   // New method to get commandes by entreprise ID
+  getCommande1ByEntrepriseId(entrepriseId: number): Observable<Commande1> {
+    return this.http.get<Commande1>(`${this.apiUrl}/entreprise/${entrepriseId}`);
+  }
+
+
   getAllCommande1s(): Observable<Commande1[]> {
     return this.http.get<Commande1[]>(this.apiUrl);
   }
