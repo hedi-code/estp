@@ -71,7 +71,7 @@ exports.createBook = (req, res) => {
     const values = [
       entreprise_id, description, nombre_collaborateurs, implantation,
       activite, slogan, site_web,
-      logo_url, !!valide_forum, !!valide_entreprise, now, now
+      logo_url, !!valide_forum, !!valide_entreprise, now, now, chiffreAff
     ];
 
     db.query(insertQuery, values, (err, result) => {
