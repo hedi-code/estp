@@ -215,7 +215,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="lightBlueBg" *ngIf="commande?.pack">
+                <tr class="lightBlueBg" *ngIf="commande?.pack && surfacePrix?.surface > 0 || surfacePrix?.surface == 0 ">
                     <td>
                         <!-- Pack {{ commande1?.pack1?.type }} - {{ commande1?.pack1?.surface }}m<sup>2</sup> -->
                         {{commande?.pack?.titre}} {{surfacePrix.surface}}m²
