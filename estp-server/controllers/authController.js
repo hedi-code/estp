@@ -17,6 +17,10 @@ exports.register = async (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.length > 0) return res.status(400).json({ error: "Email existant" });
 
+  db.query("SELECT * FROM users WHERE email = ? AND verified = 0", [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length > 0) return res.status(400).json({ error: "Email existant mais non vérifié" });
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
@@ -123,7 +127,7 @@ exports.register = async (req, res) => {
       }
       }
     );
-  });
+  })});
 };
 
 
