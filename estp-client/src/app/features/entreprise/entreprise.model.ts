@@ -17,4 +17,5 @@ export interface Entreprise {
     fct_nom?: string;
     has_participated?: number;
     activity?: number;
+    commercial?: string
   }

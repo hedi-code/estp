@@ -66,10 +66,18 @@ export class EntrepriseSouscritesComponent implements OnInit {
     this.userService.getCommercials().subscribe({
       next: (response) => {
         this.commercials = response
+          this.entreprises.forEach(element => {
+      element.commercial = this.commercials.find(e => e.id == element.commercial_id)?.first_name + " " + this.commercials.find(e => e.id == element.commercial_id)?.first_name;
+          console.log(this.entreprises)
+    })
       },
       error: (err) => console.log(err)
     })
+
+    
   }
+
+
   // Custom Validator to check if password and confirmPassword match
   passwordMatcher(password: string, confirmPassword: string) {
     return (group: FormGroup) => {

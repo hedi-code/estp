@@ -43,31 +43,31 @@
             </tr>
             <tr>
                 <th>
-                    <p-columnFilter type="text" field="id" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
-                    <p-columnFilter type="text" field="nom" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="nom" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
-                    <p-columnFilter type="text" field="siren" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="siren" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
-                    <p-columnFilter type="text" field="commercial" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="commercial" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <!-- <th>
-                    <p-columnFilter type="text" field="created" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="created" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
-                    <p-columnFilter type="text" field="modified" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="modified" [showClearButton]="false" matchMode="contains" />
                 </th> -->
                 <th>
-                    <p-columnFilter type="text" field="fct_nom" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="fct_nom" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
-                    <p-columnFilter type="text" field="fct_adresse" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="fct_adresse" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
-                    <p-columnFilter type="text" field="adresse" [showClearButton]="false" />
+                    <p-columnFilter type="text" field="adresse" [showClearButton]="false" matchMode="contains" />
                 </th>
                 <th>
                 </th>
@@ -86,15 +86,13 @@
                     
                 </td>
                 <td>
-                    
-                     
-                            {{ entreprise.siren  || '-'}}
-                    
+                
+                    {{ entreprise.siren || '-'}}
                 </td>
                 <td>
-                    
+                
                     <ng-container *ngIf="entreprise.commercial_id">
-                        {{getCommercialData(entreprise.commercial_id)?.first_name}} {{getCommercialData(entreprise.commercial_id)?.last_name}}
+                        {{ entreprise.commercial || '-'}}
                     </ng-container>
                     <ng-container *ngIf="!entreprise.commercial_id">
                         -
