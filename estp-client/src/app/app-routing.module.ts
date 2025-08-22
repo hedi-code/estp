@@ -15,6 +15,9 @@ import { LayoutComponent } from './features/forum/layout/layout.component';
 import { EntrepriseSouscritesComponent } from './features/forum/components/entreprise-souscrites/entreprise-souscrites.component';
 import { Bc1SouscritsComponent } from './features/forum/components/bc1-souscrits/bc1-souscrits.component';
 import { Bc2SouscritsComponent } from './features/forum/components/bc2-souscrits/bc2-souscrits.component';
+import { GestionBc1Component } from './features/forum/components/gestion-bc1/gestion-bc1.component';
+import { GestionBc2Component } from './features/forum/components/gestion-bc2/gestion-bc2.component';
+import { GestionBookComponent } from './features/forum/components/gestion-book/gestion-book.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -42,6 +45,9 @@ const routes: Routes = [
       { path: 'entreprise', component: EntrepriseSouscritesComponent },
       { path: 'bc1', component: Bc1SouscritsComponent },
       { path: 'bc2', component: Bc2SouscritsComponent },
+      { path: 'gestion-bc1', component: GestionBc1Component},
+      { path: 'gestion-bc2', component: GestionBc2Component },
+      { path: 'gestion-book', component: GestionBookComponent },
     ]
   }
 

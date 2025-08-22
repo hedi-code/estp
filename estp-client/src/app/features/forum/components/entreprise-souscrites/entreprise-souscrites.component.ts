@@ -185,6 +185,9 @@ export class EntrepriseSouscritesComponent implements OnInit {
         this.entrepriseService.deleteEntreprise(entreprise.id ?? -1).subscribe(response => {
           this.entreprises.splice(this.entreprises.findIndex(e => e.id == entreprise.id),1)
         });
+        if(entreprise.user_id){
+          this.userService.delete(entreprise.user_id).subscribe();
+        }
       },
       reject: () => {
         this.messageService.add({ severity: 'error', summary: 'Annulé', detail: 'Supression annulé', life: 2000 });

@@ -131,7 +131,7 @@
                     
                 </td>
                 <td >
-                                <button *ngIf="role=='rescom'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
+                                <button *ngIf="role=='rescom' || role=='pres'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
         <p-confirmPopup />
                                 <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom"  pTooltip="Supprimer" icon="pi pi-trash" (click)="deleteEntreprise($event,entreprise)"></button>
 
@@ -140,7 +140,7 @@
         </ng-template>
     </p-table>
 </div>
-<p-dialog *ngIf="role=='rescom'" [maximizable]="true" header="Assigner entreprise" [modal]="true" [(visible)]="assignModel" [style]="{ width: '30rem' }">
+<p-dialog *ngIf="role=='rescom' || role=='pres'" [maximizable]="true" header="Assigner entreprise" [modal]="true" [(visible)]="assignModel" [style]="{ width: '30rem' }">
    <p-table 
   [value]="commercials" 
   selectionMode="single"

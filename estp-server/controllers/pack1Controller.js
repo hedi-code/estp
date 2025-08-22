@@ -69,3 +69,99 @@ exports.getAllPack1sWithDetails = (req, res) => {
     res.json(groupedResults);
   });
 };
+
+// =================== CREATE PACK ===================
+exports.createPack1 = (req, res) => {
+  const { type, titre, description, img } = req.body;
+  const query = 'INSERT INTO pack1s (type, titre, description, img) VALUES (?, ?, ?, ?)';
+  db.query(query, [type, titre, description, img], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Failed to create pack' });
+    res.json({ message: 'Pack created', pack_id: result.insertId });
+  });
+};
+
+// =================== UPDATE PACK ===================
+exports.updatePack1 = (req, res) => {
+  const { id } = req.params;
+  const { type, titre, description, img } = req.body;
+
+  const query = 'UPDATE pack1s SET type=?, titre=?, description=?, img=? WHERE id=?';
+  db.query(query, [type, titre, description, img, id], (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to update pack' });
+    res.json({ message: 'Pack updated' });
+  });
+};
+
+// =================== DELETE PACK (WITH SURFACES & OPTIONS) ===================
+exports.deletePack1 = (req, res) => {
+  const { id } = req.params;
+
+  const deleteOptions = 'DELETE FROM pack1_options WHERE id_pack1=?';
+  const deleteSurfaces = 'DELETE FROM pack1s_surface WHERE id_pack1=?';
+  const deletePack = 'DELETE FROM pack1s WHERE id=?';
+
+  db.query(deleteOptions, [id], (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete pack options' });
+
+    db.query(deleteSurfaces, [id], (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to delete pack surfaces' });
+
+      db.query(deletePack, [id], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to delete pack' });
+        res.json({ message: 'Pack and related data deleted' });
+      });
+    });
+  });
+};
+
+// =================== OPTIONS CRUD ===================
+exports.createOption = (req, res) => {
+  const { description, id_pack1 } = req.body;
+  db.query('INSERT INTO pack1_options (description, id_pack1) VALUES (?, ?)', [description, id_pack1], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Failed to create option' });
+    res.json({ message: 'Option created', option_id: result.insertId });
+  });
+};
+
+exports.updateOption = (req, res) => {
+  const { id } = req.params;
+  const description  = req.body.option_description;
+  db.query('UPDATE pack1_options SET description=? WHERE id=?', [description, id], (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to update option' });
+    res.json({ message: 'Option updated' });
+  });
+};
+
+exports.deleteOption = (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM pack1_options WHERE id=?', [id], (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete option' });
+    res.json({ message: 'Option deleted' });
+  });
+};
+
+// =================== SURFACES CRUD ===================
+exports.createSurface = (req, res) => {
+  const { surface, prix, id_pack1 } = req.body;
+  db.query('INSERT INTO pack1s_surface (surface, prix, id_pack1) VALUES (?, ?, ?)', [surface, prix, id_pack1], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Failed to create surface' });
+    res.json({ message: 'Surface created', surface_id: result.insertId });
+  });
+};
+
+exports.updateSurface = (req, res) => {
+  const { id } = req.params;
+  const { surface, prix } = req.body;
+  db.query('UPDATE pack1s_surface SET surface=?, prix=? WHERE id=?', [surface, prix, id], (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to update surface' });
+    res.json({ message: 'Surface updated' });
+  });
+};
+
+exports.deleteSurface = (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM pack1s_surface WHERE id=?', [id], (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete surface' });
+    res.json({ message: 'Surface deleted' });
+  });
+};

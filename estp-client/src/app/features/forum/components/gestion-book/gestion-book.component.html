@@ -1,0 +1,162 @@
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
+  <h3 class="text-blue-400 p-2">Gestion des books</h3>
+
+  <p-table
+    [value]="books"
+    dataKey="id"
+    [rows]="10"
+    styleClass="w-full"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+    [paginator]="true"
+  >
+    <!-- HEADER -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id" style="width: 8%">ID <p-sortIcon field="id" /></th>
+        <th pSortableColumn="entreprise_id" style="width: 10%">Entreprise <p-sortIcon field="entreprise_id" /></th>
+        <th pSortableColumn="description" style="width: 16%">Description <p-sortIcon field="description" /></th>
+        <th pSortableColumn="nombre_collaborateurs" style="width: 12%">Collaborateurs <p-sortIcon field="nombre_collaborateurs" /></th>
+        <th pSortableColumn="implantation" style="width: 12%">Implantation <p-sortIcon field="implantation" /></th>
+        <th pSortableColumn="activite" style="width: 12%">Activité <p-sortIcon field="activite" /></th>
+        <th pSortableColumn="slogan" style="width: 12%">Slogan <p-sortIcon field="slogan" /></th>
+        <th pSortableColumn="site_web" style="width: 14%">Site web <p-sortIcon field="site_web" /></th>
+        <th pSortableColumn="valide_forum" style="width: 8%">Forum <p-sortIcon field="valide_forum" /></th>
+        <th pSortableColumn="valide_entreprise" style="width: 10%">Entreprise <p-sortIcon field="valide_entreprise" /></th>
+        <th pSortableColumn="created_at" style="width: 12%">Créé <p-sortIcon field="created_at" /></th>
+        <th pSortableColumn="updated_at" style="width: 12%">Modifié <p-sortIcon field="updated_at" /></th>
+        <th pSortableColumn="logo_url" style="width: 10%">Logo <p-sortIcon field="logo_url" /></th>
+        <th style="width: 10%">Actions</th>
+      </tr>
+
+      <!-- FILTERS -->
+      <tr>
+        <th><p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="entreprise_id" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="description" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="nombre_collaborateurs" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="implantation" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="activite" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="slogan" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="site_web" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="valide_forum" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="valide_entreprise" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="created_at" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="updated_at" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="logo_url" [showClearButton]="false" matchMode="contains" /></th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <!-- BODY -->
+    <ng-template pTemplate="body" let-b>
+      <tr>
+        <td>{{ b.id || '-' }}</td>
+        <td>{{ b.entreprise_id || '-' }}</td>
+        <td>{{ b.description || '-' }}</td>
+        <td>{{ b.nombre_collaborateurs ?? '-' }}</td>
+        <td>{{ b.implantation || '-' }}</td>
+        <td>{{ b.activite || '-' }}</td>
+        <td>{{ b.slogan || '-' }}</td>
+        <td>
+          <a *ngIf="b.site_web" [href]="b.site_web" target="_blank">{{ b.site_web }}</a>
+          <span *ngIf="!b.site_web">-</span>
+        </td>
+        <td>{{ b.valide_forum ? 'Oui' : 'Non' }}</td>
+        <td>{{ b.valide_entreprise ? 'Oui' : 'Non' }}</td>
+        <td>{{ b.created_at || '-' }}</td>
+        <td>{{ b.updated_at || '-' }}</td>
+        <td>
+          <img
+            *ngIf="b.logo_url"
+            [src]="baseUrl + '/api/uploads/' + b.logo_url"
+            alt="logo"
+            width="40"
+            height="40"
+            style="object-fit: cover; border-radius: 6px"
+          />
+          <span *ngIf="!b.logo_url">-</span>
+        </td>
+        <td>
+          <button pButton [text]="true" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="onEdit(b)"></button>
+          <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="onDelete(b)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- EDIT DIALOG (ALL FIELDS) -->
+  <p-dialog header="Modifier le Book" [(visible)]="displayEditDialog" [modal]="true" [closable]="false" [style]="{ width: '700px' }">
+    <div *ngIf="selectedBook" class="p-fluid grid">
+
+      <div class="col-12 md:col-12">
+        <label for="nombre_collaborateurs">Collaborateurs</label>
+        <input pInputText id="nombre_collaborateurs" type="number" [(ngModel)]="selectedBook.nombre_collaborateurs" />
+      </div>
+
+      <div class="col-12">
+        <label for="description">Description</label>
+        <textarea pInputTextarea id="description" rows="3" [(ngModel)]="selectedBook.description"></textarea>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="implantation">Implantation</label>
+        <input pInputText id="implantation" [(ngModel)]="selectedBook.implantation" />
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="activite">Activité</label>
+        <input pInputText id="activite" [(ngModel)]="selectedBook.activite" />
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="slogan">Slogan</label>
+        <input pInputText id="slogan" [(ngModel)]="selectedBook.slogan" />
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="site_web">Site web</label>
+        <input pInputText id="site_web" type="url" [(ngModel)]="selectedBook.site_web" />
+      </div>
+
+
+      <div class="col-12 md:col-6 mt-2">
+        <p-checkbox binary="true" [(ngModel)]="selectedBook.valide_forum" inputId="valide_forum"></p-checkbox>
+        <label for="valide_forum" class="ml-2">Valider (forum)</label>
+      </div>
+
+      <div class="col-12 md:col-6 mt-2">
+        <p-checkbox binary="true" [(ngModel)]="selectedBook.valide_entreprise" inputId="valide_entreprise"></p-checkbox>
+        <label for="valide_entreprise" class="ml-2">Valider (entreprise)</label>
+      </div>
+
+       <div class="col-12">
+  <label for="logo_url">Logo</label>
+  <input type="file" (change)="onFileSelected($event)" />
+  <img
+    *ngIf="selectedBook.logo_url"
+    [src]="selectedBook.logo_url"
+    alt="logo"
+    width="64"
+    height="64"
+    style="object-fit: cover; border-radius: 8px; margin-top: 5px;"
+  />
+</div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayEditDialog=false"></button>
+      <button pButton label="Enregistrer" icon="pi pi-check" (click)="saveBook()" autofocus></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- DELETE CONFIRMATION -->
+  <p-dialog header="Confirmation" [(visible)]="displayDeleteDialog" [modal]="true" [style]="{ width: '350px' }">
+    <p>Voulez-vous vraiment supprimer ce book ?</p>
+    <ng-template pTemplate="footer">
+      <button pButton label="Non" icon="pi pi-times" class="p-button-text" (click)="cancelDelete()"></button>
+      <button pButton label="Oui" icon="pi pi-check" class="p-button-danger" (click)="confirmDelete()"></button>
+    </ng-template>
+  </p-dialog>
+</div>

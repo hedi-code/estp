@@ -1,0 +1,281 @@
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
+
+    <h3 class="text-blue-400 p-2">Gestion des packs/options du BC1</h3>
+
+    <p-tabView [(activeIndex)]="activeIndex">
+        <p-tabPanel header="Gestion des Packs">
+            <div class="mb-4">
+                <p-button icon="pi pi-plus" label="Ajouter un pack"></p-button>
+                <!-- <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button> -->
+            </div>
+           <p-table [value]="packs" dataKey="pack_id" responsiveLayout="scroll">
+  <!-- Header -->
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="width: 3rem"></th>
+      <th>Pack ID</th>
+      <th>Type</th>
+      <th>Titre</th>
+      <th>Description</th>
+      <th>Image</th>
+      <th>Actions</th>
+    </tr>
+  </ng-template>
+
+  <!-- Body -->
+  <ng-template pTemplate="body" let-pack let-expanded="expanded">
+    <tr>
+      <td>
+        <a href="#" [pRowToggler]="pack">
+          <i class="pi" [ngClass]="expanded ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+        </a>
+      </td>
+      <td>{{ pack.pack_id }}</td>
+      <td>{{ pack.type }}</td>
+      <td>{{ pack.titre }}</td>
+      <td>{{ pack.description }}</td>
+      <td>
+        <img *ngIf="pack.img" [src]="baseUrl+'/api' + pack.img" alt="image" width="60" height="60" style="object-fit:cover;" />
+      </td>
+      <td>
+        <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier"
+                tooltipPosition="bottom" (click)="onEditPack(pack)"></button>
+        <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                tooltipPosition="bottom" (click)="onDeletePack(pack)"></button>
+      </td>
+    </tr>
+  </ng-template>
+
+  <!-- Expansion -->
+  <ng-template pTemplate="rowexpansion" let-pack>
+    <tr>
+      <td colspan="7">
+        <p-accordion>
+          <!-- Surfaces -->
+          <p-accordionTab header="Surfaces" *ngIf="pack.surfaces?.length">
+            <p-table [value]="pack.surfaces">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>ID</th>
+                  <th>Surface (m²)</th>
+                  <th>Prix</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-s>
+                <tr>
+                  <td>{{ s.surface_id }}</td>
+                  <td>{{ s.surface }}</td>
+                  <td>{{ s.prix }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </p-accordionTab>
+
+          <!-- Options -->
+          <p-accordionTab header="Options" *ngIf="pack.options?.length">
+            <p-table [value]="pack.options">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>ID</th>
+                  <th>Description</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-o>
+                <tr>
+                  <td>{{ o.option_id }}</td>
+                  <td>{{ o.option_description }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </p-accordionTab>
+        </p-accordion>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+        </p-tabPanel>
+        <p-tabPanel header="Gestion des options">
+            <div class="mb-4">
+                    <p-button icon="pi pi-plus" label="Ajouter une option"></p-button>
+                    <!-- <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button> -->
+                </div>
+            <p-table [value]="options" dataKey="id" responsiveLayout="scroll">
+                <!-- Header -->
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem"></th>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Prix HT</th>
+                        <th>Qmax</th>
+                        <th>Ordre</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+
+                <!-- Body -->
+                <ng-template pTemplate="body" let-opt let-expanded="expanded">
+                    <tr>
+                        <td>
+                            <a href="#" [pRowToggler]="opt">
+                                <i class="pi" [ngClass]="expanded ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+                            </a>
+                        </td>
+                        <td>{{ opt.id }}</td>
+                        <td>{{ opt.name }}</td>
+                        <td>{{ opt.prix_ht }}</td>
+                        <td>{{ opt.qmax }}</td>
+                        <td>{{ opt.ordre || '-' }}</td>
+                        <td>
+                            <img *ngIf="opt.img" [src]="baseUrl+'/api' + opt.img" alt="image" width="60" height="60"
+                                style="object-fit:cover;" />
+                        </td>
+                        <td>
+        <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom"
+                (click)="onEditOpt(opt)"></button>
+        <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom"
+                (click)="onDeleteOpt(opt)"></button>
+      </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Expansion -->
+                <ng-template pTemplate="rowexpansion" let-opt>
+                    <tr>
+                        <td colspan="7">
+                            <div class="p-3">
+                                <h5 class="mb-2">Details Option</h5>
+                                <p-table [value]="[opt]" responsiveLayout="scroll">
+                                    <ng-template pTemplate="header">
+                    <tr>
+                        <th>Description</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-o>
+                    <tr>
+                        <td>{{ o.description || '-' }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+</div>
+</td>
+</tr>
+</ng-template>
+</p-table>
+</p-tabPanel>
+</p-tabView>
+
+<p-dialog *ngIf="selectedOpt" header="Modifier Option" [(visible)]="editDialogVisible" [modal]="true" [closable]="false" [style]="{width: '600px'}">
+    <div class="p-field" class="mt-4">
+      <label  for="name">Nom</label>
+      <input id="name" type="text" pInputText class="w-full mt-2" [(ngModel)]="selectedOpt.name" />
+    </div>
+    <div class="p-field" class="mt-4">
+      <label  for="prix_ht">Prix HT</label>
+      <input id="prix_ht" type="number" pInputText class="w-full mt-2" [(ngModel)]="selectedOpt.prix_ht" />
+    </div>
+    <div class="p-field" class="mt-4">
+      <label  for="qmax">Qmax</label>
+      <input id="qmax" type="number" pInputText class="w-full mt-2" [(ngModel)]="selectedOpt.qmax" />
+    </div>
+    <div class="p-field" class="mt-4">
+      <label  for="qmax">Ordre</label>
+      <input id="qmax" type="number" pInputText class="w-full mt-2" [(ngModel)]="selectedOpt.ordre" />
+    </div>
+    <div class="p-field" class="mt-4">
+      <label  for="description">Description</label>
+      <textarea id="description" rows="3" pInputTextarea class="w-full mt-2" [(ngModel)]="selectedOpt.description"></textarea>
+    </div>
+    <div class="p-field">
+      <label for="img">Image</label>
+      <input type="file" (change)="onFileSelected($event)" />
+      <img *ngIf="selectedOpt.img" [src]="selectedOpt.img" alt="preview"
+           width="100" height="100" style="margin-top:10px; border-radius:8px;" />
+    </div>
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="editDialogVisible=false"></button>
+    <button pButton label="Valider" icon="pi pi-check" class="p-button-success" (click)="confirmEditOpt()"></button>
+  </p-footer>
+</p-dialog>
+<p-dialog header="Modifier Pack" *ngIf="selectedPack" [(visible)]="editPackDialogVisible" [modal]="true" [closable]="false" [style]="{width: '600px'}">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="titre">Titre</label>
+      <input id="titre" type="text" pInputText [(ngModel)]="selectedPack.titre" />
+    </div>
+    <div class="p-field">
+      <label for="type">Type</label>
+      <input id="type" type="text" pInputText [(ngModel)]="selectedPack.type" />
+    </div>
+    <div class="p-field">
+      <label for="description">Description</label>
+      <textarea id="description" rows="3" pInputTextarea [(ngModel)]="selectedPack.description"></textarea>
+    </div>
+
+    <!-- 🔹 Upload Image -->
+    <div class="p-field">
+      <label for="img">Image</label>
+      <input type="file" (change)="onFileSelected($event)" />
+      <img *ngIf="selectedPack.img" [src]="selectedPack.img" alt="preview"
+           width="100" height="100" style="margin-top:10px; border-radius:8px;" />
+    </div>
+
+    <!-- 🔹 Surfaces -->
+    <h5>Surfaces</h5>
+    <p-table *ngIf="selectedPack.surfaces" [value]="selectedPack.surfaces" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Surface (m²)</th>
+          <th>Prix</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-s>
+        <tr>
+          <td>{{ s.surface_id }}</td>
+          <td><input type="number" pInputText [(ngModel)]="s.surface" /></td>
+          <td><input type="text" pInputText [(ngModel)]="s.prix" /></td>
+          <td>
+             <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                tooltipPosition="bottom" (click)="deletePackSurface(s.surface_id)"></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <!-- 🔹 Options -->
+    <h5 class="mt-3">Options</h5>
+    <p-table *ngIf="selectedPack.options" [value]="selectedPack.options" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-o>
+        <tr>
+          <td>{{ o.option_id }}</td>
+          <td><input type="text" pInputText [(ngModel)]="o.option_description" /></td>
+          <td>
+             <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                tooltipPosition="bottom" (click)="deletePackOption(o.option_id)"></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text"
+            (click)="editPackDialogVisible=false"></button>
+    <button pButton label="Valider" icon="pi pi-check" class="p-button-success"
+            (click)="confirmEditPack()"></button>
+  </p-footer>
+</p-dialog>
+<!-- 🔹 Confirm Delete -->
+<p-confirmDialog></p-confirmDialog>
+</div>
