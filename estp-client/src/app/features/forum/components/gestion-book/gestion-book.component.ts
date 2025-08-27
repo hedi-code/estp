@@ -59,8 +59,8 @@ export class GestionBookComponent {
         const originalName = this.selectedFile?.name ?? '';
     let extension = originalName.includes('.') ? originalName.split('.').pop() : '';
     let newName = originalName.includes(extension ?? '') ? originalName.split('.').reverse().pop() : this.selectedFile?.name
-      this.selectedBook.logo_url = `${this.baseUrl}/api/uploads/logos/${this.selectedFile.name}`;
-      this.fileService.uploadFile(this.selectedFile,'logos',newName).subscribe()
+      this.selectedBook.logo_url = `${this.baseUrl}/api/uploads/logos/${this.selectedBook.entreprise_id}.${extension}`;
+      this.fileService.uploadFile(this.selectedFile,'logos',`${this.selectedBook.entreprise_id}`).subscribe()
     }
     this.bookService.update(this.selectedBook.id!, this.selectedBook).subscribe({
       next: () => {
