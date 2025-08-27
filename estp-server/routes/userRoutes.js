@@ -15,6 +15,8 @@ router.put('/updateStep/:id', userController.updateStep);
 
 router.get('/', userController.getAllUsers);
 
+router.delete('/:id', userController.deleteUser)
+
 
 
 module.exports = router;

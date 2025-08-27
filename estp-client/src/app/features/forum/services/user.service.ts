@@ -32,4 +32,8 @@ export class UserService {
   getCommercials(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/commercials`);
   }
+  
+  delete(id: number){
+    return this.http.delete(`${this.apiUrl}/${id}`)
+  }
 }

@@ -38,6 +38,7 @@ import { messageInterceptorInterceptor } from './core/interceptors/message-inter
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { AccordionModule } from 'primeng/accordion';
 import { DialogModule } from 'primeng/dialog';
 import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/facture-bc1.component';
 import { apiInterceptorProvider } from './core/interceptors/api.interceptor';
@@ -58,6 +59,9 @@ import { Bc1SouscritFactureComponent } from './features/forum/components/bc1-sou
 import { DecimalPipe } from '@angular/common';
 import { FileUploadModule } from 'primeng/fileupload';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { GestionBc1Component } from './features/forum/components/gestion-bc1/gestion-bc1.component';
+import { GestionBc2Component } from './features/forum/components/gestion-bc2/gestion-bc2.component';
+import { GestionBookComponent } from './features/forum/components/gestion-book/gestion-book.component';
 
 
 
@@ -87,6 +91,9 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
     Bc1SouscritsComponent,
     Bc2SouscritsComponent,
     Bc1SouscritFactureComponent,
+    GestionBc1Component,
+    GestionBc2Component,
+    GestionBookComponent,
     ],
   imports: [
     BrowserModule,
@@ -116,7 +123,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
     TooltipModule,
     ConfirmPopupModule,
     FileUploadModule,
-    InputTextareaModule
+    InputTextareaModule,
+    AccordionModule
   ],
   providers: [provideAnimations(),apiInterceptorProvider, DecimalPipe, provideHttpClient(
     withInterceptors([authInterceptorInterceptor])

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 const { sendEmail } = require('./../utils/email');
 
 // Helper to wait for file generation (optional)
@@ -66,3 +67,52 @@ exports.sendInvoice = (req, res) => {
       res.status(500).json({ error: "Échec de l'envoi de la facture", details: err.message });
     });
 };
+const upload = multer({ dest: 'uploads/tmp/' });
+
+exports.sendEmailWithAttachment = [
+  upload.single('file'),
+  async (req, res) => {
+    try {
+      const {
+        senderEmail,
+        receiverEmail,
+        receiverName,
+        subject,
+        htmlText,
+        ccEmails
+      } = req.body;
+
+      if (!senderEmail || !receiverEmail || !receiverName || !subject || !htmlText) {
+        return res.status(400).json({ error: "Champs requis manquants." });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "Aucun fichier fourni." });
+      }
+
+      const filePath = req.file.path;
+      const fileBuffer = fs.readFileSync(filePath);
+      const base64Attachment = fileBuffer.toString('base64');
+      const attachmentName = req.file.originalname;
+
+      const result = await sendEmail(
+        senderEmail,
+        receiverEmail,
+        receiverName,
+        subject,
+        htmlText,
+        ccEmails,
+        attachmentName,
+        base64Attachment
+      );
+
+      // Nettoyage du fichier temporaire
+      fs.unlinkSync(filePath);
+
+      return res.status(200).json({ message: "Email avec pièce jointe envoyé avec succès", result });
+    } catch (err) {
+      console.error("Erreur envoi email avec pièce jointe:", err);
+      return res.status(500).json({ error: "Échec de l'envoi de l'email", details: err.message });
+    }
+  }
+];

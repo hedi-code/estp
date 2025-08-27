@@ -114,3 +114,11 @@ exports.changePassword = async (req, res) => {
     });
   });
 };
+
+exports.deleteUser = (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM users WHERE id = ?', [id], (err, result) => {
+    if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+    res.json({ nonDisplayMessage: 'Utilisateur supprimée', affectedRows: result.affectedRows });
+  });
+};

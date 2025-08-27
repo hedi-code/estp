@@ -13,7 +13,17 @@ exports.getBookById = (req, res) => {
   const { id } = req.params;
   db.query('SELECT * FROM book WHERE id = ?', [id], (err, results) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    if (results.length === 0) return res.status(404).json({ message: 'Livre non trouvé' });
+    if (results.length === 0) return res.status(404).json({ message: 'Book non trouvé' });
+    res.json(results[0]);
+  });
+};
+
+// Get book by ID
+exports.getBookByEntrepriseId = (req, res) => {
+  const { id } = req.params;
+  db.query('SELECT * FROM book WHERE entreprise_id = ?', [id], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+    if (results.length === 0) return res.status(404).json({ message: 'Book non trouvé' });
     res.json(results[0]);
   });
 };
@@ -32,7 +42,7 @@ exports.getBookByUserId = (req, res) => {
   const { id } = req.params;
   db.query('SELECT * FROM book WHERE user_id = ?', [id], (err, results) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    if (results.length === 0) return res.status(404).json({ message: 'Livre non trouvé' });
+    if (results.length === 0) return res.status(404).json({ message: 'Book non trouvé' });
     res.json(results[0]);
   });
 };
@@ -120,7 +130,7 @@ exports.updateBook = (req, res) => {
 
   db.query(updateQuery, values, (err, result) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    res.json({ message: 'Livre mis à jour', affectedRows: result.affectedRows });
+    res.json({ message: 'Book mis à jour', affectedRows: result.affectedRows });
   });
 };
 
@@ -129,7 +139,7 @@ exports.deleteBook = (req, res) => {
   const { id } = req.params;
   db.query('DELETE FROM book WHERE id = ?', [id], (err, result) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    res.json({ message: 'Livre supprimé', affectedRows: result.affectedRows });
+    res.json({ message: 'Book supprimé', affectedRows: result.affectedRows });
   });
 };
 

@@ -60,13 +60,12 @@ exports.updateOption1 = (req, res) => {
   const { name, prix_ht, qmax = 1, dispo_si, img, description, ordre = 1 } = req.body;
 
   // No update to the img column in the database, just modify the returned value
-  let updatedImg = img ? `${id}_${img}` : null;
 
   db.query(
-    `UPDATE option1s SET name = ?, prix_ht = ?, qmax = ?, dispo_si = ?, description = ?, ordre = ? WHERE id = ?`,
-    [name, prix_ht, qmax, dispo_si, description, ordre, id],
+    `UPDATE option1s SET name = ?, prix_ht = ?, qmax = ?, dispo_si = ?, description = ?, ordre = ?,img=? WHERE id = ?`,
+    [name, prix_ht, qmax, dispo_si, description, ordre, img, id],
     (err) => {
-      if (err) return res.status(500).json({ error: 'Erreur lors de la mise à jour' });
+      if (err) return res.status(500).json({ error: err });
 
       res.json({
         message: 'Option mise à jour avec succès',
@@ -76,7 +75,7 @@ exports.updateOption1 = (req, res) => {
           prix_ht,
           qmax,
           dispo_si,
-          img: updatedImg, // Returning img with the id_ prefix
+         img, // Returning img with the id_ prefix
           description,
           ordre,
         },

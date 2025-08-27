@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MenuItem } from 'primeng/api';
+import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
 
 @Component({
   selector: 'app-menu',
@@ -10,14 +11,14 @@ import { MenuItem } from 'primeng/api';
 export class MenuComponent {
   model: MenuItem[] = [];
 
+  constructor(private cookieService: AuthCookieService){
+
+  }
   ngOnInit() {
     this.model = [
       {
         label: 'Gestion',
         items: [
-          { label: 'Entreprises', icon: 'pi pi-fw pi-id-card', routerLink: ['/forum/entreprise'] },
-          { label: 'BC1', icon: 'pi pi-fw pi-check-square', routerLink: ['/forum/bc1'] },
-          { label: 'BC2', icon: 'pi pi-fw pi-mobile', class: 'rotated-icon', routerLink: ['/forum/bc2'] },
           // { label: 'Fiche signaletique', icon: 'pi pi-fw pi-table', routerLink: ['/uikit/table'] },
           // { label: 'Exposants', icon: 'pi pi-fw pi-list', routerLink: ['/uikit/list'] },
           // { label: 'Pancartes', icon: 'pi pi-fw pi-share-alt', routerLink: ['/uikit/tree'] },
@@ -26,65 +27,38 @@ export class MenuComponent {
           // { label: 'Standiste', icon: 'pi pi-fw pi-image', routerLink: ['/uikit/media'] },
         ]
       },
-      // {
-      //   label: 'Administration',
-      //   items: [
-      //     {
-      //       label: 'BC1', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'],
-      //       items: [
-      //         {
-      //           label: 'Packs',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         },
-      //         {
-      //           label: 'Options',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         }
-      //       ]
-      //     },
-      //     {
-      //       label: 'BC2', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'],
-      //       items: [
-      //         {
-      //           label: 'Packs',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         },
-      //         {
-      //           label: 'Options',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         },
-      //         {
-      //           label: 'Catégorie d\'options',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         }
-      //       ]
-      //     },
-      //     {
-      //       label: 'Autre', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'],
-      //       items: [
-      //         {
-      //           label: 'Secteurs d\'activité',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         },
-      //         {
-      //           label: 'Paramétres',
-      //           icon: 'pi pi-fw pi-globe',
-      //           routerLink: ['/landing']
-      //         }
-      //       ]
-      //     },
-
-      //   ]
-      // },
-
-
-
     ];
+    if(this.cookieService.getRole() === "pres"){
+      this.model.push(
+         {
+        label: 'Administration',
+        items: [
+          {
+            label: 'BC1', icon: 'pi pi-fw pi-id-card', routerLink: ['/forum/gestion-bc1']},
+          {
+            label: 'BC2', icon: 'pi pi-fw pi-id-card', routerLink: ['/forum/gestion-bc2'],
+          },
+
+        ]
+      }
+      )
+      
+    }
+    if(this.cookieService.getRole() === "rescom" ||this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "comm" || this.cookieService.getRole() === "tres"){
+      this.model[this.model.findIndex(element => element.label === "Gestion")].items?.push(
+          { label: 'Entreprises', icon: 'pi pi-fw pi-id-card', routerLink: ['/forum/entreprise'] },
+      )
+      this.model[this.model.findIndex(element => element.label === "Gestion")].items?.push(
+          { label: 'BC1', icon: 'pi pi-fw pi-check-square', routerLink: ['/forum/bc1'] },
+      )
+      this.model[this.model.findIndex(element => element.label === "Gestion")].items?.push(
+          { label: 'BC2', icon: 'pi pi-fw pi-mobile', class: 'rotated-icon', routerLink: ['/forum/bc2'] },
+      )
+    }
+     if(this.cookieService.getRole() === "resbook" ||this.cookieService.getRole() === "pres"){
+      this.model[this.model.findIndex(element => element.label === "Gestion")].items?.push(
+          { label: 'Book', icon: 'pi pi-fw pi-mobile', class: 'rotated-icon', routerLink: ['/forum/gestion-book'] },
+      )
+    }
   }
 }

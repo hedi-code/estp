@@ -25,6 +25,9 @@ export class BookService {
   getByUserId(userId: number): Observable<Book> {
     return this.http.get<Book>(`${this.apiUrl}/user/${userId}`);
   }
+  getByEntrepriseId(entrepriseId: number): Observable<Book> {
+    return this.http.get<Book>(`${this.apiUrl}/entreprise/${entrepriseId}`);
+  }
 
   create(book: Book): Observable<Book> {
     return this.http.post<Book>(this.apiUrl, book);
