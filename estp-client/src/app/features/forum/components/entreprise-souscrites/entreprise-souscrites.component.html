@@ -134,6 +134,7 @@
                                 <button *ngIf="role=='rescom' || role=='pres'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
         <p-confirmPopup />
                                 <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom"  pTooltip="Supprimer" icon="pi pi-trash" (click)="deleteEntreprise($event,entreprise)"></button>
+                                <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Détails" icon="pi-info-circle" (click)="afficherDetails(entreprise)"></button>
 
                 </td>
             </tr>
@@ -298,4 +299,31 @@
                  (click)="onSubmit()" 
                  [disabled]="registerForm.invalid"/>
         </ng-template>
+</p-dialog>
+<p-dialog *ngIf="selectedEntreprise" header="Détails Entreprise" [(visible)]="viewEntrepriseDialogVisible" [modal]="true" [closable]="true" [style]="{width:'700px'}">
+  <div class="p-fluid grid">
+    
+    <div class="field col-12 md:6"><strong>Nom:</strong> {{ selectedEntreprise.nom || '-' }}</div>
+    <div class="field col-12 md:6"><strong>SIREN:</strong> {{ selectedEntreprise.siren || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Contact Principal ID:</strong> {{ selectedEntreprise.contact_principal_id || '-' }}</div>
+    <div class="field col-12 md:6"><strong>User ID:</strong> </div>
+    <div class="field col-12 md:6"><strong>Commercial ID:</strong> {{ selectedEntreprise.commercial_id || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Secteur ID:</strong> {{ selectedEntreprise.secteur_id || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Adresse:</strong> {{ selectedEntreprise.adresse || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Téléphone standard:</strong> {{ selectedEntreprise.telephone_standard || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Téléphone fax:</strong> {{ selectedEntreprise.telephone_fax || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Site web:</strong> 
+      <a *ngIf="selectedEntreprise.siteweb" [href]="selectedEntreprise.siteweb" target="_blank">{{ selectedEntreprise.siteweb }}</a>
+      <span *ngIf="!selectedEntreprise.siteweb">-</span>
+    </div>
+    <div class="field col-12 md:6"><strong>Facturation Nom:</strong> {{ selectedEntreprise.fct_nom || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Facturation Adresse:</strong> {{ selectedEntreprise.fct_adresse || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Has Participated:</strong> {{ selectedEntreprise.has_participated || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Activity:</strong> {{ selectedEntreprise.activity || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Created:</strong> {{ selectedEntreprise.created || '-' }}</div>
+
+  </div>
+  <p-footer>
+    <button pButton label="Fermer" icon="pi pi-times" (click)="viewEntrepriseDialogVisible=false"></button>
+  </p-footer>
 </p-dialog>

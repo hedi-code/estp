@@ -1,6 +1,15 @@
-<div class="card p-3 bg-white mt-3 mr-3 w-full">
-  <h3 class="text-blue-400 p-2">Gestion des books</h3>
+<div class="card p-3 bg-white mt-3 mr-3 w-full ">
+    <div class="flex justify-content-between">
 
+        <h3 class="text-blue-400 p-2 ">Gestion des books</h3>
+          <button 
+        pButton 
+        label="Exporter Books" 
+        icon="pi pi-download" 
+        class="mb-3" 
+        (click)="exportBooksToCSV()">
+      </button>
+    </div>
   <p-table
     [value]="books"
     dataKey="id"
@@ -81,6 +90,7 @@
         <td>
           <button pButton [text]="true" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="onEdit(b)"></button>
           <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="onDelete(b)"></button>
+          <!-- <button pButton [text]="true" icon="pi pi-send" pTooltip="Envoyer BAT" tooltipPosition="bottom" (click)="sendBat()"></button> -->
         </td>
       </tr>
     </ng-template>

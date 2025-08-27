@@ -10,6 +10,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../auth/auth.service';
 import { ContactService } from '../../models/contact.service';
 import { map, switchMap } from 'rxjs';
+import { Contact } from '../../models/contact.model';
 
 @Component({
   selector: 'app-entreprise-souscrites',
@@ -21,13 +22,16 @@ export class EntrepriseSouscritesComponent implements OnInit {
 
   entreprises: Entreprise[] = []
   commercials: User[] = [];
+  contacts: {entreprise_id: number, user:Contact}[] = [];
+  users: {entreprise_id: number, user:User}[] = [];
   cmdAssigner: Entreprise | undefined;
   assignModel = false;
   role: String | null = ''
   createDialog = false;
   registerForm: FormGroup;
   labelSiren = "Numéro SIREN de l'entreprise";
-
+  viewEntrepriseDialogVisible = false;
+  selectedEntreprise: Entreprise | null = null
 
   constructor(private fb: FormBuilder, private entrepriseService: EntrepriseService, 
     private authService: AuthService,    private contactService: ContactService,
@@ -194,4 +198,12 @@ export class EntrepriseSouscritesComponent implements OnInit {
       }
     });
     }
+
+    afficherDetails(entreprise: Entreprise){
+      this.selectedEntreprise = entreprise
+      this.viewEntrepriseDialogVisible = true
+    }
+    // getEntrepriseContact(entreprise: Entreprise): Observable<Contact[]>{
+    //   return this.contactService.getContactByUserId(entreprise.user_id ?? -1)
+    // }
 }

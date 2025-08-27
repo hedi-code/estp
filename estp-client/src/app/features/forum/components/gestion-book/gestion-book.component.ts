@@ -3,6 +3,13 @@ import { Book } from '../../models/book.model';
 import { BookService } from '../../services/book.service';
 import { environment } from '../../../../../environments/environment';
 import { FileService } from '../../../../core/services/file.service';
+import { saveAs } from 'file-saver'; // npm install file-saver
+import * as Papa from 'papaparse';   // npm install papaparse
+import JSZip from 'jszip';  
+import { EmailService } from '../../../../core/services/email.service';
+import { User } from '../../models/user.model';
+import { UserService } from '../../services/user.service';
+import { EntrepriseService } from '../../../entreprise/entreprise.service';
 
 @Component({
   selector: 'app-gestion-book',
@@ -13,14 +20,21 @@ import { FileService } from '../../../../core/services/file.service';
 export class GestionBookComponent {
     baseUrl: String = environment.apiUrl
 
-   books: Book[] = [];
+  books: Book[] = [];
   selectedBook!: Book;
   displayEditDialog = false;
   displayDeleteDialog = false;
-    selectedFile: File | null = null;
+  selectedFile: File | null = null;
+  selectedUser!: User
 
 
-  constructor(private bookService: BookService, private fileService: FileService) {}
+  constructor(
+    private bookService: BookService, 
+    private fileService: FileService, 
+    private emailService: EmailService,
+    private userService: UserService,
+    private entrepriseService: EntrepriseService
+  ) {}
 
   ngOnInit(): void {
     this.loadBooks();
@@ -81,6 +95,69 @@ export class GestionBookComponent {
     if (file) {
       this.selectedFile = file;
       this.selectedBook.logo_url = URL.createObjectURL(file); // preview
+    }
+  }
+
+    async exportBooksToCSV() {
+    if (!this.books || this.books.length === 0) return;
+
+    // Convert books to CSV
+    const csv = Papa.unparse(this.books, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    // Prepare zip archive
+    const zip = new JSZip();
+    zip.file("books.csv", csv);
+
+    // Download logos
+    const logoFolder = zip.folder("logos");
+
+    for (const b of this.books) {
+      if (b.logo_url) {
+        try {
+          const url = `${this.baseUrl}/api/uploads/${b.logo_url}`;
+          const response = await fetch(url);
+          if (response.ok) {
+            const blob = await response.blob();
+            const fileName = b.logo_url.split('/').pop() || `logo_${b.id}.png`;
+            logoFolder?.file(fileName, blob);
+          }
+        } catch (err) {
+          console.error("Erreur téléchargement logo", b.logo_url, err);
+        }
+      }
+    }
+
+    // Generate zip
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      saveAs(content, "books_export.zip");
+    });
+  }
+
+  openBatDialog(book: Book){
+    this.selectedBook = {...book};
+    this.entrepriseService.getEntrepriseById(book.entreprise_id).subscribe({
+      next: (entreprise) => {
+         this.userService.getUserById(entreprise.user_id ?? -1).subscribe(
+          user => this.selectedUser = user
+        )
+      }
+    })
+  }
+
+  sendBat(){
+    if(this.selectedFile){
+
+      this.emailService.sendEmailWithAttachment({
+        senderEmail: 'ne-pas-repondre@forumestp.fr',
+        receiverEmail: "hedibensafegine7@gmail.com  ",
+        receiverName: "hedi",
+        subject: 'azer',
+        htmlText: 'azer',
+        file: this.selectedFile 
+      }).subscribe();
     }
   }
 }
