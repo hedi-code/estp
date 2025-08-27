@@ -337,7 +337,7 @@ async createBC1() {
       rejectButtonStyleClass:"p-button-outlined p-button-danger",
       acceptButtonStyleClass: 'p-button-primary p-button-sm',
       accept: () => {
-         const book: Book = this.bookForm.value;
+    const book: Book = this.bookForm.value;
     book.entreprise_id = Number(this.cookieService.getEntrepriseId())
     book.valide_forum = false
     book.valide_entreprise = false;
@@ -347,7 +347,7 @@ async createBC1() {
     const originalName = this.selectedFile?.name ?? '';
     const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
     const renamedFilename = `${entrepriseId}.${extension}`;
-            book.logo_url = `${this.baseUrl}/api/uploads/logos/${renamedFilename}`;
+    book.logo_url = `${this.baseUrl}/api/uploads/logos/${renamedFilename}`;
 
     if(this.entreprise && this.entreprise?.nom !== nomEntreprise || this.entreprise?.siteweb !== siteEntreprise && this.entreprise){
       this.entreprise.nom = nomEntreprise
