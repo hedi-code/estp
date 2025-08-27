@@ -347,6 +347,8 @@ async createBC1() {
     const originalName = this.selectedFile?.name ?? '';
     const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
     const renamedFilename = `${entrepriseId}.${extension}`;
+            book.logo_url = `${this.baseUrl}/api/uploads/logos/${renamedFilename}`;
+
     if(this.entreprise && this.entreprise?.nom !== nomEntreprise || this.entreprise?.siteweb !== siteEntreprise && this.entreprise){
       this.entreprise.nom = nomEntreprise
       this.entreprise.siteweb = siteEntreprise
@@ -357,15 +359,7 @@ async createBC1() {
         this.bookService.create(book).subscribe({
           next: () => {
             if(this.selectedFile){
-               this.fileService.uploadFile(this.selectedFile, 'logos', entrepriseId.toString()).subscribe({
-      next: (res) => {
-        book.logo_url = `${this.baseUrl}/api/uploads/logos/${renamedFilename}`;
-      },
-      error: (e) => {
-        console.log(e);
-        
-      }
-    });
+               this.fileService.uploadFile(this.selectedFile, 'logos', entrepriseId.toString()).subscribe();
             }
           },
           error: (e) => {
