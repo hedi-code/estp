@@ -11,6 +11,8 @@ router.get('/:id', bookController.getBookById);
 // Get book by user ID (if user_id column exists)
 router.get('/user/:id', bookController.getBookByUserId);
 
+router.get('/entreprise/:id', bookController.getBookByEntrepriseId);
+
 // Create new book
 router.post('/', bookController.createBook);
 

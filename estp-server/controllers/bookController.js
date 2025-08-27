@@ -18,6 +18,16 @@ exports.getBookById = (req, res) => {
   });
 };
 
+// Get book by ID
+exports.getBookByEntrepriseId = (req, res) => {
+  const { id } = req.params;
+  db.query('SELECT * FROM book WHERE entreprise_id = ?', [id], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+    if (results.length === 0) return res.status(404).json({ message: 'Book non trouvé' });
+    res.json(results[0]);
+  });
+};
+
 // Internal helper
 async function _getBookByUserId(id) {
   return new Promise((resolve, reject) => {
