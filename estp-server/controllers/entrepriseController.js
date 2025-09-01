@@ -113,9 +113,30 @@ exports.updateEntreprise = (req, res) => {
 // Delete entreprise
 exports.deleteEntreprise = (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM entreprises WHERE id = ?', [id], (err, result) => {
+
+  // First get entreprise to know which user_id is linked
+  db.query('SELECT user_id FROM entreprises WHERE id = ?', [id], (err, rows) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    res.json({ message: 'Entreprise supprimée', affectedRows: result.affectedRows });
+    if (rows.length === 0) return res.status(404).json({ message: 'Entreprise non trouvée' });
+
+    const userId = rows[0].user_id;
+
+    // Delete the linked user
+    db.query('DELETE FROM users WHERE id = ?', [userId], (err, userResult) => {
+      if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+
+      // Then delete the entreprise
+      db.query('DELETE FROM entreprises WHERE id = ?', [id], (err, entrepriseResult) => {
+        if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+
+        res.json({
+          message: 'Entreprise supprimée',
+          deletedEntreprise: entrepriseResult.affectedRows
+        });
+      });
+    });
   });
 };
+
+
 exports._getEntrepriseByUserId = _getEntrepriseByUserId;
