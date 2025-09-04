@@ -117,7 +117,7 @@ export class GestionBookComponent {
     for (const b of this.books) {
       if (b.logo_url) {
         try {
-          const url = `${this.baseUrl}/api/uploads/${b.logo_url}`;
+          const url = `${b.logo_url}`;
           const response = await fetch(url);
           if (response.ok) {
             const blob = await response.blob();
