@@ -28,12 +28,6 @@
                  <th pSortableColumn="modified" style="width:25%">
                     Modifiée le <p-sortIcon field="modified" />
                 </th> -->
-                 <th pSortableColumn="fct_nom" style="width:25%">
-                    Nom de facturation <p-sortIcon field="fct_nom" />
-                </th>
-                 <th pSortableColumn="fct_adresse" style="width:25%">
-                    Adresse de facturation <p-sortIcon field="fct_adresse" />
-                </th>
                  <th pSortableColumn="adresse" style="width:25%">
                     Adresse <p-sortIcon field="adresse" />
                 </th>
@@ -60,12 +54,6 @@
                 <th>
                     <p-columnFilter type="text" field="modified" [showClearButton]="false" matchMode="contains" />
                 </th> -->
-                <th>
-                    <p-columnFilter type="text" field="fct_nom" [showClearButton]="false" matchMode="contains" />
-                </th>
-                <th>
-                    <p-columnFilter type="text" field="fct_adresse" [showClearButton]="false" matchMode="contains" />
-                </th>
                 <th>
                     <p-columnFilter type="text" field="adresse" [showClearButton]="false" matchMode="contains" />
                 </th>
@@ -110,23 +98,8 @@
                             {{ entreprise.modified  || '-'}}
                     
                 </td> -->
-                <td>
-                    
-                        
-                            {{ entreprise.fct_nom  || '-'}}
-                    
-                </td>
                 <td >
-                    
-                      
-                            {{ entreprise.fct_adresse  || '-'}}
-                    
-                </td>
-                <td >
-                    
-                       
                             {{entreprise.adresse || '-'}}
-                    
                 </td>
                 <td >
                                 <button *ngIf="role=='rescom' || role=='pres'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
@@ -300,27 +273,33 @@
 </p-dialog>
 <p-dialog *ngIf="selectedEntreprise" header="Détails Entreprise" [(visible)]="viewEntrepriseDialogVisible" [modal]="true" [closable]="true" [style]="{width:'700px'}">
   <div class="p-fluid grid">
-    
+<h3 class="text-blue-400">Détail entreprise</h3></div>
     <div class="field col-12 md:6"><strong>Nom:</strong> {{ selectedEntreprise.nom || '-' }}</div>
     <div class="field col-12 md:6"><strong>SIREN:</strong> {{ selectedEntreprise.siren || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Contact Principal ID:</strong> {{ selectedEntreprise.contact_principal_id || '-' }}</div>
-    <div class="field col-12 md:6"><strong>User ID:</strong> </div>
-    <div class="field col-12 md:6"><strong>Commercial ID:</strong> {{ selectedEntreprise.commercial_id || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Secteur ID:</strong> {{ selectedEntreprise.secteur_id || '-' }}</div>
     <div class="field col-12 md:6"><strong>Adresse:</strong> {{ selectedEntreprise.adresse || '-' }}</div>
     <div class="field col-12 md:6"><strong>Téléphone standard:</strong> {{ selectedEntreprise.telephone_standard || '-' }}</div>
     <div class="field col-12 md:6"><strong>Téléphone fax:</strong> {{ selectedEntreprise.telephone_fax || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Site web:</strong> 
-      <a *ngIf="selectedEntreprise.siteweb" [href]="selectedEntreprise.siteweb" target="_blank">{{ selectedEntreprise.siteweb }}</a>
-      <span *ngIf="!selectedEntreprise.siteweb">-</span>
+    <div class="field col-12 md:6"><strong>Site web:</strong>
+        <a *ngIf="selectedEntreprise.siteweb" [href]="selectedEntreprise.siteweb" target="_blank">{{ selectedEntreprise.siteweb }}</a>
+        <span *ngIf="!selectedEntreprise.siteweb">-</span>
     </div>
+    <div class="field col-12 md:6"><strong>A participé:</strong> {{ selectedEntreprise.has_participated || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Activité:</strong> {{ selectedEntreprise.activity || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Créer le:</strong> {{ selectedEntreprise.created || '-' }}</div>
+    <h3 class="text-blue-400">Commercial assigné</h3>
+    <div class="field col-12 md:6"><strong>Commercial:</strong> {{ selectedEntreprise.commercial || '-' }}</div>
+    <h3 class="text-blue-400">Détails facturation</h3>
     <div class="field col-12 md:6"><strong>Facturation Nom:</strong> {{ selectedEntreprise.fct_nom || '-' }}</div>
     <div class="field col-12 md:6"><strong>Facturation Adresse:</strong> {{ selectedEntreprise.fct_adresse || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Has Participated:</strong> {{ selectedEntreprise.has_participated || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Activity:</strong> {{ selectedEntreprise.activity || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Created:</strong> {{ selectedEntreprise.created || '-' }}</div>
 
-  </div>
+
+    <!-- Contact Principal Information -->
+    <h3 class="text-blue-400">Contact Principal</h3>
+    <div class="field col-12 md:6"><strong>Nom du Contact:</strong> {{ selectedEntreprise.contact_nom || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Email du Contact:</strong> {{ selectedEntreprise.contact_email || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Téléphone du Contact:</strong> {{ selectedEntreprise.contact_telephone || '-' }}</div>
+    <div class="field col-12 md:6"><strong>Fonction du Contact:</strong> {{ selectedEntreprise.contact_fonction || '-' }}</div>
+
   <p-footer>
     <button pButton label="Fermer" icon="pi pi-times" (click)="viewEntrepriseDialogVisible=false"></button>
   </p-footer>

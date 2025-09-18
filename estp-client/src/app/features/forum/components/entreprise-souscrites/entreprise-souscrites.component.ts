@@ -64,6 +64,8 @@ export class EntrepriseSouscritesComponent implements OnInit {
         else {
           this.entreprises = response;
         }
+        // Load contact information for each entreprise
+        this.loadContactInformation();
       },
       error: (err) => console.log(err)
     })
@@ -78,7 +80,7 @@ export class EntrepriseSouscritesComponent implements OnInit {
       error: (err) => console.log(err)
     })
 
-    
+
   }
 
 
@@ -99,6 +101,36 @@ export class EntrepriseSouscritesComponent implements OnInit {
   }
   getCommercialData(id: number): User | undefined {
     return this.commercials.find(u => u.id == id);
+  }
+
+  loadContactInformation(): void {
+    this.entreprises.forEach(entreprise => {
+      if (entreprise.contact_principal_id) {
+        this.contactService.getContact(entreprise.contact_principal_id).subscribe({
+          next: (contact) => {
+            // Add contact information to the entreprise object
+            entreprise.contact_nom = `${contact.prenom} ${contact.nom}`;
+            entreprise.contact_email = contact.email;
+            entreprise.contact_telephone = contact.telephone1;
+            entreprise.contact_fonction = contact.fonction;
+          },
+          error: (err) => {
+            console.log('Error loading contact for entreprise', entreprise.id, err);
+            // Set default values if contact not found
+            entreprise.contact_nom = '-';
+            entreprise.contact_email = '-';
+            entreprise.contact_telephone = '-';
+            entreprise.contact_fonction = '-';
+          }
+        });
+      } else {
+        // No contact_principal_id, set default values
+        entreprise.contact_nom = '-';
+        entreprise.contact_email = '-';
+        entreprise.contact_telephone = '-';
+        entreprise.contact_fonction = '-';
+      }
+    });
   }
   assigner(cmd: Entreprise) {
     this.cmdAssigner = cmd;
@@ -208,8 +240,22 @@ export class EntrepriseSouscritesComponent implements OnInit {
     }
 
     afficherDetails(entreprise: Entreprise){
-      this.selectedEntreprise = entreprise
-      this.viewEntrepriseDialogVisible = true
+      this.selectedEntreprise = entreprise;
+      // Ensure contact information is loaded for the details dialog
+      if (entreprise.contact_principal_id && !entreprise.contact_nom) {
+        this.contactService.getContact(entreprise.contact_principal_id).subscribe({
+          next: (contact) => {
+            entreprise.contact_nom = `${contact.prenom} ${contact.nom}`;
+            entreprise.contact_email = contact.email;
+            entreprise.contact_telephone = contact.telephone1;
+            entreprise.contact_fonction = contact.fonction;
+          },
+          error: (err) => {
+            console.log('Error loading contact for details', err);
+          }
+        });
+      }
+      this.viewEntrepriseDialogVisible = true;
     }
     // getEntrepriseContact(entreprise: Entreprise): Observable<Contact[]>{
     //   return this.contactService.getContactByUserId(entreprise.user_id ?? -1)
