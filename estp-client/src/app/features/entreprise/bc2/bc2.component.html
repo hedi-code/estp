@@ -1,9 +1,7 @@
-<p-tabView [(activeIndex)]="activeIndex">
-  <!-- Category tabs from backend -->
+<!-- <p-tabView [(activeIndex)]="activeIndex">
   <p-tabPanel *ngFor="let category of option2Categories; let i = index" [disabled]="true" [header]="category.name">
     <div class="grid">
       <div class="col-9 pt-4">
-        <!-- Display pack categories horizontally -->
         <div *ngIf="category.name.toLowerCase().includes('pack')" class="grid">
           <ng-container *ngFor="let option of option2sByCategory[category.id]">
             <div class="col-12 mb-3">
@@ -64,7 +62,6 @@
           </ng-container>
         </div>
 
-        <!-- Display non-pack categories vertically (cards) -->
         <div *ngIf="!category.name.toLowerCase().includes('pack')" class="grid">
           <ng-container *ngFor="let option of option2sByCategory[category.id]">
             <div class="col-12 sm:col-6 md:col-4 lg:col-4">
@@ -155,11 +152,9 @@
       </div>
     </div>
 
-    <!-- Standiste Information Section (Inline) -->
     <div *ngIf="getSelectedStandisteOption() !== null" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
       <h2 class="mb-4">Informations du Standiste</h2>
 
-      <!-- Dynamic form based on selected standiste option -->
       <div *ngIf="getSelectedStandisteOption() === 21">
         <h3 class="mb-3">Description du projet standiste</h3>
         <form [formGroup]="standisteForm">
@@ -210,7 +205,6 @@
     </div>
   </p-tabPanel>
 
-  <!-- Récapitulatif wrapper tab after categories -->
   <p-tabPanel [disabled]="true" header="Récapitulatif">
     <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
       <h2 class="mb-4">Facturation</h2>
@@ -281,7 +275,6 @@
         </div>
       </div>
 
-      <!-- Validation Messages -->
       <div class="mt-3">
         <p-message class="w-full mb-2" *ngIf="reservationForm.get('nom')?.invalid && reservationForm.get('nom')?.touched"
                    severity="error" text="Le nom est requis."></p-message>
@@ -308,7 +301,6 @@
       </div>
     </form>
 
-    <!-- Facture Confirmation Dialog -->
     <p-dialog header="Votre commande" [modal]="true" [(visible)]="factureDialogVisible" [style]="{ width: '960px' }">
       <app-facture-bc2 id="contentToExport" (createBc2Event)="createBC2()" #factureBc2Dialog
         [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
@@ -321,7 +313,6 @@
   </p-tabPanel>
 </p-tabView>
 
-<!-- Global Navigation Buttons -->
 <div class="mb-3 flex justify-content-between mt-4">
   <button pButton label="Précédent"
           [disabled]="activeIndex === 0"
@@ -334,4 +325,6 @@
 </div>
 
 
-<p-confirmDialog />
+<p-confirmDialog /> -->
+
+Les bc2 seront disponible début octobre
