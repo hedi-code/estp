@@ -17,5 +17,10 @@ export interface Entreprise {
     fct_nom?: string;
     has_participated?: number;
     activity?: number;
-    commercial?: string
+    commercial?: string;
+    // Contact information (loaded dynamically)
+    contact_nom?: string;
+    contact_email?: string;
+    contact_telephone?: string;
+    contact_fonction?: string;
   }
