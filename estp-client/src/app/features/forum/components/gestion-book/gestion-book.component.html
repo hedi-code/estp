@@ -24,7 +24,7 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="id" style="width: 8%">ID <p-sortIcon field="id" /></th>
-        <th pSortableColumn="entreprise_id" style="width: 10%">Entreprise <p-sortIcon field="entreprise_id" /></th>
+        <th pSortableColumn="entreprise_id" style="width: 10%">Entreprise <p-sortIcon field="entreprise_nom" /></th>
         <th pSortableColumn="description" style="width: 16%">Description <p-sortIcon field="description" /></th>
         <th pSortableColumn="nombre_collaborateurs" style="width: 12%">Collaborateurs <p-sortIcon field="nombre_collaborateurs" /></th>
         <th pSortableColumn="implantation" style="width: 12%">Implantation <p-sortIcon field="implantation" /></th>
@@ -42,7 +42,7 @@
       <!-- FILTERS -->
       <tr>
         <th><p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains" /></th>
-        <th><p-columnFilter type="text" field="entreprise_id" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="entreprise_nom" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="description" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="nombre_collaborateurs" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="implantation" [showClearButton]="false" matchMode="contains" /></th>
@@ -62,7 +62,7 @@
     <ng-template pTemplate="body" let-b>
       <tr>
         <td>{{ b.id || '-' }}</td>
-        <td>{{ b.entreprise_id || '-' }}</td>
+        <td>{{ b.entreprise_nom || '-' }}</td>
         <td>{{ b.description || '-' }}</td>
         <td>{{ b.nombre_collaborateurs ?? '-' }}</td>
         <td>{{ b.implantation || '-' }}</td>

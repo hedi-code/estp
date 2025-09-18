@@ -1,1 +1,642 @@
-<p>bc2-souscrits works!</p>
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
+  <div class="flex justify-content-between align-items-center">
+    <h3 class="text-blue-400 p-2">Liste des BC2</h3>
+    <div>
+      <p-button icon="pi pi-plus" label="Créer un BC2" (click)="openCreateDialog()"></p-button>
+      <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button>
+    </div>
+  </div>
+
+  <p-table
+    #dt
+    [value]="commandes"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [paginator]="true"
+    filterDisplay="row"
+    styleClass="w-full"
+  >
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" style="text-align: center; color: #999;">Pas de données</td>
+      </tr>
+    </ng-template>
+
+    <!-- Header -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
+        <th pSortableColumn="entreprise.nom" style="width: 200px;">Entreprise <p-sortIcon field="entreprise.nom" /></th>
+        <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
+        <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
+        <th pSortableColumn="created">Créé le <p-sortIcon field="created" /></th>
+        <th pSortableColumn="standiste_status">Standiste <p-sortIcon field="standiste_status" /></th>
+        <th pSortableColumn="validation_lieu">Lieu de validation <p-sortIcon field="validation_lieu" /></th>
+        <th>Actions</th>
+      </tr>
+      <tr>
+        <th><p-columnFilter field="id" matchMode="contains" /></th>
+        <th><p-columnFilter field="entreprise.nom" matchMode="contains" /></th>
+        <th></th>
+        <th><p-columnFilter field="total_ht" matchMode="contains" /></th>
+        <th><p-columnFilter field="created" matchMode="contains" /></th>
+        <th><p-columnFilter field="standiste_status" matchMode="contains" /></th>
+        <th><p-columnFilter field="validation_lieu" matchMode="contains" /></th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <!-- Body -->
+    <ng-template pTemplate="body" let-cmd>
+      <tr>
+        <td>{{ cmd.id }}</td>
+        <td style="padding-right: 150px;">{{ cmd.entreprise?.nom ?? '-' }}</td>
+        <td>
+          <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>
+          <p-tag *ngIf="!cmd.valide" icon="pi pi-times" severity="warning" value="Non"></p-tag>
+        </td>
+        <td>{{ cmd.total_ht }}</td>
+        <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
+        <td>
+          <p-tag *ngIf="cmd.standiste_status === 15" severity="info" value="Pas de standiste"></p-tag>
+          <p-tag *ngIf="cmd.standiste_status === 21" severity="warning" value="Description projet"></p-tag>
+          <p-tag *ngIf="cmd.standiste_status === 22" severity="success" value="Standiste complet"></p-tag>
+          <p-tag *ngIf="!cmd.standiste_status || cmd.standiste_status === 0" value="-"></p-tag>
+        </td>
+        <td>{{ cmd.validation_lieu ?? '-' }}</td>
+        <td class="flex justify-content-between">
+          <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC2" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
+          <button pButton [text]="true" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" (click)="showDetailsDialog(cmd)"></button>
+          <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
+          <p-confirmPopup />
+          <a pButton [text]="true" icon="pi pi-file" pTooltip="Consulter PDF" tooltipPosition="bottom"
+             target="_blank" [href]="baseUrl+'/api/uploads/bc2/'+cmd.entreprise?.id+'_BC2.pdf'"></a>
+          <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Details Dialog -->
+  <p-dialog
+    header="Détails BC2"
+    [modal]="true"
+    [(visible)]="detailsDialog"
+    [style]="{ width: '50rem' }"
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+    [maximizable]="true">
+
+    <h3 class="text-blue-400">Options</h3>
+    <p-table [value]="detailsOptions">
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" style="text-align: center; color: #999;">Pas de données</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Prix HT</th>
+          <th>Image</th>
+          <th>Qté</th>
+          <th>Couleur</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-opt>
+        <tr>
+          <td>{{ opt.id }}</td>
+          <td>{{ opt.nom ?? '-' }}</td>
+          <td>{{ opt.prix_ht ?? '-' }} €</td>
+          <td>
+            <img *ngIf="opt.img" [src]="baseUrl+'/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+            <span *ngIf="!opt.img">-</span>
+          </td>
+          <td>{{ opt.qteCommande }}</td>
+          <td>{{ opt.colorCommande ?? '-' }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <h3 class="text-blue-400">Total HT</h3>{{ detailsCommande?.total_ht || 0 | number: '1.2-2' }} €
+    <h3 class="text-blue-400">Total TTC</h3>{{ getTotalTva(detailsCommande?.total_ht || 0) | number: '1.2-2' }} €
+
+    <div class="flex justify-content-end gap-2">
+      <p-button label="Fermer" severity="secondary" (onClick)="detailsDialog = false" />
+    </div>
+  </p-dialog>
+
+  <!-- Modify Dialog -->
+  <p-dialog
+    header="Modifier le BC2"
+    [modal]="true"
+    [(visible)]="modifyDialog"
+    [style]="{ width: '50rem' }"
+    [maximizable]="true">
+
+    <h3 class="text-blue-400">Options par catégorie</h3>
+
+    <!-- Options organized by categories -->
+    <p-accordion *ngIf="option2Categories.length > 0">
+      <!-- Category sections -->
+      <p-accordionTab *ngFor="let category of option2Categories" [header]="getCategoryName2(category.id) + ' (' + getOptionsByCategory2(category.id).length + ')'">
+        <p-table [value]="getOptionsByCategory2(category.id)" *ngIf="getOptionsByCategory2(category.id).length > 0">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Prix HT</th>
+              <th>Image</th>
+              <th>Couleur</th>
+              <th>Qté</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-opt>
+            <tr>
+              <td>{{ opt.id }}</td>
+              <td>{{ opt.nom ?? '-' }}</td>
+              <td>{{ opt.prix_ht ?? '-' }} €</td>
+              <td>
+                <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+                <span *ngIf="!opt.img">-</span>
+              </td>
+              <td style="width: 20%;">
+                <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
+                       [placeholder]="opt.coloris" class="w-full" />
+                <span *ngIf="!opt.coloris">-</span>
+              </td>
+              <td style="width: 25%;">
+                <p-inputNumber
+                  [(ngModel)]="opt.qteCommande"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [step]="1"
+                  [min]="0"
+                  [max]="opt.multiple ? opt.qmax : 1"
+                  class="flex-grow-1 w-full mb-2"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  decrementButtonClass="p-button-secondary outlined"
+                  incrementButtonClass="p-button-secondary outlined"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  mode="decimal"
+                  (ngModelChange)="modifierOption(opt)"/>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <div *ngIf="getOptionsByCategory2(category.id).length === 0" class="p-3 text-center text-gray-600">
+          Aucune option dans cette catégorie
+        </div>
+      </p-accordionTab>
+
+      <!-- Uncategorized options -->
+      <p-accordionTab header="Sans catégorie ({{ getOptionsByCategory2(null).length }})" *ngIf="getOptionsByCategory2(null).length > 0">
+        <p-table [value]="getOptionsByCategory2(null)">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Prix HT</th>
+              <th>Image</th>
+              <th>Couleur</th>
+              <th>Qté</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-opt>
+            <tr>
+              <td>{{ opt.id }}</td>
+              <td>{{ opt.nom ?? '-' }}</td>
+              <td>{{ opt.prix_ht ?? '-' }} €</td>
+              <td>
+                <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+                <span *ngIf="!opt.img">-</span>
+              </td>
+              <td style="width: 20%;">
+                <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
+                       [placeholder]="opt.coloris" class="w-full" />
+                <span *ngIf="!opt.coloris">-</span>
+              </td>
+              <td style="width: 25%;">
+                <p-inputNumber
+                  [(ngModel)]="opt.qteCommande"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [step]="1"
+                  [min]="0"
+                  [max]="opt.multiple ? opt.qmax : 1"
+                  class="flex-grow-1 w-full mb-2"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  decrementButtonClass="p-button-secondary outlined"
+                  incrementButtonClass="p-button-secondary outlined"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  mode="decimal"
+                  (ngModelChange)="modifierOption(opt)"/>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-accordionTab>
+    </p-accordion>
+
+    <!-- Fallback if no categories -->
+    <div *ngIf="option2Categories.length === 0" class="p-3 text-center text-gray-600">
+      <p>Aucune catégorie disponible. Les options ne peuvent pas être organisées.</p>
+      <p-table [value]="optionsBc2">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Prix HT</th>
+            <th>Image</th>
+            <th>Couleur</th>
+            <th>Qté</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-opt>
+          <tr>
+            <td>{{ opt.id }}</td>
+            <td>{{ opt.nom ?? '-' }}</td>
+            <td>{{ opt.prix_ht ?? '-' }} €</td>
+            <td>
+              <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+              <span *ngIf="!opt.img">-</span>
+            </td>
+            <td style="width: 20%;">
+              <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
+                     [placeholder]="opt.coloris" class="w-full" />
+              <span *ngIf="!opt.coloris">-</span>
+            </td>
+            <td style="width: 25%;">
+              <p-inputNumber
+                [(ngModel)]="opt.qteCommande"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                [step]="1"
+                [min]="0"
+                [max]="opt.multiple ? opt.qmax : 1"
+                class="flex-grow-1 w-full mb-2"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                decrementButtonClass="p-button-secondary outlined"
+                incrementButtonClass="p-button-secondary outlined"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus"
+                mode="decimal"
+                (ngModelChange)="modifierOption(opt)"/>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Standiste Information Section for Modify -->
+    <div *ngIf="getSelectedStandisteOptionForModify() !== null" class="mt-4 p-4 border-1 border-300 border-round">
+      <h3 class="text-blue-400 mb-3">Informations du Standiste</h3>
+
+      <!-- Option 21: Description du projet -->
+      <div *ngIf="getSelectedStandisteOptionForModify() === 21">
+        <h4 class="mb-3">Description du projet standiste</h4>
+        <form [formGroup]="modifyStandisteForm">
+          <div class="field">
+            <label for="modify_standiste_demande">Description du projet *</label>
+            <textarea pInputTextarea id="modify_standiste_demande" formControlName="standiste_demande"
+                      placeholder="Décrivez votre projet de standiste" class="w-full" rows="4"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Option 22: Fiche standiste complète -->
+      <div *ngIf="getSelectedStandisteOptionForModify() === 22">
+        <h4 class="mb-3">Fiche standiste</h4>
+        <form [formGroup]="modifyStandisteForm">
+          <div class="grid">
+            <div class="field col-6">
+              <label for="modify_standiste_nom">Nom *</label>
+              <input pInputText id="modify_standiste_nom" formControlName="standiste_nom"
+                     placeholder="Nom du standiste" class="w-full" />
+            </div>
+            <div class="field col-6">
+              <label for="modify_standiste_prenom">Prénom *</label>
+              <input pInputText id="modify_standiste_prenom" formControlName="standiste_prenom"
+                     placeholder="Prénom du standiste" class="w-full" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="modify_standiste_telephone">Téléphone *</label>
+            <input pInputText id="modify_standiste_telephone" formControlName="standiste_telephone"
+                   placeholder="Téléphone du standiste" class="w-full" />
+          </div>
+
+          <div class="field">
+            <label for="modify_standiste_entreprise">Entreprise *</label>
+            <input pInputText id="modify_standiste_entreprise" formControlName="standiste_entreprise"
+                   placeholder="Entreprise du standiste" class="w-full" />
+          </div>
+        </form>
+      </div>
+
+      <!-- Option 15: Pas de standiste -->
+      <div *ngIf="getSelectedStandisteOptionForModify() === 15">
+        <div class="p-4 border-round bg-green-100 text-center">
+          <i class="pi pi-check-circle text-green-600 text-2xl mb-2"></i>
+          <p class="m-0 text-green-700">Vous avez choisi de ne pas avoir de standiste</p>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-content-between align-items-center">
+        <div>
+          <h3 class="text-black-400">Total HT: {{modifyTotalHt | number: '1.2-2'}} €</h3>
+          <h3 class="text-black-400">Total TTC: {{(modifyTotalHt || 0) * 1.2 | number: '1.2-2'}} €</h3>
+        </div>
+        <div>
+          <p-button
+            label="Annuler"
+            [text]="true"
+            severity="secondary"
+            styleClass="mt-2"
+            (click)="modifyDialog = false" />
+          <p-button
+            styleClass="mt-2"
+            label="Valider"
+            severity="primary"
+            (click)="validerOptionCommande()" />
+        </div>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Create Dialog -->
+  <p-dialog
+    header="Créer un BC2"
+    [modal]="true"
+    [(visible)]="createDialog"
+    [style]="{ width: '50rem' }"
+    [maximizable]="true">
+
+    <h3 class="text-blue-400">Entreprise</h3>
+    <div class="field">
+      <label for="entreprise">Nom de l'entreprise</label>
+      <p-dropdown
+        [options]="ajoutEntreprises"
+        [(ngModel)]="ajoutEntreprise"
+        optionLabel="nom"
+        [filter]="true"
+        filterBy="nom"
+        [showClear]="true"
+        class="w-full"
+        styleClass="w-full"
+        placeholder="Nom" />
+    </div>
+
+    <h3 class="text-blue-400">Options par catégorie</h3>
+
+    <!-- Options organized by categories for creation -->
+    <p-accordion *ngIf="option2Categories.length > 0">
+      <!-- Category sections -->
+      <p-accordionTab *ngFor="let category of option2Categories" [header]="getCategoryName2(category.id) + ' (' + getOptionsByCategory2(category.id).length + ')'">
+        <p-table [value]="getOptionsByCategory2(category.id)" *ngIf="getOptionsByCategory2(category.id).length > 0">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Prix HT</th>
+              <th>Image</th>
+              <th>Couleur</th>
+              <th>Qté</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-opt>
+            <tr>
+              <td>{{ opt.id }}</td>
+              <td>{{ opt.nom ?? '-' }}</td>
+              <td>{{ opt.prix_ht ?? '-' }} €</td>
+              <td>
+                <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+                <span *ngIf="!opt.img">-</span>
+              </td>
+              <td style="width: 20%;">
+                <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
+                       [placeholder]="opt.coloris" class="w-full" />
+                <span *ngIf="!opt.coloris">-</span>
+              </td>
+              <td style="width: 25%;">
+                <p-inputNumber
+                  [(ngModel)]="opt.qteCommande"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [step]="1"
+                  [min]="0"
+                  [max]="opt.multiple ? opt.qmax : 1"
+                  class="flex-grow-1 w-full mb-2"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  decrementButtonClass="p-button-secondary outlined"
+                  incrementButtonClass="p-button-secondary outlined"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  mode="decimal"
+                  (ngModelChange)="calculerCreerPrix()" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <div *ngIf="getOptionsByCategory2(category.id).length === 0" class="p-3 text-center text-gray-600">
+          Aucune option dans cette catégorie
+        </div>
+      </p-accordionTab>
+
+      <!-- Uncategorized options -->
+      <p-accordionTab header="Sans catégorie ({{ getOptionsByCategory2(null).length }})" *ngIf="getOptionsByCategory2(null).length > 0">
+        <p-table [value]="getOptionsByCategory2(null)">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Prix HT</th>
+              <th>Image</th>
+              <th>Couleur</th>
+              <th>Qté</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-opt>
+            <tr>
+              <td>{{ opt.id }}</td>
+              <td>{{ opt.nom ?? '-' }}</td>
+              <td>{{ opt.prix_ht ?? '-' }} €</td>
+              <td>
+                <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+                <span *ngIf="!opt.img">-</span>
+              </td>
+              <td style="width: 20%;">
+                <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
+                       [placeholder]="opt.coloris" class="w-full" />
+                <span *ngIf="!opt.coloris">-</span>
+              </td>
+              <td style="width: 25%;">
+                <p-inputNumber
+                  [(ngModel)]="opt.qteCommande"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [step]="1"
+                  [min]="0"
+                  [max]="opt.multiple ? opt.qmax : 1"
+                  class="flex-grow-1 w-full mb-2"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  decrementButtonClass="p-button-secondary outlined"
+                  incrementButtonClass="p-button-secondary outlined"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  mode="decimal"
+                  (ngModelChange)="calculerCreerPrix()" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-accordionTab>
+    </p-accordion>
+
+    <!-- Fallback if no categories -->
+    <div *ngIf="option2Categories.length === 0" class="p-3 text-center text-gray-600">
+      <p>Aucune catégorie disponible. Les options ne peuvent pas être organisées.</p>
+      <p-table [value]="ajoutOption">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Prix HT</th>
+            <th>Image</th>
+            <th>Couleur</th>
+            <th>Qté</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-opt>
+          <tr>
+            <td>{{ opt.id }}</td>
+            <td>{{ opt.nom ?? '-' }}</td>
+            <td>{{ opt.prix_ht ?? '-' }} €</td>
+            <td>
+              <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
+              <span *ngIf="!opt.img">-</span>
+            </td>
+            <td style="width: 20%;">
+              <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
+                     [placeholder]="opt.coloris" class="w-full" />
+              <span *ngIf="!opt.coloris">-</span>
+            </td>
+            <td style="width: 25%;">
+              <p-inputNumber
+                [(ngModel)]="opt.qteCommande"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                [step]="1"
+                [min]="0"
+                [max]="opt.multiple ? opt.qmax : 1"
+                class="flex-grow-1 w-full mb-2"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                decrementButtonClass="p-button-secondary outlined"
+                incrementButtonClass="p-button-secondary outlined"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus"
+                mode="decimal"
+                (ngModelChange)="calculerCreerPrix()" />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Standiste Information Section for Create -->
+    <div *ngIf="getSelectedStandisteOptionForCreate() !== null" class="mt-4 p-4 border-1 border-300 border-round">
+      <h3 class="text-blue-400 mb-3">Informations du Standiste</h3>
+
+      <!-- Option 21: Description du projet -->
+      <div *ngIf="getSelectedStandisteOptionForCreate() === 21">
+        <h4 class="mb-3">Description du projet standiste</h4>
+        <form [formGroup]="standisteForm">
+          <div class="field">
+            <label for="create_standiste_demande">Description du projet *</label>
+            <textarea pInputTextarea id="create_standiste_demande" formControlName="standiste_demande"
+                      placeholder="Décrivez votre projet de standiste" class="w-full" rows="4"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Option 22: Fiche standiste complète -->
+      <div *ngIf="getSelectedStandisteOptionForCreate() === 22">
+        <h4 class="mb-3">Fiche standiste</h4>
+        <form [formGroup]="standisteForm">
+          <div class="grid">
+            <div class="field col-6">
+              <label for="create_standiste_nom">Nom *</label>
+              <input pInputText id="create_standiste_nom" formControlName="standiste_nom"
+                     placeholder="Nom du standiste" class="w-full" />
+            </div>
+            <div class="field col-6">
+              <label for="create_standiste_prenom">Prénom *</label>
+              <input pInputText id="create_standiste_prenom" formControlName="standiste_prenom"
+                     placeholder="Prénom du standiste" class="w-full" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="create_standiste_telephone">Téléphone *</label>
+            <input pInputText id="create_standiste_telephone" formControlName="standiste_telephone"
+                   placeholder="Téléphone du standiste" class="w-full" />
+          </div>
+
+          <div class="field">
+            <label for="create_standiste_entreprise">Entreprise *</label>
+            <input pInputText id="create_standiste_entreprise" formControlName="standiste_entreprise"
+                   placeholder="Entreprise du standiste" class="w-full" />
+          </div>
+        </form>
+      </div>
+
+      <!-- Option 15: Pas de standiste -->
+      <div *ngIf="getSelectedStandisteOptionForCreate() === 15">
+        <div class="p-4 border-round bg-green-100 text-center">
+          <i class="pi pi-check-circle text-green-600 text-2xl mb-2"></i>
+          <p class="m-0 text-green-700">Vous avez choisi de ne pas avoir de standiste</p>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-content-between align-items-center">
+        <div>
+          <h3 class="text-black-400">Total HT: {{ajoutTotalHt || 0 | number: '1.2-2'}} €</h3>
+          <h3 class="text-black-400">Total TTC: {{(ajoutTotalHt || 0) * 1.2 | number: '1.2-2'}} €</h3>
+        </div>
+        <div>
+          <p-button
+            label="Annuler"
+            [text]="true"
+            severity="secondary"
+            styleClass="mt-2"
+            (click)="createDialog = false" />
+          <p-button
+            styleClass="mt-2"
+            label="Valider"
+            severity="primary"
+            (click)="createNouvelleCommande()" />
+        </div>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

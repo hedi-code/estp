@@ -1,1 +1,418 @@
-<p>gestion-bc2 works!</p>
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
+  <h3 class="text-blue-400 p-2">Gestion des options/catégories du BC2</h3>
+
+  <p-tabView [(activeIndex)]="activeIndex">
+    <!-- ================= CATEGORIES TAB ================= -->
+    <p-tabPanel header="Gestion des Catégories">
+      <div class="mb-4">
+        <p-button icon="pi pi-plus" label="Ajouter une catégorie" (click)="openCreateCategoryDialog()"></p-button>
+      </div>
+
+      <p-table [value]="categories" dataKey="id" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Nombre d'options</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-category>
+          <tr>
+            <td>{{ category.id }}</td>
+            <td>{{ category.name }}</td>
+            <td>{{ getOptionsByCategory(category.id).length }}</td>
+            <td>
+              <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier"
+                      tooltipPosition="bottom" (click)="onEditCategory(category)"></button>
+              <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                      tooltipPosition="bottom" (click)="onDeleteCategory(category)"></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+
+    <!-- ================= OPTIONS TAB ================= -->
+    <p-tabPanel header="Gestion des Options">
+      <div class="mb-4">
+        <p-button icon="pi pi-plus" label="Ajouter une option" (click)="openCreateOptionDialog()"></p-button>
+      </div>
+
+      <!-- Nested tabs for each category -->
+      <p-tabView [(activeIndex)]="optionsTabActiveIndex" *ngIf="categories.length > 0">
+        <!-- Tab for each category -->
+        <p-tabPanel *ngFor="let category of categories" [header]="category.name + ' (' + getOptionsByCategory(category.id).length + ')'">
+          <div class="mb-3">
+            <h4 class="text-primary">Options de la catégorie: {{ category.name }}</h4>
+          </div>
+
+          <p-table [value]="getOptionsByCategory(category.id)" dataKey="id" responsiveLayout="scroll">
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="9" style="text-align: center; color: #999;">Aucune option dans cette catégorie</td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 3rem"></th>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Prix HT</th>
+                <th>TVA</th>
+                <th>Qmax</th>
+                <th>Multiple</th>
+                <th>Image</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-option let-expanded="expanded">
+              <tr>
+                <td>
+                  <a href="#" [pRowToggler]="option">
+                    <i class="pi" [ngClass]="expanded ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+                  </a>
+                </td>
+                <td>{{ option.id }}</td>
+                <td>{{ option.nom }}</td>
+                <td>{{ option.prix_ht }}€</td>
+                <td>{{ option.taux_tva }}%</td>
+                <td>{{ option.qmax }}</td>
+                <td>
+                  <p-tag [value]="option.multiple ? 'Oui' : 'Non'"
+                         [severity]="option.multiple ? 'success' : 'secondary'"></p-tag>
+                </td>
+                <td>
+                  <img *ngIf="option.img" [src]="baseUrl+'/api/uploads/img/option2s/' + option.id + '/' + option.img"
+                       alt="image" width="60" height="60" style="object-fit:cover;" />
+                  <span *ngIf="!option.img">-</span>
+                </td>
+                <td>
+                  <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier"
+                          tooltipPosition="bottom" (click)="onEditOption(option)"></button>
+                  <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                          tooltipPosition="bottom" (click)="onDeleteOption(option)"></button>
+                </td>
+              </tr>
+            </ng-template>
+
+            <!-- Expansion -->
+            <ng-template pTemplate="rowexpansion" let-option>
+              <tr>
+                <td colspan="9">
+                  <div class="p-3">
+                    <h5 class="mb-2">Détails Option</h5>
+                    <div class="grid">
+                      <div class="col-6">
+                        <strong>Description:</strong> {{ option.description || '-' }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Coloris:</strong> {{ option.coloris || '-' }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Disponible si:</strong> {{ option.dispo_si || '-' }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Ordre:</strong> {{ option.ordre }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+
+        <!-- Tab for options without category -->
+        <p-tabPanel header="Sans catégorie ({{ getOptionsByCategory(null).length }})">
+          <div class="mb-3">
+            <h4 class="text-primary">Options sans catégorie</h4>
+          </div>
+
+          <p-table [value]="getOptionsByCategory(null)" dataKey="id" responsiveLayout="scroll">
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="9" style="text-align: center; color: #999;">Aucune option sans catégorie</td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 3rem"></th>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Prix HT</th>
+                <th>TVA</th>
+                <th>Qmax</th>
+                <th>Multiple</th>
+                <th>Image</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-option let-expanded="expanded">
+              <tr>
+                <td>
+                  <a href="#" [pRowToggler]="option">
+                    <i class="pi" [ngClass]="expanded ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+                  </a>
+                </td>
+                <td>{{ option.id }}</td>
+                <td>{{ option.nom }}</td>
+                <td>{{ option.prix_ht }}€</td>
+                <td>{{ option.taux_tva }}%</td>
+                <td>{{ option.qmax }}</td>
+                <td>
+                  <p-tag [value]="option.multiple ? 'Oui' : 'Non'"
+                         [severity]="option.multiple ? 'success' : 'secondary'"></p-tag>
+                </td>
+                <td>
+                  <img *ngIf="option.img" [src]="baseUrl+'/api/uploads/img/option2s/' + option.id + '/' + option.img"
+                       alt="image" width="60" height="60" style="object-fit:cover;" />
+                  <span *ngIf="!option.img">-</span>
+                </td>
+                <td>
+                  <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier"
+                          tooltipPosition="bottom" (click)="onEditOption(option)"></button>
+                  <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                          tooltipPosition="bottom" (click)="onDeleteOption(option)"></button>
+                </td>
+              </tr>
+            </ng-template>
+
+            <!-- Expansion -->
+            <ng-template pTemplate="rowexpansion" let-option>
+              <tr>
+                <td colspan="9">
+                  <div class="p-3">
+                    <h5 class="mb-2">Détails Option</h5>
+                    <div class="grid">
+                      <div class="col-6">
+                        <strong>Description:</strong> {{ option.description || '-' }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Coloris:</strong> {{ option.coloris || '-' }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Disponible si:</strong> {{ option.dispo_si || '-' }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Ordre:</strong> {{ option.ordre }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+      </p-tabView>
+
+      <!-- Fallback if no categories exist -->
+      <div *ngIf="categories.length === 0" class="text-center p-4">
+        <p class="text-gray-600">Aucune catégorie disponible. Créez d'abord une catégorie pour organiser les options.</p>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
+</div>
+
+<!-- ================= CREATE CATEGORY DIALOG ================= -->
+<p-dialog header="Créer une catégorie" [(visible)]="createCategoryDialogVisible" [modal]="true" [closable]="false" [style]="{width: '500px'}">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="categoryName">Nom de la catégorie *</label>
+      <input id="categoryName" type="text" pInputText [(ngModel)]="newCategory.name" class="w-full mt-2" placeholder="Nom de la catégorie" />
+    </div>
+  </div>
+
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="createCategoryDialogVisible=false"></button>
+    <button pButton label="Créer" icon="pi pi-check" class="p-button-success" (click)="confirmCreateCategory()" [disabled]="!newCategory.name"></button>
+  </p-footer>
+</p-dialog>
+
+<!-- ================= EDIT CATEGORY DIALOG ================= -->
+<p-dialog header="Modifier la catégorie" *ngIf="selectedCategory" [(visible)]="editCategoryDialogVisible" [modal]="true" [closable]="false" [style]="{width: '500px'}">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label for="editCategoryName">Nom de la catégorie *</label>
+      <input id="editCategoryName" type="text" pInputText [(ngModel)]="selectedCategory.name" class="w-full mt-2" />
+    </div>
+  </div>
+
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="editCategoryDialogVisible=false"></button>
+    <button pButton label="Modifier" icon="pi pi-check" class="p-button-success" (click)="confirmEditCategory()" [disabled]="!selectedCategory.name"></button>
+  </p-footer>
+</p-dialog>
+
+<!-- ================= CREATE OPTION DIALOG ================= -->
+<p-dialog header="Créer une option" [(visible)]="createOptionDialogVisible" [modal]="true" [closable]="false" [style]="{width: '700px'}">
+  <div class="p-fluid">
+    <div class="grid">
+      <div class="col-6">
+        <div class="p-field">
+          <label for="optionNom">Nom *</label>
+          <input id="optionNom" type="text" pInputText [(ngModel)]="newOption.nom" class="w-full mt-2" />
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-field">
+          <label for="optionCategory">Catégorie</label>
+          <p-dropdown id="optionCategory" [options]="categories" [(ngModel)]="newOption.category_id"
+                     optionLabel="name" optionValue="id" placeholder="Sélectionner une catégorie" class="w-full mt-2"></p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-4">
+        <div class="p-field">
+          <label for="optionPrix">Prix HT *</label>
+          <p-inputNumber id="optionPrix" [(ngModel)]="newOption.prix_ht" mode="currency" currency="EUR" locale="fr-FR" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="p-field">
+          <label for="optionTva">TVA (%)</label>
+          <p-inputNumber id="optionTva" [(ngModel)]="newOption.taux_tva" [min]="0" [max]="100" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="p-field">
+          <label for="optionQmax">Quantité max</label>
+          <p-inputNumber id="optionQmax" [(ngModel)]="newOption.qmax" [min]="1" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-6">
+        <div class="p-field">
+          <label for="optionColoris">Coloris</label>
+          <input id="optionColoris" type="text" pInputText [(ngModel)]="newOption.coloris" class="w-full mt-2" placeholder="Rouge,Bleu,Vert" />
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-field">
+          <label for="optionOrdre">Ordre</label>
+          <p-inputNumber id="optionOrdre" [(ngModel)]="newOption.ordre" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-field">
+      <label for="optionDescription">Description</label>
+      <textarea id="optionDescription" rows="3" pInputTextarea [(ngModel)]="newOption.description" class="w-full mt-2"></textarea>
+    </div>
+
+    <div class="p-field">
+      <label for="optionDispoSi">Disponible si</label>
+      <input id="optionDispoSi" type="text" pInputText [(ngModel)]="newOption.dispo_si" class="w-full mt-2" />
+    </div>
+
+    <div class="p-field">
+      <p-checkbox [(ngModel)]="newOption.multiple" binary="true" label="Option multiple"></p-checkbox>
+    </div>
+
+    <div class="p-field">
+      <label for="optionImg">Image</label>
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+    </div>
+  </div>
+
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="createOptionDialogVisible=false"></button>
+    <button pButton label="Créer" icon="pi pi-check" class="p-button-success" (click)="confirmCreateOption()" [disabled]="!newOption.nom"></button>
+  </p-footer>
+</p-dialog>
+
+<!-- ================= EDIT OPTION DIALOG ================= -->
+<p-dialog header="Modifier l'option" *ngIf="selectedOption" [(visible)]="editOptionDialogVisible" [modal]="true" [closable]="false" [style]="{width: '700px'}">
+  <div class="p-fluid">
+    <div class="grid">
+      <div class="col-6">
+        <div class="p-field">
+          <label for="editOptionNom">Nom *</label>
+          <input id="editOptionNom" type="text" pInputText [(ngModel)]="selectedOption.nom" class="w-full mt-2" />
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-field">
+          <label for="editOptionCategory">Catégorie</label>
+          <p-dropdown id="editOptionCategory" [options]="categories" [(ngModel)]="selectedOption.category_id"
+                     optionLabel="name" optionValue="id" placeholder="Sélectionner une catégorie" class="w-full mt-2"></p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-4">
+        <div class="p-field">
+          <label for="editOptionPrix">Prix HT *</label>
+          <p-inputNumber id="editOptionPrix" [(ngModel)]="selectedOption.prix_ht" mode="currency" currency="EUR" locale="fr-FR" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="p-field">
+          <label for="editOptionTva">TVA (%)</label>
+          <p-inputNumber id="editOptionTva" [(ngModel)]="selectedOption.taux_tva" [min]="0" [max]="100" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="p-field">
+          <label for="editOptionQmax">Quantité max</label>
+          <p-inputNumber id="editOptionQmax" [(ngModel)]="selectedOption.qmax" [min]="1" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-6">
+        <div class="p-field">
+          <label for="editOptionColoris">Coloris</label>
+          <input id="editOptionColoris" type="text" pInputText [(ngModel)]="selectedOption.coloris" class="w-full mt-2" placeholder="Rouge,Bleu,Vert" />
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="p-field">
+          <label for="editOptionOrdre">Ordre</label>
+          <p-inputNumber id="editOptionOrdre" [(ngModel)]="selectedOption.ordre" class="w-full mt-2"></p-inputNumber>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-field">
+      <label for="editOptionDescription">Description</label>
+      <textarea id="editOptionDescription" rows="3" pInputTextarea [(ngModel)]="selectedOption.description" class="w-full mt-2"></textarea>
+    </div>
+
+    <div class="p-field">
+      <label for="editOptionDispoSi">Disponible si</label>
+      <input id="editOptionDispoSi" type="text" pInputText [(ngModel)]="selectedOption.dispo_si" class="w-full mt-2" />
+    </div>
+
+    <div class="p-field">
+      <p-checkbox [(ngModel)]="selectedOption.multiple" binary="true" label="Option multiple"></p-checkbox>
+    </div>
+
+    <div class="p-field">
+      <label for="editOptionImg">Image</label>
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+      <img *ngIf="selectedOption.img" [src]="selectedOption.img" alt="preview"
+           width="100" height="100" style="margin-top:10px; border-radius:8px;" />
+    </div>
+  </div>
+
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="editOptionDialogVisible=false"></button>
+    <button pButton label="Modifier" icon="pi pi-check" class="p-button-success" (click)="confirmEditOption()" [disabled]="!selectedOption.nom"></button>
+  </p-footer>
+</p-dialog>
+
+<!-- ================= CONFIRM DIALOGS ================= -->
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

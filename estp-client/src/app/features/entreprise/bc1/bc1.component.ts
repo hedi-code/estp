@@ -22,6 +22,7 @@ import { concatMap, forkJoin, lastValueFrom, take } from 'rxjs';
 import { BookService } from '../../forum/services/book.service';
 import { Book } from '../../forum/models/book.model';
 import { ConfirmationService } from 'primeng/api';
+import { Router } from '@angular/router';
 
 
 
@@ -60,7 +61,7 @@ previewUrl: string | null = null;
 
 
   constructor(    private commande1OptionService:Commande1OptionsService, private confirmationService: ConfirmationService,
-  private bookService: BookService,private fileService: FileService, private commande1Service: Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService) { }
+  private bookService: BookService,private fileService: FileService, private commande1Service: Commande1Service, private fb: FormBuilder, private pack1Service: Pack1Service, private commandeService: CommandeService, private option1Service: Option1Service, private entrepriseService: EntrepriseService, private cookieService: AuthCookieService, private contactService: ContactService, private router: Router) { }
 
   ngOnInit() {
     this.commande1Service.getCommande1ByEntrepriseId(Number(this.cookieService.getEntrepriseId())).subscribe({
@@ -361,6 +362,9 @@ async createBC1() {
             if(this.selectedFile){
                this.fileService.uploadFile(this.selectedFile, 'logos', entrepriseId.toString()).subscribe();
             }
+            // Navigate to BC2 after successful book creation
+            console.log('Book created successfully, navigating to BC2');
+            this.router.navigate(['/entreprise/bc2']);
           },
           error: (e) => {
             console.error(e)

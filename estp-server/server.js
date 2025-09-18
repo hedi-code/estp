@@ -13,6 +13,12 @@ const commande1OptionsRoutes = require("./routes/commande1OptionsRoutes");
 const fileRoutes = require('./routes/fileRoutes'); // <- Import file routes
 const emailRoutes = require('./routes/emailRoutes'); // <- Import file routes
 const bookRoutes = require('./routes/bookRoutes'); // <- Import file routes
+const commande2Routes = require('./routes/commande2Routes'); // <- Import commande2 routes
+const commande2OptionsRoutes = require('./routes/commande2OptionsRoutes'); // <- Import commande2Options routes
+const pack2Routes = require('./routes/pack2Routes'); // <- Import pack2 routes
+const option2Routes = require('./routes/option2Routes'); // <- Import option2 routes
+const option2CategoriesRoutes = require('./routes/option2CategoriesRoutes'); // <- Import option2Categories routes
+const authMiddleware = require('./middleware/auth'); // <- Import JWT middleware
 
 
 
@@ -68,6 +74,11 @@ app.use("/api/commande1Options", commande1OptionsRoutes);
 app.use('/api/upload', fileRoutes); // <- Use file routes under /api/files
 app.use('/api/email', emailRoutes); // <- Use file routes under /api/files
 app.use('/api/book', bookRoutes); // <- Use file routes under /api/files
+app.use('/api/commande2', commande2Routes); // <- Use commande2 routes
+app.use('/api/commande2Options', commande2OptionsRoutes); // <- Use commande2Options routes
+app.use('/api/pack2', pack2Routes); // <- Use pack2 routes
+app.use('/api/option2', option2Routes); // <- Use option2 routes
+app.use('/api/option2Categories', option2CategoriesRoutes); // <- Use option2Categories routes
 
 
 

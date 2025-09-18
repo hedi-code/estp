@@ -265,9 +265,12 @@ bc1DialogVisible: boolean = false;
 
   getModifyCommandePrix() {
     this.modifyTotalHt = 0;
+    if(this.modifyPackOptions?.length > 0){
     this.modifyTotalHt = Number(this.modifyPackOptions.find((p: { surface_id: number | null | undefined; }) => p.surface_id == this.modifyCommande?.pack1_id)?.prix);
+
+    }
     this.modificationsOptions.forEach(o => {
-      if (o && this.modifyTotalHt) {
+      if (o && this.modifyTotalHt !== undefined) {
         this.modifyTotalHt += (o.qteCommande ?? 0) * (o.prix_ht ?? 0)
       }
     })

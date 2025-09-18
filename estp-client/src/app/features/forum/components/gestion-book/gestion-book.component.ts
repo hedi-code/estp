@@ -42,7 +42,15 @@ export class GestionBookComponent {
 
   loadBooks() {
     this.bookService.getAll().subscribe({
-      next: (data) => (this.books = data || []),
+      next: (data) => {
+        this.books = data || []
+        this.books.forEach(book => {
+          this.entrepriseService.getEntrepriseById(book.entreprise_id).subscribe(entreprise => {
+            this.books[this.books.findIndex(book => book.entreprise_id == entreprise.id)].entreprise_nom = entreprise.nom
+          })
+        })
+        
+      },
       error: (e) => console.error(e),
     });
   }

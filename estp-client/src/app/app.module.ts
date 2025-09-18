@@ -41,6 +41,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { AccordionModule } from 'primeng/accordion';
 import { DialogModule } from 'primeng/dialog';
 import { FactureBc1Component } from './features/entreprise/bc1/facture-bc1/facture-bc1.component';
+import { FactureBc2Component } from './features/entreprise/bc2/facture-bc2/facture-bc2.component';
 import { apiInterceptorProvider } from './core/interceptors/api.interceptor';
 import { LoaderComponent } from './core/components/loader/loader.component';
 import { MenuitemComponent } from './features/forum/components/menuitem/menuitem.component';
@@ -82,6 +83,7 @@ import { GestionBookComponent } from './features/forum/components/gestion-book/g
     VerifyAcccountComponent,
     ValidatePasswordComponent,
     FactureBc1Component,
+    FactureBc2Component,
     LoaderComponent,
     MenuitemComponent,
     MenuComponent,

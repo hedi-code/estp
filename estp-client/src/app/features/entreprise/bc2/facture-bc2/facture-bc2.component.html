@@ -1,0 +1,355 @@
+<html>
+
+<head>
+    <style>
+        body,
+        table {
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 10px;
+        }
+
+        p {
+            margin: 0;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .blockTitle {
+            width: 130px;
+            font-weight: bold;
+        }
+
+        .blockContent {
+            width: 170px;
+        }
+
+        .darkBlueBg {
+            background-color: #4274b6;
+        }
+
+        .grayBlueBg {
+            background-color: #f7f6fb;
+        }
+
+        .lightBlueBg {
+            background-color: #ecf4fd;
+        }
+
+        td {
+            padding: 2px;
+        }
+
+        .t-r {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .contact-details tr {
+            padding: 0;
+        }
+
+        .contact-details tr td {
+            padding: 0;
+        }
+
+        .contact-details tr td p {
+            padding: 2px 0;
+            margin: 0;
+        }
+
+        .signature-wrapper {
+            border: 1px solid #e5e6e7;
+            position: relative;
+            width: 100%;
+            height: 100px;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body class="p-5 bg-white" id="contentToExport">
+    <div style="width: 830px; display: block; margin-bottom:10px;">
+        <img width="150" height="50" src="assets/logo.png" alt="" />
+        <div style="float: right; margin-top:auto; margin-bottom:auto;">
+            <p style="font-size: 12px;">BC2 - BON DE COMMANDE</p>
+            <p style="font-size: 12px;">Page: 1 sur 1</p>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+
+    <!-- Block contacts -->
+    <div style="border:1px solid black;">
+        <div style="border:1px solid black; margin:2px; padding:6px;" class="grayBlueBg">
+
+            <!-- left block -->
+            <div style="float:left; width:360px">
+                <table class="contact-details">
+                    <tr>
+                        <td>
+                            <p class="blockTitle">Société</p>
+                        </td>
+                        <td>
+                            <p class="blockContent">{{ getCompanyInfo()?.nom }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="blockTitle">Adresse</p>
+                        </td>
+                        <td>
+                            <p class="blockContent">{{ getCompanyInfo()?.adresse | uppercase }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="blockTitle">Téléphone</p>
+                        </td>
+                        <td>
+                            <p class="blockContent">{{ getCompanyInfo()?.telephone | uppercase }}</p>
+                        </td>
+                    </tr>
+                </table>
+                <p style="clear:left"></p>
+            </div>
+
+            <!-- right blocks -->
+            <div style="float:right;width:360px; color:#FFF">
+
+                <!-- block1 -->
+                <div style="border:2px solid black">
+                    <div style="margin:2px; padding:5px;" class="darkBlueBg">
+                        <table class="contact-details">
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Responsable</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ getResponsableInfo()?.nom || '-' }}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">E-mail</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ getResponsableInfo()?.email || '-' }}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Téléphone</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">{{ getResponsableInfo()?.telephone || '-' }}</p>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="clear:left"></p>
+                    </div>
+                </div>
+
+                <!-- block2 -->
+                <div style="border:2px solid black; margin-top:20px">
+                    <div style="margin:2px; padding:5px;" class="darkBlueBg">
+                        <table class="contact-details">
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Correspondant</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">Alice Douard</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">E-mail</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">alice.douard&#64;forumestp.fr</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="blockTitle">Téléphone</p>
+                                </td>
+                                <td>
+                                    <p class="blockContent">+337 81 33 78 87</p>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="clear:left"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="clear:both"></div>
+        </div>
+    </div>
+    <!-- Fin Block contacts -->
+
+    <!-- Block detail produits -->
+    <div style="border:2px solid black;margin-top:30px; ">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">Détails de la commande</div>
+
+        <table class="table" width="830px">
+            <thead class="grayBlueBg">
+                <tr>
+                    <th width="40%">Produit</th>
+                    <th width="10%">Quantité</th>
+                    <th width="10%">TVA</th>
+                    <th width="25%">Prix Unitaire HT</th>
+                    <th width="15%">Prix Total HT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let option of selectedOptions" class="lightBlueBg">
+                    <td>
+                        {{option.option_nom}}
+                        <span *ngIf="option.color"> - {{option.color}}</span>
+                    </td>
+                    <td style="text-align:right">
+                        {{option.qty}}
+                    </td>
+                    <td style="text-align:right">
+                        20%
+                    </td>
+                    <td style="text-align:right">
+                        {{option.option_prix_ht | number: '1.2-2'}} €
+                    </td>
+                    <td style="text-align:right">
+                        {{((option.option_prix_ht || 0) * (option.qty || 1)) | number: '1.2-2'}} €
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Fin Block detail produits -->
+
+    <!-- Standiste Information Block -->
+    <!--
+    <div *ngIf="getSelectedStandisteOption() !== null" style="border:2px solid black;margin-top:30px;">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">Informations Standiste</div>
+
+        <div style="padding: 10px;">
+            <div *ngIf="getSelectedStandisteOption() === 15" class="lightBlueBg" style="padding: 5px;">
+                <strong>Type:</strong> Aucun standiste demandé
+            </div>
+
+            <div *ngIf="getSelectedStandisteOption() === 21" class="lightBlueBg" style="padding: 5px;">
+                <p><strong>Type:</strong> Projet standiste (100€ HT)</p>
+                <p><strong>Description:</strong> {{standisteForm?.get('standiste_demande')?.value}}</p>
+            </div>
+
+            <div *ngIf="getSelectedStandisteOption() === 22" class="lightBlueBg" style="padding: 5px;">
+                <p><strong>Type:</strong> Standiste fourni (0€ HT)</p>
+                <p><strong>Nom:</strong> {{standisteForm?.get('standiste_nom')?.value}} {{standisteForm?.get('standiste_prenom')?.value}}</p>
+                <p><strong>Entreprise:</strong> {{standisteForm?.get('standiste_entreprise')?.value}}</p>
+                <p><strong>Téléphone:</strong> {{standisteForm?.get('standiste_telephone')?.value}}</p>
+            </div>
+        </div>
+    </div>
+    -->
+    <!-- Fin Block Standiste -->
+
+    <!-- Block Detail Prix Total -->
+    <div style="border:2px solid black;margin-top:30px; ">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">Montant de la commande</div>
+
+        <table class="table" width="100%">
+            <tr>
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">Total HT (€)</td>
+                <td width="15%" style="text-align:right">
+                    {{calculateTotalHT() | number: '1.2-2'}}
+                </td>
+            </tr>
+            <tr>
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">TVA (€)</td>
+                <td width="15%" style="text-align:right">
+                    {{calculateTVA() | number: '1.2-2'}}
+                </td>
+            </tr>
+            <tr>
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg font-bold">Total TTC (€)</td>
+                <td width="15%" style="text-align:right" class="font-bold">
+                    {{calculateTotalTTC() | number: '1.2-2'}}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!-- Fin Block Detail Prix Total -->
+
+    <div style="border:2px solid black;margin-top:30px; ">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">Modalit&eacute;s de r&egrave;glement</div>
+
+        <table class="table" width="830px">
+            <thead style="background-color:red">
+                <tr>
+                    <th width="50%" class="lightBlueBg">Entreprises</th>
+                    <th width="50%" class="lightBlueBg">Associations, Ecole, Organismes, Autres</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan=2 style="vertical-align:top;text-align:center">Régler 50% du montant total TTC mentionné sur le présent bon avant le {{getDateAcompte() | date:'dd/MM/yyyy' }}. Règlement du solde avant le 24 novembre 2025.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Fin Modalites -->
+
+    <hr style="margin-top:10px; margin-bottom:20px" />
+
+    <p>Je soussign&eacute;(e), Madame, Monsieur (rayez la mention inutile)
+        <b *ngIf="getResponsableInfo()?.nom">
+            {{getResponsableInfo()?.nom}}
+        </b>
+    </p>
+    <p style="margin-top:20px">Repr&eacute;sentant la soci&eacute;t&eacute; <b>{{ getCompanyInfo()?.nom | uppercase }}</b>, m'engage &agrave; effectuer le
+        r&egrave;glement des prestations, suivant le mode choisi ci-dessus, et &agrave; envoyer le pr&eacute;sent bon
+        avant la date limite du <b>15 Octobre 2025</b>. Pour tout d&eacute;sistement effectu&eacute; au-del&agrave; de
+        cette date, le montant indiqu&eacute; ci-dessus sera d&ucirc;.</p>
+
+    <div style="height: 200px;">
+        <table width="830px">
+            <tr>
+                <td>
+                    <div style="float:left; width:450px;text-align:right; margin-top:20px;">
+                        <p style="margin-top:10px; margin-left:35px">Fait &agrave; <b>{{fait}}</b>, le <b>{{ today | date:
+                                'dd/MM/yyyy' }}</b></p>
+                        <p style="font-weight:bold">Signature et cachet </p>
+                    </div>
+                    <div style="float:right; height: fit-content;" class="signature-bg">
+                        <div class="signature-wrapper lightBlueBg" style="border: 2px dashed black; cursor: initial;">
+                            <img style="width: 300px;" [src]="signature" />
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+   
+</body>
+
+</html>

@@ -1,1 +1,337 @@
-<p>bc2 works!</p>
+<p-tabView [(activeIndex)]="activeIndex">
+  <!-- Category tabs from backend -->
+  <p-tabPanel *ngFor="let category of option2Categories; let i = index" [disabled]="true" [header]="category.name">
+    <div class="grid">
+      <div class="col-9 pt-4">
+        <!-- Display pack categories horizontally -->
+        <div *ngIf="category.name.toLowerCase().includes('pack')" class="grid">
+          <ng-container *ngFor="let option of option2sByCategory[category.id]">
+            <div class="col-12 mb-3">
+              <div class="border-2 border-round-xl border-solid border-primary grid flex">
+                <div *ngIf="option.img" class="col-4 m-0 p-0 flex items-center justify-center overflow-hidden relative">
+                  <img [src]="baseUrl+'/api/uploads/img/option2s/' +option.id+'/'+ option.img"
+                       alt=""
+                       class="border-round-left-xl w-full"
+                       style="object-fit: cover; height: 200px;" />
+                  <span class="absolute bottom-0 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 border-round z-5">
+                    *photo non contractuelle
+                  </span>
+                </div>
+
+                <div [ngClass]="option.img ? 'col-8' : 'col-12'" class="p-4 flex flex-column">
+                  <h3 class="text-primary uppercase">{{option.nom}}</h3>
+                  <div class="mb-3" [innerHTML]="option.description"></div>
+                  <p class="mb-3">{{option.coloris}}</p>
+
+                  <div class="mb-3">
+                    <div class="font-bold">Prix: {{option.prix_ht}} € HT</div>
+                  </div>
+
+                  <div class="grid mb-3" *ngIf="option.coloris || option.multiple">
+                    <div class="col-6" *ngIf="option.coloris">
+                      <label class="text-sm">Couleur:</label>
+                      <p-dropdown
+                        [options]="option.coloris ? option.coloris.split(',') : []"
+                        [(ngModel)]="optionColors[option.id]"
+                        placeholder="Choisir couleur"
+                        styleClass="w-full">
+                      </p-dropdown>
+                    </div>
+
+                    <div class="col-6" *ngIf="option.multiple">
+                      <label class="text-sm">Quantité (max {{option.qmax}}):</label>
+                      <p-inputNumber
+                        [(ngModel)]="optionQuantities[option.id]"
+                        [showButtons]="true"
+                        buttonLayout="vertical"
+                        [step]="1"
+                        [min]="1"
+                        [max]="option.qmax"
+                        styleClass="w-full" />
+                    </div>
+                  </div>
+
+                  <div class="mt-auto">
+                    <p-button
+                      label="Ajouter"
+                      icon="pi pi-plus"
+                      styleClass="w-full"
+                      (click)="addOption2(option)" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Display non-pack categories vertically (cards) -->
+        <div *ngIf="!category.name.toLowerCase().includes('pack')" class="grid">
+          <ng-container *ngFor="let option of option2sByCategory[category.id]">
+            <div class="col-12 sm:col-6 md:col-4 lg:col-4">
+              <p-card styleClass="h-full" [header]="option.nom"
+                      [subheader]="option.prix_ht + ' € HT' + (option.taux_tva > 0 ? ' + TVA' : '')">
+                <ng-template pTemplate="header" *ngIf="option.img">
+                  <img alt="Option"
+                       [src]="baseUrl+'/api/uploads/img/option2s/' +option.id+'/'+ option.img"
+                       class="w-full border-round-top-md"
+                       style="height: 200px; object-fit: cover;" />
+                </ng-template>
+
+                <div [innerHTML]="option.description || 'Pas de description'"></div>
+
+                <div *ngIf="option.coloris" class="field">
+                  <label>Couleur:</label>
+                  <p-dropdown
+                    [options]="option.coloris ? option.coloris.split(',') : []"
+                    [(ngModel)]="optionColors[option.id]"
+                    placeholder="Choisir couleur"
+                    styleClass="w-full">
+                  </p-dropdown>
+                </div>
+
+                <div *ngIf="option.multiple" class="field">
+                  <label class="text-sm">Quantité (max {{option.qmax}}):</label>
+                  <p-inputNumber
+                    [(ngModel)]="optionQuantities[option.id]"
+                    [showButtons]="true"
+                    buttonLayout="horizontal"
+                    [step]="1"
+                    [min]="1"
+                    [max]="option.qmax"
+                    class="w-full"
+                    styleClass="w-full"
+                    inputStyleClass="w-full"
+                    decrementButtonClass="p-button-secondary outlined"
+                    incrementButtonClass="p-button-secondary outlined"
+                    incrementButtonIcon="pi pi-plus"
+                    decrementButtonIcon="pi pi-minus"
+                    mode="decimal" />
+                </div>
+
+                <ng-template pTemplate="footer">
+                  <p-button
+                    label="Ajouter"
+                    class="w-full"
+                    styleClass="w-full"
+                    (click)="addOption2(option)">
+                  </p-button>
+                </ng-template>
+              </p-card>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="col-3">
+        <div class="bg-white p-4 border-round shadow-2 sticky top-0">
+          <h3>Récapitulatif</h3>
+
+          <div *ngIf="selectedOptions.length > 0" class="mb-3">
+            <h4>Options sélectionnées:</h4>
+            <div *ngFor="let option of selectedOptions" class="flex justify-content-between align-items-center mb-2 p-2 border-round bg-gray-50">
+              <div class="flex-grow-1">
+                <p class="m-0 text-sm font-semibold">{{option.option_nom}}</p>
+                <p class="m-0 text-xs">Qté: {{option.qty}} - {{(option.option_prix_ht || 0) * (option.qty || 1)}} € HT</p>
+                <p class="m-0 text-xs" *ngIf="option.color">Couleur: {{option.color}}</p>
+              </div>
+              <p-button
+                icon="pi pi-times"
+                severity="danger"
+                size="small"
+                [text]="true"
+                (click)="removeOption2(option.option2_id)">
+              </p-button>
+            </div>
+          </div>
+
+          <div *ngIf="selectedOptions.length === 0" class="mb-3 p-3 border-round bg-gray-100 text-center">
+            <p class="m-0 text-gray-600">Aucune option sélectionnée</p>
+          </div>
+
+          <div class="text-xl font-bold border-top-1 pt-3">
+            Total: {{calculateTotal()}} € HT
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standiste Information Section (Inline) -->
+    <div *ngIf="getSelectedStandisteOption() !== null" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
+      <h2 class="mb-4">Informations du Standiste</h2>
+
+      <!-- Dynamic form based on selected standiste option -->
+      <div *ngIf="getSelectedStandisteOption() === 21">
+        <h3 class="mb-3">Description du projet standiste</h3>
+        <form [formGroup]="standisteForm">
+          <div class="field">
+            <label for="standiste_demande">Description du projet *</label>
+            <textarea pInputTextarea id="standiste_demande" formControlName="standiste_demande"
+                      placeholder="Décrivez votre projet de standiste" class="w-full" rows="4"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div *ngIf="getSelectedStandisteOption() === 22">
+        <h3 class="mb-3">Fiche standiste</h3>
+        <form [formGroup]="standisteForm">
+          <div class="grid">
+            <div class="field col-6">
+              <label for="standiste_nom">Nom *</label>
+              <input pInputText id="standiste_nom" formControlName="standiste_nom"
+                     placeholder="Nom du standiste" class="w-full" />
+            </div>
+            <div class="field col-6">
+              <label for="standiste_prenom">Prénom *</label>
+              <input pInputText id="standiste_prenom" formControlName="standiste_prenom"
+                     placeholder="Prénom du standiste" class="w-full" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="standiste_telephone">Téléphone *</label>
+            <input pInputText id="standiste_telephone" formControlName="standiste_telephone"
+                   placeholder="Téléphone du standiste" class="w-full" />
+          </div>
+
+          <div class="field">
+            <label for="standiste_entreprise">Entreprise *</label>
+            <input pInputText id="standiste_entreprise" formControlName="standiste_entreprise"
+                   placeholder="Entreprise du standiste" class="w-full" />
+          </div>
+        </form>
+      </div>
+
+      <div *ngIf="getSelectedStandisteOption() === 15">
+        <div class="p-4 border-round bg-green-100 text-center">
+          <i class="pi pi-check-circle text-green-600 text-2xl mb-2"></i>
+          <p class="m-0 text-green-700">Vous avez choisi de ne pas avoir de standiste</p>
+        </div>
+      </div>
+    </div>
+  </p-tabPanel>
+
+  <!-- Récapitulatif wrapper tab after categories -->
+  <p-tabPanel [disabled]="true" header="Récapitulatif">
+    <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
+      <h2 class="mb-4">Facturation</h2>
+
+      <div class="field">
+        <label for="nom">Nom de l'entreprise à facturer</label>
+        <input pInputText id="nom" formControlName="nom" placeholder="Entrez le nom de l'entreprise" class="w-full" />
+      </div>
+
+      <div class="grid">
+        <div class="field col-4">
+          <label for="rue">Rue</label>
+          <input pInputText id="rue" formControlName="rue" placeholder="Entrez la rue" class="w-full" />
+        </div>
+        <div class="field col-4">
+          <label for="codePostale">Code postal</label>
+          <input pInputText id="codePostale" formControlName="codePostale" placeholder="Entrez le code postal" class="w-full" />
+        </div>
+        <div class="field col-4">
+          <label for="ville">Ville</label>
+          <input pInputText id="ville" formControlName="ville" placeholder="Entrez la ville" class="w-full" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="telephone_standard">Téléphone</label>
+        <input pInputText id="telephone_standard" formControlName="telephone_standard"
+               placeholder="Entrez le numéro de téléphone" class="w-full" />
+      </div>
+
+      <h2 class="mb-4">Responsable</h2>
+      <div class="grid">
+        <div class="field col-6">
+          <label for="nomResponsable">Nom</label>
+          <input pInputText id="nomResponsable" formControlName="nomResponsable"
+                 placeholder="Entrez le nom du responsable" class="w-full" />
+        </div>
+        <div class="field col-6">
+          <label for="prenomResponsable">Prénom</label>
+          <input pInputText id="prenomResponsable" formControlName="prenomResponsable"
+                 placeholder="Entrez le prénom du responsable" class="w-full" />
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field col-6">
+          <label for="telResponsable">Téléphone</label>
+          <input pInputText id="telResponsable" formControlName="telResponsable"
+                 placeholder="Entrez le téléphone du responsable" class="w-full" />
+        </div>
+        <div class="field col-6">
+          <label for="emailResponsable">Email</label>
+          <input pInputText type="email" id="emailResponsable" formControlName="emailResponsable"
+                 placeholder="Entrez l'email du responsable" class="w-full" />
+        </div>
+      </div>
+
+      <h2 class="mb-4">Signature</h2>
+      <div class="grid">
+        <div class="field col-6">
+          <label for="faitA">Fait à</label>
+          <input pInputText id="faitA" formControlName="faitA" placeholder="Lieu" class="w-full" />
+        </div>
+        <div class="signature-pad col-6">
+          <label>Signature</label>
+          <canvas #canvas style="border: 1px solid #d8d8d8;" width="600" height="200"></canvas>
+          <p-button severity="primary" outlined="true" (click)="clearCanvas()" class="mt-2">Effacer</p-button>
+        </div>
+      </div>
+
+      <!-- Validation Messages -->
+      <div class="mt-3">
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('nom')?.invalid && reservationForm.get('nom')?.touched"
+                   severity="error" text="Le nom est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('rue')?.invalid && reservationForm.get('rue')?.touched"
+                   severity="error" text="La rue est requise."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('codePostale')?.invalid && reservationForm.get('codePostale')?.touched"
+                   severity="error" text="Le code postal est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('ville')?.invalid && reservationForm.get('ville')?.touched"
+                   severity="error" text="La ville est requise."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('telephone_standard')?.invalid && reservationForm.get('telephone_standard')?.touched"
+                   severity="error" text="Le téléphone standard est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('nomResponsable')?.invalid && reservationForm.get('nomResponsable')?.touched"
+                   severity="error" text="Le nom du responsable est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('prenomResponsable')?.invalid && reservationForm.get('prenomResponsable')?.touched"
+                   severity="error" text="Le prénom du responsable est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('telResponsable')?.invalid && reservationForm.get('telResponsable')?.touched"
+                   severity="error" text="Le téléphone du responsable est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('faitA')?.invalid && reservationForm.get('faitA')?.touched"
+                   severity="error" text="Le champ 'Fait à' est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('emailResponsable')?.errors?.['required'] && reservationForm.get('emailResponsable')?.touched"
+                   severity="error" text="L'email du responsable est requis."></p-message>
+        <p-message class="w-full mb-2" *ngIf="reservationForm.get('emailResponsable')?.errors?.['email'] && reservationForm.get('emailResponsable')?.touched"
+                   severity="error" text="L'adresse email du responsable n'est pas valide."></p-message>
+      </div>
+    </form>
+
+    <!-- Facture Confirmation Dialog -->
+    <p-dialog header="Votre commande" [modal]="true" [(visible)]="factureDialogVisible" [style]="{ width: '960px' }">
+      <app-facture-bc2 id="contentToExport" (createBc2Event)="createBC2()" #factureBc2Dialog
+        [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
+        [entreprise]="entreprise" [fait]="reservationForm.get('faitA')?.value"
+        [selectedOptions]="selectedOptions"
+        [standisteForm]="standisteForm"
+        [reservationForm]="reservationForm"></app-facture-bc2>
+      <p-button label="Valider" severity="primary" (click)="createBC2()" styleClass="w-full" />
+    </p-dialog>
+  </p-tabPanel>
+</p-tabView>
+
+<!-- Global Navigation Buttons -->
+<div class="mb-3 flex justify-content-between mt-4">
+  <button pButton label="Précédent"
+          [disabled]="activeIndex === 0"
+          (click)="handlePrevious()"
+          class="p-button-outlined"></button>
+
+  <button pButton
+          label="Suivant"
+          (click)="handleNext()"></button>
+</div>
+
+
+<p-confirmDialog />

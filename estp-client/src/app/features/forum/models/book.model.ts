@@ -12,4 +12,5 @@ export interface Book {
   valide_entreprise?: boolean;
   created_at?: string;
   updated_at?: string;
+  entreprise_nom?: string;
 }
