@@ -123,10 +123,22 @@ export class FactureBc2Component implements OnInit {
   }
 
   calculateTotalTTC(): number {
-    return this.calculateTotalHT() * 1.2;
+    return this.calculateTotalHT() + this.calculateTVA();
   }
 
   calculateTVA(): number {
-    return this.calculateTotalHT() * 0.2;
+    let totalTVA = 0;
+    this.selectedOptions.forEach(option => {
+      const prixHT = (option.option_prix_ht || 0) * (option.qty || 1);
+      const tauxTVA = (option.option_taux_tva || 20) / 100; // Default to 20% if not set
+
+      // Debug log to check what TVA values we're getting
+      if (option.option_taux_tva === undefined || option.option_taux_tva === null || option.option_taux_tva === 0) {
+        console.log(`Option ${option.option_nom} has no TVA set, using default 20%`, option);
+      }
+
+      totalTVA += prixHT * tauxTVA;
+    });
+    return totalTVA;
   }
 }

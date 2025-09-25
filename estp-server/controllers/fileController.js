@@ -5,7 +5,8 @@ const fs = require('fs');
 // Multer storage config with dynamic folder and filename
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const folder = req.params.folder;
+    // Extract folder path from the wildcard parameter
+    const folder = req.params[0]; // Gets everything after /api/upload/
     const uploadDir = path.join(__dirname, '../uploads', folder);
 
     if (!fs.existsSync(uploadDir)) {
@@ -35,7 +36,7 @@ const uploadHandler = (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const folder = req.params.folder;
+    const folder = req.params[0]; // Gets everything after /api/upload/
     res.status(200).json({
       nonDisplayMessage: 'File uploaded successfully',
       filePath: `/uploads/${folder}/${req.file.filename}`

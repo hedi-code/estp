@@ -11,4 +11,5 @@ estp-server/packages.microsoft.gpg
 estp-server/sudo
 estp-server/temctl status mysql.service'
 estp-server/uploads
+.claude
 

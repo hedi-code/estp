@@ -25,7 +25,8 @@ export class GestionBookComponent {
   displayEditDialog = false;
   displayDeleteDialog = false;
   selectedFile: File | null = null;
-  selectedUser!: User
+  selectedUser!: User;
+  displayBatDialog = false;
 
 
   constructor(
@@ -146,6 +147,8 @@ export class GestionBookComponent {
 
   openBatDialog(book: Book){
     this.selectedBook = {...book};
+    this.selectedFile = null; // Reset selected file
+    this.displayBatDialog = true;
     this.entrepriseService.getEntrepriseById(book.entreprise_id).subscribe({
       next: (entreprise) => {
          this.userService.getUserById(entreprise.user_id ?? -1).subscribe(
@@ -156,16 +159,69 @@ export class GestionBookComponent {
   }
 
   sendBat(){
-    if(this.selectedFile){
+    if (!this.selectedFile) {
+      alert('Veuillez sélectionner un fichier BAT');
+      return;
+    }
 
-      this.emailService.sendEmailWithAttachment({
-        senderEmail: 'ne-pas-repondre@forumestp.fr',
-        receiverEmail: "hedibensafegine7@gmail.com  ",
-        receiverName: "hedi",
-        subject: 'azer',
-        htmlText: 'azer',
-        file: this.selectedFile 
-      }).subscribe();
+    this.entrepriseService.getEntrepriseById(this.selectedBook.entreprise_id).subscribe({
+      next: (entreprise) => {
+         this.userService.getUserById(entreprise.user_id ?? -1).subscribe({
+          next: (user) => {
+            this.selectedUser = user;
+            // Send email with book details
+            this.emailService.sendEmailWithAttachment({
+              senderEmail: 'ne-pas-repondre@forumestp.fr',
+              //receiverEmail: "hedibensafegine7@gmail.com",
+              receiverEmail: user.email || "hedibensafegine7@gmail.com",
+              ccEmails: ['chloe.denier@forumestp.fr'],
+              receiverName: `${user.first_name} ${user.last_name}`,
+              subject: `Bon à tirer - Page de Book ${entreprise.nom}`,
+              htmlText: `
+                <p>Bonjour,</p>
+                <br>
+                <p>Suite au remplissage de votre fiche signalétique, nous avons pu compléter votre page de présentation dans le Book.</p>
+                <br>
+                <p>Vous trouverez le Bon à Tirer ci-joint.</p>
+                <br>
+                <p>Dans le cas où l'une des sections n'est pas remplie, vous avez la possibilité de nous communiquer le texte correspondant.</p>
+                <br>
+                <p>Si vous avez d'autres remarques, merci de nous faire un retour par mail sous un délai de 48h (jours ouvrés) à partir de la réception du mail.</p>
+                <br>
+                <p>Si aucune réponse n'est donnée avant le dépassement du délai, nous considérerons que la page de Book est validée.</p>
+                <br>
+                <p>Notez que le nom de l'entreprise indiquée dans le Book sera utilisé comme référence pour l'ensemble de la communication de l'événement.</p>
+                <br>
+                <p>En attendant un retour de votre part, nous vous remercions d'avance pour votre attention et nous vous souhaitons une bonne journée.</p>
+                <br>
+                <p>Bien cordialement,</p>
+              `,
+              file: this.selectedFile!
+            }).subscribe({
+              next: () => {
+                this.displayBatDialog = false;
+                this.selectedFile = null;
+              },
+              error: (error) => {
+                console.error('Erreur lors de l\'envoi de l\'email:', error);
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+          }
+         });
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération de l\'entreprise:', error);
+      }
+    });
+  }
+
+  onBatFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
     }
   }
 }

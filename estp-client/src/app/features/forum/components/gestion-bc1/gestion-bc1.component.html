@@ -5,7 +5,7 @@
     <p-tabView [(activeIndex)]="activeIndex">
         <p-tabPanel header="Gestion des Packs">
             <div class="mb-4">
-                <p-button icon="pi pi-plus" label="Ajouter un pack"></p-button>
+                <p-button icon="pi pi-plus" label="Ajouter un pack" (click)="onAddPack()"></p-button>
                 <!-- <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button> -->
             </div>
            <p-table [value]="packs" dataKey="pack_id" responsiveLayout="scroll">
@@ -97,7 +97,7 @@
         </p-tabPanel>
         <p-tabPanel header="Gestion des options">
             <div class="mb-4">
-                    <p-button icon="pi pi-plus" label="Ajouter une option"></p-button>
+                    <p-button icon="pi pi-plus" label="Ajouter une option" (click)="onAddOption()"></p-button>
                     <!-- <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button> -->
                 </div>
             <p-table [value]="options" dataKey="id" responsiveLayout="scroll">
@@ -276,6 +276,68 @@
             (click)="confirmEditPack()"></button>
   </p-footer>
 </p-dialog>
+<!-- 🔹 ADD PACK DIALOG -->
+<p-dialog header="Ajouter un pack" [(visible)]="addPackDialogVisible" [modal]="true" [closable]="false" [style]="{width: '600px'}">
+  <div class="p-fluid">
+    <div class="p-field" class="mt-4">
+      <label for="newPackTitre">Titre</label>
+      <input id="newPackTitre" type="text" pInputText class="w-full mt-2" [(ngModel)]="newPack.titre" />
+    </div>
+    <div class="p-field" class="mt-4">
+      <label for="newPackType">Type</label>
+      <input id="newPackType" type="text" pInputText class="w-full mt-2" [(ngModel)]="newPack.type" />
+    </div>
+    <div class="p-field" class="mt-4">
+      <label for="newPackDescription">Description</label>
+      <textarea id="newPackDescription" rows="3" pInputTextarea class="w-full mt-2" [(ngModel)]="newPack.description"></textarea>
+    </div>
+    <div class="p-field" class="mt-4">
+      <label for="newPackImg">Image</label>
+      <input type="file" (change)="onFileSelected($event)" />
+      <img *ngIf="newPack.img" [src]="newPack.img" alt="preview"
+           width="100" height="100" style="margin-top:10px; border-radius:8px;" />
+    </div>
+  </div>
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="addPackDialogVisible=false"></button>
+    <button pButton label="Ajouter" icon="pi pi-check" class="p-button-success" (click)="confirmAddPack()"></button>
+  </p-footer>
+</p-dialog>
+
+<!-- 🔹 ADD OPTION DIALOG -->
+<p-dialog header="Ajouter une option" [(visible)]="addOptionDialogVisible" [modal]="true" [closable]="false" [style]="{width: '600px'}">
+  <div class="p-field" class="mt-4">
+    <label for="newOptionName">Nom</label>
+    <input id="newOptionName" type="text" pInputText class="w-full mt-2" [(ngModel)]="newOption.name" />
+  </div>
+  <div class="p-field" class="mt-4">
+    <label for="newOptionPrixHt">Prix HT</label>
+    <input id="newOptionPrixHt" type="number" pInputText class="w-full mt-2" [(ngModel)]="newOption.prix_ht" />
+  </div>
+  <div class="p-field" class="mt-4">
+    <label for="newOptionQmax">Qmax</label>
+    <input id="newOptionQmax" type="number" pInputText class="w-full mt-2" [(ngModel)]="newOption.qmax" />
+  </div>
+  <div class="p-field" class="mt-4">
+    <label for="newOptionOrdre">Ordre</label>
+    <input id="newOptionOrdre" type="number" pInputText class="w-full mt-2" [(ngModel)]="newOption.ordre" />
+  </div>
+  <div class="p-field" class="mt-4">
+    <label for="newOptionDescription">Description</label>
+    <textarea id="newOptionDescription" rows="3" pInputTextarea class="w-full mt-2" [(ngModel)]="newOption.description"></textarea>
+  </div>
+  <div class="p-field" class="mt-4">
+    <label for="newOptionImg">Image</label>
+    <input type="file" (change)="onFileSelected($event)" />
+    <img *ngIf="newOption.img" [src]="newOption.img" alt="preview"
+         width="100" height="100" style="margin-top:10px; border-radius:8px;" />
+  </div>
+  <p-footer>
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="addOptionDialogVisible=false"></button>
+    <button pButton label="Ajouter" icon="pi pi-check" class="p-button-success" (click)="confirmAddOption()"></button>
+  </p-footer>
+</p-dialog>
+
 <!-- 🔹 Confirm Delete -->
 <p-confirmDialog></p-confirmDialog>
 </div>

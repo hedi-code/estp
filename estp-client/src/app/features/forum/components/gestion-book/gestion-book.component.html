@@ -90,7 +90,7 @@
         <td>
           <button pButton [text]="true" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="onEdit(b)"></button>
           <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="onDelete(b)"></button>
-          <!-- <button pButton [text]="true" icon="pi pi-send" pTooltip="Envoyer BAT" tooltipPosition="bottom" (click)="sendBat()"></button> -->
+          <button pButton [text]="true" severity="info" icon="pi pi-send" pTooltip="Envoyer BAT" tooltipPosition="bottom" (click)="openBatDialog(b)"></button>
         </td>
       </tr>
     </ng-template>
@@ -167,6 +167,59 @@
     <ng-template pTemplate="footer">
       <button pButton label="Non" icon="pi pi-times" class="p-button-text" (click)="cancelDelete()"></button>
       <button pButton label="Oui" icon="pi pi-check" class="p-button-danger" (click)="confirmDelete()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- BAT DIALOG -->
+  <p-dialog header="Envoyer BAT par email" [(visible)]="displayBatDialog" [modal]="true" [closable]="true" [style]="{ width: '500px' }">
+    <div *ngIf="selectedBook && selectedUser" class="p-fluid">
+      <div class="mb-4">
+        <h4>Informations de l'entreprise</h4>
+        <p><strong>Entreprise:</strong> {{ selectedBook.entreprise_nom }}</p>
+        <p><strong>Contact:</strong> {{ selectedUser?.first_name }} {{ selectedUser?.last_name }}</p>
+        <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+      </div>
+
+      <div class="mb-4">
+        <h4>Détails du book</h4>
+        <p><strong>Description:</strong> {{ selectedBook.description || 'Non renseignée' }}</p>
+        <p><strong>Collaborateurs:</strong> {{ selectedBook.nombre_collaborateurs || 'Non renseigné' }}</p>
+        <p><strong>Activité:</strong> {{ selectedBook.activite || 'Non renseignée' }}</p>
+        <p><strong>Implantation:</strong> {{ selectedBook.implantation || 'Non renseignée' }}</p>
+      </div>
+
+      <div class="mb-4">
+        <label for="bat-file" class="block mb-2"><strong>Fichier BAT à joindre *</strong></label>
+        <input
+          type="file"
+          id="bat-file"
+          (change)="onBatFileSelected($event)"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          class="w-full p-2 border border-gray-300 rounded"
+        />
+        <small class="text-gray-600">Formats acceptés: PDF, DOC, DOCX, JPG, PNG</small>
+        <div *ngIf="selectedFile" class="mt-2 text-green-600">
+          <i class="pi pi-check"></i> Fichier sélectionné: {{ selectedFile.name }}
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="displayBatDialog=false">
+      </button>
+      <button
+        pButton
+        label="Envoyer Email"
+        icon="pi pi-send"
+        class="p-button-primary"
+        [disabled]="!selectedFile"
+        (click)="sendBat()">
+      </button>
     </ng-template>
   </p-dialog>
 </div>
