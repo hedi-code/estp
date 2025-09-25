@@ -28,6 +28,8 @@ export class GestionBc1Component {
   selectedFile: File | null = null;
   newPack: Pack = { pack_id: 0, type: '', titre: '', description: '', img: '', surfaces: [], options: [] };
   newOption: Option1 = { id: 0, name: '', prix_ht: 0, qmax: 0, ordre: 0, description: '', img: '' };
+  newPackSurfaces: {surface?: number, prix?: string}[] = [];
+  newPackOptions: {option_description?: string}[] = [];
   
 
   constructor(private fileService: FileService, private packService: Pack1Service, private optionService: Option1Service, private confirmationService: ConfirmationService){}
@@ -217,8 +219,28 @@ export class GestionBc1Component {
   // ================= ADD PACK =================
   onAddPack() {
     this.newPack = { pack_id: 0, type: '', titre: '', description: '', img: '', surfaces: [], options: [] };
+    this.newPackSurfaces = [];
+    this.newPackOptions = [];
     this.selectedFile = null;
     this.addPackDialogVisible = true;
+  }
+
+  // Methods for managing surfaces in new pack
+  addNewPackSurface() {
+    this.newPackSurfaces.push({ surface: 0, prix: '' });
+  }
+
+  removeNewPackSurface(index: number) {
+    this.newPackSurfaces.splice(index, 1);
+  }
+
+  // Methods for managing options in new pack
+  addNewPackOption() {
+    this.newPackOptions.push({ option_description: '' });
+  }
+
+  removeNewPackOption(index: number) {
+    this.newPackOptions.splice(index, 1);
   }
 
   confirmAddPack() {
@@ -227,7 +249,7 @@ export class GestionBc1Component {
       const tempImg = this.newPack.img;
       this.newPack.img = '';
 
-      // Create pack first, then upload image
+      // Create pack first, then upload image and create surfaces/options
       this.packService.createPack(this.newPack).subscribe((response: { message: string; pack_id: number }) => {
         const packId = response.pack_id;
 
@@ -240,22 +262,59 @@ export class GestionBc1Component {
             const imgPath = `${packId}.${extension}`;
             // Now update the pack with the image path
             this.packService.updatePack(packId, { ...this.newPack, img: imgPath }).subscribe(() => {
-              this.addPackDialogVisible = false;
-              this.loadPacks();
-              this.selectedFile = null;
+              this.createPackSurfacesAndOptions(packId);
             });
           });
       });
     } else {
-      this.createPack();
+      // Create pack without image
+      this.packService.createPack(this.newPack).subscribe((response: { message: string; pack_id: number }) => {
+        const packId = response.pack_id;
+        this.createPackSurfacesAndOptions(packId);
+      });
     }
   }
 
-  private createPack() {
-    this.packService.createPack(this.newPack).subscribe(() => {
+  private createPackSurfacesAndOptions(packId: number) {
+    // Create surfaces
+    const surfacePromises = this.newPackSurfaces
+      .filter(surface => surface.surface && surface.prix)
+      .map(surface =>
+        this.packService.createSurface({
+          surface: surface.surface!,
+          prix: surface.prix!,
+          id_pack1: packId
+        }).toPromise()
+      );
+
+    // Create options
+    const optionPromises = this.newPackOptions
+      .filter(option => option.option_description && option.option_description.trim())
+      .map(option =>
+        this.packService.createOption({
+          description: option.option_description!,
+          id_pack1: packId
+        }).toPromise()
+      );
+
+    // Wait for all surfaces and options to be created
+    Promise.all([...surfacePromises, ...optionPromises]).then(() => {
       this.addPackDialogVisible = false;
       this.loadPacks();
       this.selectedFile = null;
+    }).catch(error => {
+      console.error('Error creating surfaces/options:', error);
+      // Still close dialog and reload, but log the error
+      this.addPackDialogVisible = false;
+      this.loadPacks();
+      this.selectedFile = null;
+    });
+  }
+
+  private createPack() {
+    this.packService.createPack(this.newPack).subscribe((response: { message: string; pack_id: number }) => {
+      const packId = response.pack_id;
+      this.createPackSurfacesAndOptions(packId);
     });
   }
 

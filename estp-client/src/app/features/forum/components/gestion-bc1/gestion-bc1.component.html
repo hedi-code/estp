@@ -297,6 +297,29 @@
       <img *ngIf="newPack.img" [src]="newPack.img" alt="preview"
            width="100" height="100" style="margin-top:10px; border-radius:8px;" />
     </div>
+
+    <!-- Surfaces Section -->
+    <div class="mt-4">
+      <label class="font-bold">Surfaces</label>
+      <div *ngFor="let surface of newPackSurfaces; let i = index" class="flex align-items-center gap-2 mt-2">
+        <input type="number" pInputText placeholder="Surface (m²)" [(ngModel)]="surface.surface" class="flex-1" />
+        <input type="text" pInputText placeholder="Prix" [(ngModel)]="surface.prix" class="flex-1" />
+        <button pButton icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="removeNewPackSurface(i)"></button>
+      </div>
+      <button pButton label="Ajouter Surface" icon="pi pi-plus" class="p-button-sm mt-2" (click)="addNewPackSurface()"></button>
+    </div>
+
+    <!-- Options Section -->
+    <div class="mt-4">
+      <label class="font-bold">Options</label>
+      <div *ngFor="let option of newPackOptions; let i = index" class="border-1 border-300 p-3 mt-2">
+        <div class="flex align-items-center gap-2 mb-2">
+          <textarea pInputTextarea placeholder="Description de l'option" [(ngModel)]="option.option_description" class="flex-1" rows="2"></textarea>
+          <button pButton icon="pi pi-trash" class="p-button-danger p-button-sm" (click)="removeNewPackOption(i)"></button>
+        </div>
+      </div>
+      <button pButton label="Ajouter Option" icon="pi pi-plus" class="p-button-sm mt-2" (click)="addNewPackOption()"></button>
+    </div>
   </div>
   <p-footer>
     <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="addPackDialogVisible=false"></button>
