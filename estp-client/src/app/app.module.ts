@@ -64,6 +64,8 @@ import { GestionBc1Component } from './features/forum/components/gestion-bc1/ges
 import { GestionBc2Component } from './features/forum/components/gestion-bc2/gestion-bc2.component';
 import { GestionBookComponent } from './features/forum/components/gestion-book/gestion-book.component';
 import { DashboardComponent } from './features/forum/components/dashboard/dashboard.component';
+import { CommonModule } from '@angular/common';
+import { MailingComponent } from './features/forum/components/mailing/mailing.component';
 import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2-charts';
 
 
@@ -99,6 +101,7 @@ import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2
     GestionBc2Component,
     GestionBookComponent,
     DashboardComponent,
+    MailingComponent
     ],
   imports: [
     BrowserModule,
@@ -130,6 +133,7 @@ import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2
     FileUploadModule,
     InputTextareaModule,
     AccordionModule,
+    CommonModule,
     BaseChartDirective
   ],
   providers: [
