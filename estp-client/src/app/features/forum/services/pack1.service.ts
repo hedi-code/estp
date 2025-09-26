@@ -17,9 +17,9 @@ export class Pack1Service {
   getAllPacks(): Observable<Pack[]> {
     return this.http.get<Pack[]>(this.apiUrl);
   }
-  createPack(data: Pack) { return this.http.post(`${this.apiUrl}`, data); }
+  createPack(data: Pack): Observable<{message: string, pack_id: number}> { return this.http.post<{message: string, pack_id: number}>(`${this.apiUrl}`, data); }
   updatePack(id: number, data: Pack) { return this.http.put(`${this.apiUrl}/pack/${id}`, data); }
-  deletePack(id: number) { return this.http.delete(`${this.apiUrl}}/pack/${id}`); }
+  deletePack(id: number) { return this.http.delete(`${this.apiUrl}/${id}`); }
 
   // Options
   createOption(data: any) { return this.http.post(`${this.apiUrl}/pack/options`, data); }

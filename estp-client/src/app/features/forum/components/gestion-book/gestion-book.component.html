@@ -137,7 +137,7 @@
         <td>
           <button pButton [text]="true" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="onEdit(b)"></button>
           <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="onDelete(b)"></button>
-          <!-- <button pButton [text]="true" icon="pi pi-send" pTooltip="Envoyer BAT" tooltipPosition="bottom" (click)="sendBat()"></button> -->
+          <button pButton [text]="true" severity="info" icon="pi pi-send" pTooltip="Envoyer BAT" tooltipPosition="bottom" (click)="openBatDialog(b)"></button>
         </td>
       </tr>
     </ng-template>

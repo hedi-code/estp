@@ -220,7 +220,7 @@
                         {{option.qty}}
                     </td>
                     <td style="text-align:right">
-                        20%
+                        {{option.option_taux_tva || 0}}%
                     </td>
                     <td style="text-align:right">
                         {{option.option_prix_ht | number: '1.2-2'}} €

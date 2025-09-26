@@ -23,7 +23,13 @@ export class GestionBc1Component {
   editDialogVisible: boolean = false;
   selectedPack!: Pack;
   editPackDialogVisible = false;
+  addPackDialogVisible = false;
+  addOptionDialogVisible = false;
   selectedFile: File | null = null;
+  newPack: Pack = { pack_id: 0, type: '', titre: '', description: '', img: '', surfaces: [], options: [] };
+  newOption: Option1 = { id: 0, name: '', prix_ht: 0, qmax: 0, ordre: 0, description: '', img: '' };
+  newPackSurfaces: {surface?: number, prix?: string}[] = [];
+  newPackOptions: {option_description?: string}[] = [];
   
 
   constructor(private fileService: FileService, private packService: Pack1Service, private optionService: Option1Service, private confirmationService: ConfirmationService){}
@@ -44,27 +50,29 @@ export class GestionBc1Component {
  // ---- Edit ----
   onEditOpt(opt: Option1) {
     this.selectedOpt = { ...opt }; // copie pour ne pas modifier directement
+    this.selectedFile = null;
     this.editDialogVisible = true;
   }
 
   confirmEditOpt() {
-     if (this.selectedFile?.name) {
-      // upload first, then update pack
-    const originalName = this.selectedFile?.name ?? '';
-    let extension = originalName.includes('.') ? originalName.split('.').pop() : '';
-    let newName = originalName.includes(extension ?? '') ? originalName.split('.').reverse().pop() : this.selectedFile?.name
-      this.fileService.uploadFile(this.selectedFile, 'img%2Foption1s%2F'+this.selectedOpt.id, newName)
+    if (this.selectedFile?.name) {
+      // upload first, then update option
+      const originalName = this.selectedFile?.name ?? '';
+
+      this.fileService.uploadFile(this.selectedFile, `img/option1s/${this.selectedOpt.id}`, originalName.split('.')[0])
         .subscribe(() => {
-          this.selectedOpt.img = newName+'.'+extension;
- this.optionService.updateOption(this.selectedOpt.id, this.selectedOpt).subscribe(() => {
-      this.editDialogVisible = false;
-      this.loadOptions();
-    });        });
+          this.selectedOpt.img = originalName;
+          this.optionService.updateOption(this.selectedOpt.id, this.selectedOpt).subscribe(() => {
+            this.editDialogVisible = false;
+            this.loadOptions();
+          });
+        });
     } else {
- this.optionService.updateOption(this.selectedOpt.id, this.selectedOpt).subscribe(() => {
-      this.editDialogVisible = false;
-      this.loadOptions();
-    });    }
+      this.optionService.updateOption(this.selectedOpt.id, this.selectedOpt).subscribe(() => {
+        this.editDialogVisible = false;
+        this.loadOptions();
+      });
+    }
   }
 
   // ---- Delete ----
@@ -87,6 +95,7 @@ export class GestionBc1Component {
  // ================= EDIT PACK =================
   onEditPack(pack: Pack) {
     this.selectedPack = JSON.parse(JSON.stringify(pack)); // deep copy
+    this.selectedFile = null;
     this.editPackDialogVisible = true;
   }
 
@@ -94,19 +103,29 @@ export class GestionBc1Component {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
-      this.selectedPack.img = URL.createObjectURL(file); // preview
+      const preview = URL.createObjectURL(file);
+
+      if (this.editPackDialogVisible && this.selectedPack) {
+        this.selectedPack.img = preview;
+      } else if (this.editDialogVisible && this.selectedOpt) {
+        this.selectedOpt.img = preview;
+      } else if (this.addPackDialogVisible && this.newPack) {
+        this.newPack.img = preview;
+      } else if (this.addOptionDialogVisible && this.newOption) {
+        this.newOption.img = preview;
+      }
     }
   }
 
   confirmEditPack() {
     if (this.selectedFile?.name) {
       // upload first, then update pack
-    const originalName = this.selectedFile?.name ?? '';
-    let extension = originalName.includes('.') ? originalName.split('.').pop() : '';
-    let newName = originalName.includes(extension ?? '') ? originalName.split('.').reverse().pop() : this.selectedFile?.name
-      this.fileService.uploadFile(this.selectedFile, 'img%2Fpack1', newName)
+      const originalName = this.selectedFile?.name ?? '';
+      let extension = originalName.includes('.') ? originalName.split('.').pop() : '';
+
+      this.fileService.uploadFile(this.selectedFile, 'img/pack1', `${this.selectedPack.pack_id}`)
         .subscribe(() => {
-          this.selectedPack.img = newName+'.'+extension;
+          this.selectedPack.img = `${this.selectedPack.pack_id}.${extension}`;
           this.updatePackData();
         });
     } else {
@@ -135,7 +154,7 @@ export class GestionBc1Component {
 
   }
   async deletePackSurface(id: number){
-    await this.packService.deletePack(id).subscribe();
+    await this.packService.deleteSurface(id).subscribe();
     await this.loadPacks()
 
   }
@@ -196,4 +215,153 @@ export class GestionBc1Component {
       }
     });
   }
+
+  // ================= ADD PACK =================
+  onAddPack() {
+    this.newPack = { pack_id: 0, type: '', titre: '', description: '', img: '', surfaces: [], options: [] };
+    this.newPackSurfaces = [];
+    this.newPackOptions = [];
+    this.selectedFile = null;
+    this.addPackDialogVisible = true;
+  }
+
+  // Methods for managing surfaces in new pack
+  addNewPackSurface() {
+    this.newPackSurfaces.push({ surface: 0, prix: '' });
+  }
+
+  removeNewPackSurface(index: number) {
+    this.newPackSurfaces.splice(index, 1);
+  }
+
+  // Methods for managing options in new pack
+  addNewPackOption() {
+    this.newPackOptions.push({ option_description: '' });
+  }
+
+  removeNewPackOption(index: number) {
+    this.newPackOptions.splice(index, 1);
+  }
+
+  confirmAddPack() {
+    if (this.selectedFile?.name) {
+      // Create pack first without image, then upload and update
+      const tempImg = this.newPack.img;
+      this.newPack.img = '';
+
+      // Create pack first, then upload image and create surfaces/options
+      this.packService.createPack(this.newPack).subscribe((response: { message: string; pack_id: number }) => {
+        const packId = response.pack_id;
+
+        // Upload image file
+        const originalName = this.selectedFile!.name;
+        const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
+
+        this.fileService.uploadFile(this.selectedFile!, 'img/pack1', `${packId}`)
+          .subscribe(() => {
+            const imgPath = `${packId}.${extension}`;
+            // Now update the pack with the image path
+            this.packService.updatePack(packId, { ...this.newPack, img: imgPath }).subscribe(() => {
+              this.createPackSurfacesAndOptions(packId);
+            });
+          });
+      });
+    } else {
+      // Create pack without image
+      this.packService.createPack(this.newPack).subscribe((response: { message: string; pack_id: number }) => {
+        const packId = response.pack_id;
+        this.createPackSurfacesAndOptions(packId);
+      });
+    }
+  }
+
+  private createPackSurfacesAndOptions(packId: number) {
+    // Create surfaces
+    const surfacePromises = this.newPackSurfaces
+      .filter(surface => surface.surface && surface.prix)
+      .map(surface =>
+        this.packService.createSurface({
+          surface: surface.surface!,
+          prix: surface.prix!,
+          id_pack1: packId
+        }).toPromise()
+      );
+
+    // Create options
+    const optionPromises = this.newPackOptions
+      .filter(option => option.option_description && option.option_description.trim())
+      .map(option =>
+        this.packService.createOption({
+          description: option.option_description!,
+          id_pack1: packId
+        }).toPromise()
+      );
+
+    // Wait for all surfaces and options to be created
+    Promise.all([...surfacePromises, ...optionPromises]).then(() => {
+      this.addPackDialogVisible = false;
+      this.loadPacks();
+      this.selectedFile = null;
+    }).catch(error => {
+      console.error('Error creating surfaces/options:', error);
+      // Still close dialog and reload, but log the error
+      this.addPackDialogVisible = false;
+      this.loadPacks();
+      this.selectedFile = null;
+    });
+  }
+
+  private createPack() {
+    this.packService.createPack(this.newPack).subscribe((response: { message: string; pack_id: number }) => {
+      const packId = response.pack_id;
+      this.createPackSurfacesAndOptions(packId);
+    });
+  }
+
+
+  // ================= ADD OPTION =================
+  onAddOption() {
+    this.newOption = { id: 0, name: '', prix_ht: 0, qmax: 0, ordre: 0, description: '', img: '' };
+    this.selectedFile = null;
+    this.addOptionDialogVisible = true;
+  }
+
+  confirmAddOption() {
+    if (this.selectedFile?.name) {
+      // Include image filename in the initial option creation
+      const originalName = this.selectedFile.name;
+      this.newOption.img = originalName;
+
+      // Create option with image filename
+      this.optionService.createOption(this.newOption).subscribe((response: { message: string; id: number }) => {
+        const optionId = response.id;
+        if (optionId) {
+          // Upload image file to option-specific folder
+          this.fileService.uploadFile(this.selectedFile!, `img/option1s/${optionId}`, originalName.split('.')[0])
+            .subscribe(() => {
+              this.addOptionDialogVisible = false;
+              this.loadOptions();
+              this.selectedFile = null;
+            });
+        } else {
+          console.error('Option ID is undefined in response:', response);
+          this.addOptionDialogVisible = false;
+          this.loadOptions();
+          this.selectedFile = null;
+        }
+      });
+    } else {
+      this.createOption();
+    }
+  }
+
+  private createOption() {
+    this.optionService.createOption(this.newOption).subscribe(() => {
+      this.addOptionDialogVisible = false;
+      this.loadOptions();
+      this.selectedFile = null;
+    });
+  }
+
+
 }

@@ -1,0 +1,109 @@
+<div class="dashboard-container">
+  <div class="grid">
+    <div class="col-12">
+      <h2 class="text-2xl font-bold mb-4">Tableau de Bord</h2>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="col-12 flex justify-content-center">
+      <i class="pi pi-spinner pi-spin" style="font-size: 2rem"></i>
+    </div>
+
+    <!-- Stats Cards -->
+    <div *ngIf="!loading && stats" class="col-12">
+      <div class="grid">
+        <div class="col-12 md:col-3">
+          <div class="bg-blue-100 border-round p-3 text-center">
+            <i class="pi pi-book text-blue-500 text-4xl mb-2"></i>
+            <h3 class="text-2xl font-bold text-blue-700">{{stats.totalBooks}}</h3>
+            <p class="text-blue-600 font-medium">Total Books</p>
+          </div>
+        </div>
+        <div class="col-12 md:col-3">
+          <div class="bg-red-100 border-round p-3 text-center">
+            <i class="pi pi-id-card text-red-500 text-4xl mb-2"></i>
+            <h3 class="text-2xl font-bold text-red-700">{{stats.totalBc1}}</h3>
+            <p class="text-red-600 font-medium">Total BC1</p>
+          </div>
+        </div>
+        <div class="col-12 md:col-3">
+          <div class="bg-yellow-100 border-round p-3 text-center">
+            <i class="pi pi-mobile text-yellow-500 text-4xl mb-2"></i>
+            <h3 class="text-2xl font-bold text-yellow-700">{{stats.totalBc2}}</h3>
+            <p class="text-yellow-600 font-medium">Total BC2</p>
+          </div>
+        </div>
+        <div class="col-12 md:col-3">
+          <div class="bg-teal-100 border-round p-3 text-center">
+            <i class="pi pi-building text-teal-500 text-4xl mb-2"></i>
+            <h3 class="text-2xl font-bold text-teal-700">{{stats.totalEntreprises}}</h3>
+            <p class="text-teal-600 font-medium">Total Entreprises</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div *ngIf="!loading && stats" class="col-12 lg:col-6">
+      <p-panel header="Statistiques générales" class="h-full">
+        <canvas baseChart
+                [data]="barChartData"
+                [options]="barChartOptions"
+                [type]="barChartType">
+        </canvas>
+      </p-panel>
+    </div>
+
+    <div *ngIf="!loading && stats" class="col-12 lg:col-6">
+      <p-panel header="Répartition BC1 vs BC2" class="h-full">
+        <canvas baseChart
+                [data]="doughnutChartData"
+                [options]="doughnutChartOptions"
+                [type]="doughnutChartType">
+        </canvas>
+      </p-panel>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div *ngIf="!loading && stats" class="col-12 lg:col-8">
+      <p-panel header="Montants HT" class="h-full">
+        <canvas baseChart
+                [data]="pieChartData"
+                [options]="pieChartOptions"
+                [type]="pieChartType">
+        </canvas>
+      </p-panel>
+    </div>
+
+    <div *ngIf="!loading && stats" class="col-12 lg:col-4">
+      <p-panel header="Résumé financier" class="h-full">
+        <div class="p-3">
+          <div class="mb-3">
+            <h5 class="text-lg font-semibold mb-2">BC1 Total HT</h5>
+            <p class="text-2xl font-bold text-red-600">{{stats.totalBc1Amount | currency:'EUR':'symbol':'1.2-2'}}</p>
+            <small class="text-gray-500">Valeur brute: {{stats.totalBc1Amount}}</small>
+          </div>
+          <div class="mb-3">
+            <h5 class="text-lg font-semibold mb-2">BC2 Total HT</h5>
+            <p class="text-2xl font-bold text-yellow-600">{{stats.totalBc2Amount | currency:'EUR':'symbol':'1.2-2'}}</p>
+            <small class="text-gray-500">Valeur brute: {{stats.totalBc2Amount}}</small>
+          </div>
+          <div class="border-top-1 border-300 pt-3">
+            <h5 class="text-lg font-semibold mb-2">Total Général</h5>
+            <p class="text-3xl font-bold text-green-600">{{(stats.totalBc1Amount + stats.totalBc2Amount) | currency:'EUR':'symbol':'1.2-2'}}</p>
+            <small class="text-gray-500">Valeur brute: {{stats.totalBc1Amount + stats.totalBc2Amount}}</small>
+          </div>
+        </div>
+      </p-panel>
+    </div>
+
+    <!-- Refresh Button -->
+    <div *ngIf="!loading" class="col-12 flex justify-content-center mt-4">
+      <p-button label="Actualiser les données"
+                icon="pi pi-refresh"
+                (onClick)="loadDashboardData()"
+                [outlined]="true">
+      </p-button>
+    </div>
+  </div>
+</div>

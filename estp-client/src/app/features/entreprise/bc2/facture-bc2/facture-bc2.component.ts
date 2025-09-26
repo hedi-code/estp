@@ -130,7 +130,7 @@ export class FactureBc2Component implements OnInit {
   }
 
   calculateTotalTTC(): number {
-    return this.calculateTotalHT() * 1.2;
+    return this.calculateTotalHT() + this.calculateTVA();
   }
 
   calculateTVA(): number {

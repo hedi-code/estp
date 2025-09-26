@@ -73,10 +73,14 @@ exports.getAllPack1sWithDetails = (req, res) => {
 // =================== CREATE PACK ===================
 exports.createPack1 = (req, res) => {
   const { type, titre, description, img } = req.body;
+  console.log('Creating pack with data:', { type, titre, description, img });
   const query = 'INSERT INTO pack1s (type, titre, description, img) VALUES (?, ?, ?, ?)';
   db.query(query, [type, titre, description, img], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Failed to create pack' });
-    res.json({ message: 'Pack created', pack_id: result.insertId });
+    if (err) {
+      console.error('Pack creation error:', err);
+      return res.status(500).json({ error: 'Échec de la création du pack' });
+    }
+    res.json({ message: 'Pack créé avec succès', pack_id: result.insertId });
   });
 };
 

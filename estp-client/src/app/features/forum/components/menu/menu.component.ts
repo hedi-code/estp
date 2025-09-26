@@ -17,6 +17,12 @@ export class MenuComponent {
   ngOnInit() {
     this.model = [
       {
+        label: 'Tableau de Bord',
+        items: [
+          { label: 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/forum/dashboard'] },
+        ]
+      },
+      {
         label: 'Gestion',
         items: [
           // { label: 'Fiche signaletique', icon: 'pi pi-fw pi-table', routerLink: ['/uikit/table'] },

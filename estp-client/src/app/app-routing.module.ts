@@ -41,9 +41,11 @@ const routes: Routes = [
     ]
   },
   {
-    path: 'forum', 
+    path: 'forum',
     component: LayoutComponent,
     children: [
+      { path: '', component: DashboardComponent },
+      { path: 'dashboard', component: DashboardComponent },
       { path: 'entreprise', component: EntrepriseSouscritesComponent },
       { path: 'bc1', component: Bc1SouscritsComponent },
       { path: 'bc2', component: Bc2SouscritsComponent },

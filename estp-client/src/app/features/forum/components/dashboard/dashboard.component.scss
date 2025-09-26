@@ -1,0 +1,31 @@
+.dashboard-container {
+  padding: 1rem;
+
+  .grid {
+    margin: 0;
+  }
+
+  .col-12, .col-3, .col-4, .col-6, .col-8 {
+    padding: 0.5rem;
+  }
+
+  p-panel {
+    height: 100%;
+
+    ::ng-deep .p-panel-content {
+      padding: 1rem;
+    }
+  }
+
+  canvas {
+    max-height: 400px;
+  }
+
+  .stats-card {
+    transition: transform 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}

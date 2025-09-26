@@ -14,8 +14,8 @@ export class Option1Service {
   constructor(private http: HttpClient) {}
 
   // Create a new option
-  createOption(option: Option1): Observable<Option1> {
-    return this.http.post<Option1>(this.apiUrl, option);
+  createOption(option: Option1): Observable<{message: string, id: number}> {
+    return this.http.post<{message: string, id: number}>(this.apiUrl, option);
   }
 
   // Get all options
@@ -29,7 +29,7 @@ export class Option1Service {
   }
 
   // Update an option by ID
-  updateOption(id: number, option: Option1): Observable<Option1> {
+  updateOption(id: number, option: Partial<Option1>): Observable<Option1> {
     return this.http.put<Option1>(`${this.apiUrl}/${id}`, option);
   }
 

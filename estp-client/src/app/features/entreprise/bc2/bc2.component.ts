@@ -129,7 +129,7 @@ export class Bc2Component implements OnInit {
   }
 
   checkExistingCommande2() {
-    // Always start on first tab (index 0)
+    // Always start on first tab (index 0) - never jump to Récapitulatif automatically
     this.activeIndex = 0;
 
     // Check if commande2 already exists (for informational purposes only)
@@ -137,8 +137,13 @@ export class Bc2Component implements OnInit {
       next: (response) => {
         if (response && response.id) {
           console.log('BC2 already exists for this entreprise');
-          // Note: We still start on first tab, user can navigate as needed
+          // Always start on first tab regardless of existing BC2
+          this.activeIndex = 0;
         }
+      },
+      error: () => {
+        // No existing BC2, start on first tab
+        this.activeIndex = 0;
       }
     });
   }
@@ -504,11 +509,11 @@ export class Bc2Component implements OnInit {
 
       console.log('✅ Commande2 and all options created successfully');
       this.visible = false;
-      // Show success message and stay on Récapitulatif tab
+      // Show success message
       alert('Commande BC2 créée avec succès!');
-      // Close the dialog and stay on Récapitulatif tab
+      // Close the dialog and stay on current tab
       this.factureDialogVisible = false;
-      this.activeIndex = this.option2Categories.length;
+      // Don't automatically jump to Récapitulatif - let user navigate naturally
 
     } catch (err) {
       console.error("❌ Error during BC2 creation", err);

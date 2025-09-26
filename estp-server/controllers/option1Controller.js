@@ -5,8 +5,8 @@ exports.createOption1 = (req, res) => {
   const { name, prix_ht, qmax = 1, dispo_si, img, description, ordre = 1 } = req.body;
 
   db.query(
-    `INSERT INTO option1s (name, prix_ht, qmax, dispo_si, description, ordre) VALUES (?, ?, ?, ?, ?, ?)`,
-    [name, prix_ht, qmax, dispo_si, description, ordre],
+    `INSERT INTO option1s (name, prix_ht, qmax, dispo_si, img, description, ordre) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [name, prix_ht, qmax, dispo_si, img, description, ordre],
     (err, result) => {
       if (err) return res.status(500).json({ error: 'Erreur lors de l\'insertion' });
 
@@ -14,13 +14,14 @@ exports.createOption1 = (req, res) => {
 
       res.status(201).json({
         message: 'Option créée avec succès',
+        id: id,
         option: {
           id,
           name,
           prix_ht,
           qmax,
           dispo_si,
-          img, // Returning img with the id_ prefix
+          img,
           description,
           ordre,
         },
@@ -35,7 +36,7 @@ exports.getAllOption1s = (req, res) => {
     if (err) return res.status(500).json({ error: 'Erreur serveur' });
     const options = results.map(opt => ({
       ...opt,
-      img: opt.img ? `/uploads/img/option1s/${opt.id}/${opt.img}` : null, // Adding id_ prefix
+      img: opt.img ? `/uploads/img/option1s/${opt.id}/${opt.img}` : null,
     }));
     res.json(options);
   });
@@ -57,31 +58,41 @@ exports.getOption1ById = (req, res) => {
 // Update
 exports.updateOption1 = (req, res) => {
   const { id } = req.params;
-  const { name, prix_ht, qmax = 1, dispo_si, img, description, ordre = 1 } = req.body;
 
-  // No update to the img column in the database, just modify the returned value
+  // First get the current option data
+  db.query('SELECT * FROM option1s WHERE id = ?', [id], (err, results) => {
+    if (err) return res.status(500).json({ error: err });
+    if (results.length === 0) return res.status(404).json({ error: 'Option not found' });
 
-  db.query(
-    `UPDATE option1s SET name = ?, prix_ht = ?, qmax = ?, dispo_si = ?, description = ?, ordre = ?,img=? WHERE id = ?`,
-    [name, prix_ht, qmax, dispo_si, description, ordre, img, id],
-    (err) => {
-      if (err) return res.status(500).json({ error: err });
+    const currentOption = results[0];
 
-      res.json({
-        message: 'Option mise à jour avec succès',
-        option: {
-          id,
-          name,
-          prix_ht,
-          qmax,
-          dispo_si,
-         img, // Returning img with the id_ prefix
-          description,
-          ordre,
-        },
-      });
-    }
-  );
+    // Merge current data with provided updates
+    const updatedData = {
+      name: req.body.name !== undefined ? req.body.name : currentOption.name,
+      prix_ht: req.body.prix_ht !== undefined ? req.body.prix_ht : currentOption.prix_ht,
+      qmax: req.body.qmax !== undefined ? req.body.qmax : currentOption.qmax,
+      dispo_si: req.body.dispo_si !== undefined ? req.body.dispo_si : currentOption.dispo_si,
+      img: req.body.img !== undefined ? req.body.img : currentOption.img,
+      description: req.body.description !== undefined ? req.body.description : currentOption.description,
+      ordre: req.body.ordre !== undefined ? req.body.ordre : currentOption.ordre,
+    };
+
+    db.query(
+      `UPDATE option1s SET name = ?, prix_ht = ?, qmax = ?, dispo_si = ?, description = ?, ordre = ?, img = ? WHERE id = ?`,
+      [updatedData.name, updatedData.prix_ht, updatedData.qmax, updatedData.dispo_si, updatedData.description, updatedData.ordre, updatedData.img, id],
+      (err) => {
+        if (err) return res.status(500).json({ error: err });
+
+        res.json({
+          message: 'Option mise à jour avec succès',
+          option: {
+            id: parseInt(id),
+            ...updatedData
+          },
+        });
+      }
+    );
+  });
 };
 
 // Delete
