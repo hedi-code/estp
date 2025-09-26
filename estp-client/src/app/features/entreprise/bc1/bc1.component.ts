@@ -81,7 +81,14 @@ previewUrl: string | null = null;
       slogan: [''],
       site_web: [''],
       logo_url: [''],
-   
+      // New fields
+      annee_creation: [null],
+      profils_recherches: [''],
+      methode_recrutement: [''],
+      offres_stage_emploi: [''],
+      adresse_postale: [''],
+      telephone_contact: [''],
+      email_recrutement: ['', Validators.email]
     });
     this.reservationForm = this.fb.group({
       nom: ['', Validators.required],

@@ -1,0 +1,204 @@
+<div class="card p-3 bg-white mt-3 mr-3">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h3 class="text-blue-400 p-2">Mailing - Envoi d'emails groupés</h3>
+    <div class="flex gap-2">
+      <p-button
+        icon="pi pi-envelope"
+        label="Email regroupé"
+        [disabled]="selectedEntreprises.length === 0"
+        (click)="openEmailDialog()"
+        severity="primary">
+      </p-button>
+      <span class="p-2 bg-blue-100 text-blue-800 border-round" *ngIf="selectedEntreprises.length > 0">
+        {{ selectedEntreprises.length }} entreprise(s) sélectionnée(s)
+      </span>
+    </div>
+  </div>
+
+  <!-- Enterprise Selection Table -->
+  <p-table
+    [value]="entreprises"
+    [(selection)]="selectedEntreprises"
+    dataKey="id"
+    [rows]="10"
+    styleClass="w-full"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+    [paginator]="true"
+    selectionMode="multiple">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th pSortableColumn="id" style="width: 8%">
+          ID <p-sortIcon field="id" />
+        </th>
+        <th pSortableColumn="nom" style="width: 25%">
+          Nom <p-sortIcon field="nom" />
+        </th>
+        <th pSortableColumn="siren" style="width: 15%">
+          SIREN <p-sortIcon field="siren" />
+        </th>
+        <th pSortableColumn="adresse" style="width: 20%">
+          Adresse <p-sortIcon field="adresse" />
+        </th>
+        <th pSortableColumn="telephone_standard" style="width: 15%">
+          Téléphone <p-sortIcon field="telephone_standard" />
+        </th>
+        <th pSortableColumn="contact_email" style="width: 20%">
+          Email Contact <p-sortIcon field="contact_email" />
+        </th>
+      </tr>
+
+      <!-- Filters -->
+      <tr>
+        <th></th>
+        <th>
+          <p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains" />
+        </th>
+        <th>
+          <p-columnFilter type="text" field="nom" [showClearButton]="false" matchMode="contains" />
+        </th>
+        <th>
+          <p-columnFilter type="text" field="siren" [showClearButton]="false" matchMode="contains" />
+        </th>
+        <th>
+          <p-columnFilter type="text" field="adresse" [showClearButton]="false" matchMode="contains" />
+        </th>
+        <th>
+          <p-columnFilter type="text" field="telephone_standard" [showClearButton]="false" matchMode="contains" />
+        </th>
+        <th>
+          <p-columnFilter type="text" field="contact_email" [showClearButton]="false" matchMode="contains" />
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-entreprise let-rowIndex="rowIndex">
+      <tr>
+        <td>
+          <p-tableCheckbox [value]="entreprise"></p-tableCheckbox>
+        </td>
+        <td>{{ entreprise.id || '-' }}</td>
+        <td>{{ entreprise.nom || '-' }}</td>
+        <td>{{ entreprise.siren || '-' }}</td>
+        <td>{{ entreprise.adresse || '-' }}</td>
+        <td>{{ entreprise.telephone_standard || '-' }}</td>
+        <td>{{ entreprise.contact_email || '-' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Email Dialog -->
+<p-dialog
+  header="Envoi d'email groupé"
+  [(visible)]="emailDialogVisible"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '600px' }"
+  [maximizable]="true">
+
+  <div class="p-fluid">
+    <form [formGroup]="emailForm">
+
+      <!-- Selected Enterprises Info -->
+      <div class="mb-4 p-3 bg-blue-50 border-round">
+        <h4 class="text-primary mb-2">Destinataires sélectionnés ({{ selectedEntreprises.length }})</h4>
+        <div class="flex flex-wrap gap-1">
+          <span
+            *ngFor="let entreprise of selectedEntreprises"
+            class="inline-flex align-items-center px-2 py-1 bg-blue-100 text-blue-800 text-sm border-round">
+            {{ entreprise.nom }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Sender Email -->
+      <div class="field">
+        <label for="senderEmail" class="font-semibold">Email expéditeur *</label>
+        <input
+          pInputText
+          id="senderEmail"
+          formControlName="senderEmail"
+          class="w-full"
+          placeholder="ne-pas-repondre@forumestp.fr" />
+        <small
+          class="p-error"
+          *ngIf="emailForm.get('senderEmail')?.invalid && emailForm.get('senderEmail')?.touched">
+          Email expéditeur requis et format valide
+        </small>
+      </div>
+
+      <!-- Subject -->
+      <div class="field">
+        <label for="subject" class="font-semibold">Sujet *</label>
+        <input
+          pInputText
+          id="subject"
+          formControlName="subject"
+          class="w-full"
+          placeholder="Objet de l'email" />
+        <small
+          class="p-error"
+          *ngIf="emailForm.get('subject')?.invalid && emailForm.get('subject')?.touched">
+          Le sujet est requis
+        </small>
+      </div>
+
+      <!-- Message -->
+      <div class="field">
+        <label for="message" class="font-semibold">Message *</label>
+        <textarea
+          pInputTextarea
+          id="message"
+          formControlName="message"
+          rows="8"
+          class="w-full"
+          placeholder="Votre message..."></textarea>
+        <small
+          class="p-error"
+          *ngIf="emailForm.get('message')?.invalid && emailForm.get('message')?.touched">
+          Le message est requis
+        </small>
+      </div>
+
+      <!-- HTML Note -->
+      <div class="mb-3">
+        <small class="text-gray-600">
+          <i class="pi pi-info-circle mr-1"></i>
+          Vous pouvez utiliser du HTML basique dans votre message (balises: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, &lt;em&gt;, etc.)
+        </small>
+      </div>
+
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-between w-full">
+      <p-button
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="cancelEmail()"
+        [disabled]="loading">
+      </p-button>
+      <p-button
+        label="Envoyer"
+        icon="pi pi-send"
+        [loading]="loading"
+        [disabled]="emailForm.invalid"
+        (click)="sendGroupEmail()">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Confirmation Dialog -->
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Toast Messages -->
+<p-toast></p-toast>

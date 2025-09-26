@@ -19,11 +19,13 @@
     [resizableColumns]="true"
     columnResizeMode="expand"
     [paginator]="true"
+    [expandedRowKeys]="expandedRows"
   >
     <!-- HEADER -->
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="id" style="width: 8%">ID <p-sortIcon field="id" /></th>
+        <th style="width: 3%"></th>
+        <th pSortableColumn="id" style="width: 5%">ID <p-sortIcon field="id" /></th>
         <th pSortableColumn="entreprise_id" style="width: 10%">Entreprise <p-sortIcon field="entreprise_nom" /></th>
         <th pSortableColumn="description" style="width: 16%">Description <p-sortIcon field="description" /></th>
         <th pSortableColumn="nombre_collaborateurs" style="width: 12%">Collaborateurs <p-sortIcon field="nombre_collaborateurs" /></th>
@@ -35,12 +37,20 @@
         <th pSortableColumn="valide_entreprise" style="width: 10%">Entreprise <p-sortIcon field="valide_entreprise" /></th>
         <th pSortableColumn="created_at" style="width: 12%">Créé <p-sortIcon field="created_at" /></th>
         <th pSortableColumn="updated_at" style="width: 12%">Modifié <p-sortIcon field="updated_at" /></th>
-        <th pSortableColumn="logo_url" style="width: 10%">Logo <p-sortIcon field="logo_url" /></th>
+        <th pSortableColumn="logo_url" style="width: 8%">Logo <p-sortIcon field="logo_url" /></th>
+        <th pSortableColumn="annee_creation" style="width: 8%">Année <p-sortIcon field="annee_creation" /></th>
+        <th pSortableColumn="telephone_contact" style="width: 10%">Tél <p-sortIcon field="telephone_contact" /></th>
+        <th pSortableColumn="email_recrutement" style="width: 12%">Email RH <p-sortIcon field="email_recrutement" /></th>
+        <th pSortableColumn="adresse_postale" style="width: 15%">Adresse <p-sortIcon field="adresse_postale" /></th>
+        <th pSortableColumn="profils_recherches" style="width: 15%">Profils <p-sortIcon field="profils_recherches" /></th>
+        <th pSortableColumn="methode_recrutement" style="width: 15%">Méthode RH <p-sortIcon field="methode_recrutement" /></th>
+        <th pSortableColumn="offres_stage_emploi" style="width: 15%">Offres <p-sortIcon field="offres_stage_emploi" /></th>
         <th style="width: 10%">Actions</th>
       </tr>
 
       <!-- FILTERS -->
       <tr>
+        <th></th>
         <th><p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="entreprise_nom" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="description" [showClearButton]="false" matchMode="contains" /></th>
@@ -54,6 +64,13 @@
         <th><p-columnFilter type="text" field="created_at" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="updated_at" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="logo_url" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="annee_creation" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="telephone_contact" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="email_recrutement" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="adresse_postale" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="profils_recherches" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="methode_recrutement" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="offres_stage_emploi" [showClearButton]="false" matchMode="contains" /></th>
         <th></th>
       </tr>
     </ng-template>
@@ -61,13 +78,28 @@
     <!-- BODY -->
     <ng-template pTemplate="body" let-b>
       <tr>
+        <td>
+          <p-button
+            type="button"
+            pRipple
+            [pRowToggler]="b"
+            class="p-button-text p-button-rounded p-button-plain"
+            [icon]="isExpanded(b) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
+          </p-button>
+        </td>
         <td>{{ b.id || '-' }}</td>
         <td>{{ b.entreprise_nom || '-' }}</td>
-        <td>{{ b.description || '-' }}</td>
+        <td [pTooltip]="b.description" tooltipPosition="top">
+          {{ (b.description && b.description.length > 50) ? (b.description | slice:0:50) + '...' : (b.description || '-') }}
+        </td>
         <td>{{ b.nombre_collaborateurs ?? '-' }}</td>
         <td>{{ b.implantation || '-' }}</td>
-        <td>{{ b.activite || '-' }}</td>
-        <td>{{ b.slogan || '-' }}</td>
+        <td [pTooltip]="b.activite" tooltipPosition="top">
+          {{ (b.activite && b.activite.length > 30) ? (b.activite | slice:0:30) + '...' : (b.activite || '-') }}
+        </td>
+        <td [pTooltip]="b.slogan" tooltipPosition="top">
+          {{ (b.slogan && b.slogan.length > 30) ? (b.slogan | slice:0:30) + '...' : (b.slogan || '-') }}
+        </td>
         <td>
           <a *ngIf="b.site_web" [href]="b.site_web" target="_blank">{{ b.site_web }}</a>
           <span *ngIf="!b.site_web">-</span>
@@ -87,6 +119,21 @@
           />
           <span *ngIf="!b.logo_url">-</span>
         </td>
+        <td>{{ b.annee_creation || '-' }}</td>
+        <td>{{ b.telephone_contact || '-' }}</td>
+        <td>{{ b.email_recrutement || '-' }}</td>
+        <td [pTooltip]="b.adresse_postale" tooltipPosition="top">
+          {{ (b.adresse_postale && b.adresse_postale.length > 50) ? (b.adresse_postale | slice:0:50) + '...' : (b.adresse_postale || '-') }}
+        </td>
+        <td [pTooltip]="b.profils_recherches" tooltipPosition="top">
+          {{ (b.profils_recherches && b.profils_recherches.length > 50) ? (b.profils_recherches | slice:0:50) + '...' : (b.profils_recherches || '-') }}
+        </td>
+        <td [pTooltip]="b.methode_recrutement" tooltipPosition="top">
+          {{ (b.methode_recrutement && b.methode_recrutement.length > 50) ? (b.methode_recrutement | slice:0:50) + '...' : (b.methode_recrutement || '-') }}
+        </td>
+        <td [pTooltip]="b.offres_stage_emploi" tooltipPosition="top">
+          {{ (b.offres_stage_emploi && b.offres_stage_emploi.length > 50) ? (b.offres_stage_emploi | slice:0:50) + '...' : (b.offres_stage_emploi || '-') }}
+        </td>
         <td>
           <button pButton [text]="true" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="onEdit(b)"></button>
           <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="onDelete(b)"></button>
@@ -94,10 +141,109 @@
         </td>
       </tr>
     </ng-template>
+
+    <!-- ROW EXPANSION TEMPLATE -->
+    <ng-template pTemplate="rowexpansion" let-b>
+      <tr>
+        <td colspan="17">
+          <div class="p-4 bg-gray-50 border-round">
+            <div class="grid">
+              <div class="col-12">
+                <h4 class="text-primary mb-3">Détails complets - {{ b.entreprise_nom }}</h4>
+              </div>
+
+              <!-- Informations générales -->
+              <div class="col-6">
+                <h5 class="text-800 mb-2">Informations générales</h5>
+                <div class="field-group">
+                  <p><strong>Description:</strong></p>
+                  <p class="ml-2 text-700">{{ b.description || 'Non renseignée' }}</p>
+
+                  <p><strong>Activité:</strong></p>
+                  <p class="ml-2 text-700">{{ b.activite || 'Non renseignée' }}</p>
+
+                  <p><strong>Slogan:</strong></p>
+                  <p class="ml-2 text-700">{{ b.slogan || 'Non renseigné' }}</p>
+
+                  <p><strong>Site web:</strong></p>
+                  <p class="ml-2 text-700">
+                    <a *ngIf="b.site_web" [href]="b.site_web" target="_blank" class="text-primary">{{ b.site_web }}</a>
+                    <span *ngIf="!b.site_web">Non renseigné</span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Informations de contact et recrutement -->
+              <div class="col-6">
+                <h5 class="text-800 mb-2">Contact et Recrutement</h5>
+                <div class="field-group">
+                  <p><strong>Année de création:</strong></p>
+                  <p class="ml-2 text-700">{{ b.annee_creation || 'Non renseignée' }}</p>
+
+                  <p><strong>Nombre de collaborateurs:</strong></p>
+                  <p class="ml-2 text-700">{{ b.nombre_collaborateurs || 'Non renseigné' }}</p>
+
+                  <p><strong>Implantation:</strong></p>
+                  <p class="ml-2 text-700">{{ b.implantation || 'Non renseignée' }}</p>
+
+                  <p><strong>Téléphone contact:</strong></p>
+                  <p class="ml-2 text-700">{{ b.telephone_contact || 'Non renseigné' }}</p>
+
+                  <p><strong>Email recrutement:</strong></p>
+                  <p class="ml-2 text-700">{{ b.email_recrutement || 'Non renseigné' }}</p>
+                </div>
+              </div>
+
+              <!-- Adresse complète -->
+              <div class="col-12" *ngIf="b.adresse_postale">
+                <h5 class="text-800 mb-2">Adresse postale</h5>
+                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.adresse_postale }}</p>
+              </div>
+
+              <!-- Profils recherchés -->
+              <div class="col-12" *ngIf="b.profils_recherches">
+                <h5 class="text-800 mb-2">Profils recherchés</h5>
+                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.profils_recherches }}</p>
+              </div>
+
+              <!-- Méthode de recrutement -->
+              <div class="col-12" *ngIf="b.methode_recrutement">
+                <h5 class="text-800 mb-2">Méthode de recrutement</h5>
+                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.methode_recrutement }}</p>
+              </div>
+
+              <!-- Offres de stage et emploi -->
+              <div class="col-12" *ngIf="b.offres_stage_emploi">
+                <h5 class="text-800 mb-2">Offres de stage et emploi</h5>
+                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.offres_stage_emploi }}</p>
+              </div>
+
+              <!-- Statuts et dates -->
+              <div class="col-12 mt-3">
+                <div class="flex gap-4 align-items-center">
+                  <span class="p-2 border-round" [ngClass]="b.valide_forum ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    Forum: {{ b.valide_forum ? 'Validé' : 'Non validé' }}
+                  </span>
+                  <span class="p-2 border-round" [ngClass]="b.valide_entreprise ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    Entreprise: {{ b.valide_entreprise ? 'Validé' : 'Non validé' }}
+                  </span>
+                  <span class="p-2 bg-blue-100 text-blue-800 border-round">
+                    Créé: {{ b.created_at | date:'dd/MM/yyyy' }}
+                  </span>
+                  <span class="p-2 bg-blue-100 text-blue-800 border-round" *ngIf="b.updated_at !== b.created_at">
+                    Modifié: {{ b.updated_at | date:'dd/MM/yyyy' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
   </p-table>
 
   <!-- EDIT DIALOG (ALL FIELDS) -->
-  <p-dialog header="Modifier le Book" [(visible)]="displayEditDialog" [modal]="true" [closable]="false" [style]="{ width: '700px' }">
+  <p-dialog header="Modifier le Book" [(visible)]="displayEditDialog" [modal]="true" [closable]="false" [style]="{ width: '900px', maxHeight: '90vh' }" [contentStyle]="{ 'overflow-y': 'auto' }">
     <div *ngIf="selectedBook" class="p-fluid grid">
 
       <div class="col-12 md:col-12">
@@ -141,18 +287,65 @@
         <label for="valide_entreprise" class="ml-2">Valider (entreprise)</label>
       </div>
 
-       <div class="col-12">
-  <label for="logo_url">Logo</label>
-  <input type="file" (change)="onFileSelected($event)" />
-  <img
-    *ngIf="selectedBook.logo_url"
-    [src]="selectedBook.logo_url"
-    alt="logo"
-    width="64"
-    height="64"
-    style="object-fit: cover; border-radius: 8px; margin-top: 5px;"
-  />
-</div>
+      <!-- Logo -->
+      <div class="col-12">
+        <label for="logo_url">Logo</label>
+        <input type="file" (change)="onFileSelected($event)" />
+        <img
+          *ngIf="selectedBook.logo_url"
+          [src]="selectedBook.logo_url"
+          alt="logo"
+          width="64"
+          height="64"
+          style="object-fit: cover; border-radius: 8px; margin-top: 5px;"
+        />
+      </div>
+
+      <!-- Séparateur pour les nouveaux champs -->
+      <div class="col-12 mt-4">
+        <h4 class="text-primary border-bottom-1 pb-2">Informations supplémentaires</h4>
+      </div>
+
+      <!-- Année de création et Téléphone -->
+      <div class="col-12 md:col-6">
+        <label for="annee_creation">Année de création</label>
+        <input pInputText id="annee_creation" type="number" [(ngModel)]="selectedBook.annee_creation" min="1900" max="2025" />
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="telephone_contact">Téléphone de contact</label>
+        <input pInputText id="telephone_contact" [(ngModel)]="selectedBook.telephone_contact" />
+      </div>
+
+      <!-- Email de recrutement -->
+      <div class="col-12">
+        <label for="email_recrutement">Email de recrutement</label>
+        <input pInputText id="email_recrutement" type="email" [(ngModel)]="selectedBook.email_recrutement" />
+      </div>
+
+      <!-- Adresse postale -->
+      <div class="col-12">
+        <label for="adresse_postale">Adresse postale</label>
+        <textarea pInputTextarea id="adresse_postale" rows="2" [(ngModel)]="selectedBook.adresse_postale" maxlength="255" placeholder="255 caractères max"></textarea>
+      </div>
+
+      <!-- Profils recherchés -->
+      <div class="col-12">
+        <label for="profils_recherches">Profils recherchés</label>
+        <textarea pInputTextarea id="profils_recherches" rows="3" [(ngModel)]="selectedBook.profils_recherches" maxlength="390" placeholder="390 caractères max"></textarea>
+      </div>
+
+      <!-- Méthode de recrutement -->
+      <div class="col-12">
+        <label for="methode_recrutement">Méthode de recrutement</label>
+        <textarea pInputTextarea id="methode_recrutement" rows="3" [(ngModel)]="selectedBook.methode_recrutement" maxlength="370" placeholder="370 caractères max"></textarea>
+      </div>
+
+      <!-- Offres de stage et emploi -->
+      <div class="col-12">
+        <label for="offres_stage_emploi">Offres de stage et emploi</label>
+        <textarea pInputTextarea id="offres_stage_emploi" rows="3" [(ngModel)]="selectedBook.offres_stage_emploi" maxlength="365" placeholder="365 caractères max"></textarea>
+      </div>
     </div>
 
     <ng-template pTemplate="footer">
@@ -167,6 +360,78 @@
     <ng-template pTemplate="footer">
       <button pButton label="Non" icon="pi pi-times" class="p-button-text" (click)="cancelDelete()"></button>
       <button pButton label="Oui" icon="pi pi-check" class="p-button-danger" (click)="confirmDelete()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- BAT DIALOG -->
+  <p-dialog header="Envoyer BAT par email" [(visible)]="displayBatDialog" [modal]="true" [closable]="true" [style]="{ width: '700px', maxHeight: '80vh' }" [contentStyle]="{ 'overflow-y': 'auto' }">
+    <div *ngIf="selectedBook && selectedUser" class="p-fluid">
+      <div class="mb-4">
+        <h4>Informations de l'entreprise</h4>
+        <p><strong>Entreprise:</strong> {{ selectedBook.entreprise_nom }}</p>
+        <p><strong>Contact:</strong> {{ selectedUser?.first_name }} {{ selectedUser?.last_name }}</p>
+        <p><strong>Email:</strong> {{ selectedUser.email }}</p>
+      </div>
+
+      <div class="mb-4">
+        <h4>Détails du book</h4>
+        <div class="grid">
+          <div class="col-6">
+            <p><strong>Description:</strong> {{ selectedBook.description || 'Non renseignée' }}</p>
+            <p><strong>Collaborateurs:</strong> {{ selectedBook.nombre_collaborateurs || 'Non renseigné' }}</p>
+            <p><strong>Activité:</strong> {{ selectedBook.activite || 'Non renseignée' }}</p>
+            <p><strong>Implantation:</strong> {{ selectedBook.implantation || 'Non renseignée' }}</p>
+            <p><strong>Année de création:</strong> {{ selectedBook.annee_creation || 'Non renseignée' }}</p>
+          </div>
+          <div class="col-6">
+            <p><strong>Téléphone contact:</strong> {{ selectedBook.telephone_contact || 'Non renseigné' }}</p>
+            <p><strong>Email recrutement:</strong> {{ selectedBook.email_recrutement || 'Non renseigné' }}</p>
+            <p><strong>Adresse postale:</strong> {{ selectedBook.adresse_postale || 'Non renseignée' }}</p>
+          </div>
+        </div>
+        <div *ngIf="selectedBook.profils_recherches">
+          <p><strong>Profils recherchés:</strong> {{ selectedBook.profils_recherches }}</p>
+        </div>
+        <div *ngIf="selectedBook.methode_recrutement">
+          <p><strong>Méthode de recrutement:</strong> {{ selectedBook.methode_recrutement }}</p>
+        </div>
+        <div *ngIf="selectedBook.offres_stage_emploi">
+          <p><strong>Offres stage/emploi:</strong> {{ selectedBook.offres_stage_emploi }}</p>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="bat-file" class="block mb-2"><strong>Fichier BAT à joindre *</strong></label>
+        <input
+          type="file"
+          id="bat-file"
+          (change)="onBatFileSelected($event)"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          class="w-full p-2 border border-gray-300 rounded"
+        />
+        <small class="text-gray-600">Formats acceptés: PDF, DOC, DOCX, JPG, PNG</small>
+        <div *ngIf="selectedFile" class="mt-2 text-green-600">
+          <i class="pi pi-check"></i> Fichier sélectionné: {{ selectedFile.name }}
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="displayBatDialog=false">
+      </button>
+      <button
+        pButton
+        label="Envoyer Email"
+        icon="pi pi-send"
+        class="p-button-primary"
+        [disabled]="!selectedFile"
+        (click)="sendBat()">
+      </button>
     </ng-template>
   </p-dialog>
 </div>

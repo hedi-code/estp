@@ -18,6 +18,8 @@ import { Bc2SouscritsComponent } from './features/forum/components/bc2-souscrits
 import { GestionBc1Component } from './features/forum/components/gestion-bc1/gestion-bc1.component';
 import { GestionBc2Component } from './features/forum/components/gestion-bc2/gestion-bc2.component';
 import { GestionBookComponent } from './features/forum/components/gestion-book/gestion-book.component';
+import { DashboardComponent } from './features/forum/components/dashboard/dashboard.component';
+import { MailingComponent } from './features/forum/components/mailing/mailing.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -48,6 +50,7 @@ const routes: Routes = [
       { path: 'gestion-bc1', component: GestionBc1Component},
       { path: 'gestion-bc2', component: GestionBc2Component },
       { path: 'gestion-book', component: GestionBookComponent },
+      { path: 'mailing', component: MailingComponent },
     ]
   }
 

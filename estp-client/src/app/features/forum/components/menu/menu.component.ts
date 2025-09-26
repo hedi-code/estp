@@ -38,6 +38,9 @@ export class MenuComponent {
           {
             label: 'BC2', icon: 'pi pi-fw pi-id-card', routerLink: ['/forum/gestion-bc2'],
           },
+          {
+            label: 'Mailing', icon: 'pi pi-fw pi-envelope', routerLink: ['/forum/mailing']
+          },
 
         ]
       }

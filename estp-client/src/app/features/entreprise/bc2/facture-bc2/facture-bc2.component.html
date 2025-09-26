@@ -211,7 +211,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let option of selectedOptions" class="lightBlueBg">
+                <tr *ngFor="let option of getFilteredOptions()" class="lightBlueBg">
                     <td>
                         {{option.option_nom}}
                         <span *ngIf="option.color"> - {{option.color}}</span>

@@ -29,10 +29,14 @@ export class Bc2Component implements OnInit {
   option2Categories: Option2Category[] = [];
   option2sByCategory: { [categoryId: number]: Option2[] } = {};
   optionQuantities: { [key: number]: number } = {};
-  optionColors: { [key: number]: string } = {};
+  // Removed optionColors as we no longer need color selection
   selectedOptions: Commande2Option[] = [];
   selectedPack: any = null;
   packColor: string = '';
+
+  // For grouped options (Electricité, Internet, Elingues)
+  selectedGroupOptions: { [groupName: string]: Option2 } = {};
+  groupedOptionsCache: { [categoryId: number]: any[] } = {};
 
   isDisabled = true;
   savedSignature: any;
@@ -68,9 +72,12 @@ export class Bc2Component implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.initializeForms();
-    this.checkBC1ExistenceAndProceed();
+  async ngOnInit() {
+    // Force start on first tab
+    await this.initializeForms();
+    await this.checkBC1ExistenceAndProceed();
+    this.activeIndex = 0;
+
   }
 
   initializeForms() {
@@ -140,13 +147,22 @@ export class Bc2Component implements OnInit {
     // Load categories and options
     this.option2CategoriesService.getAllOption2Categories().subscribe({
       next: (categories) => {
+        console.log('Categories loaded:', categories);
+        console.log('Number of categories:', categories.length);
         this.option2Categories = categories;
+        // Ensure we start on the first category tab after categories are loaded
+        this.activeIndex = 0;
+        console.log('activeIndex set to:', this.activeIndex);
+        console.log('Total tabs will be:', this.getTotalTabsCount());
 
         // Load options for each category
         categories.forEach(category => {
           this.option2Service.getOption2sByCategory(category.id).subscribe({
             next: (options) => {
+              console.log(`Options loaded for category ${category.id} (${category.name}):`, options);
               this.option2sByCategory[category.id] = options;
+              // Clear cache when new data is loaded
+              delete this.groupedOptionsCache[category.id];
               // Initialize quantities for multiple options
               options.forEach(option => {
                 if (option.multiple) {
@@ -191,7 +207,7 @@ export class Bc2Component implements OnInit {
     // For non-multiple options, quantity is always 1
     // For multiple options, use the selected quantity or default to 1
     const qty = option.multiple ? (this.optionQuantities[option.id] || 1) : 1;
-    const color = this.optionColors[option.id] || '';
+    const color = ''; // No color selection needed
 
     console.log(`Adding option ${option.nom} with qty: ${qty}, multiple: ${option.multiple}`);
 
@@ -207,7 +223,7 @@ export class Bc2Component implements OnInit {
       commande2_id: 0, // Will be set when commande is created
       option2_id: option.id,
       qty: qty,
-      color: color,
+      color: '', // No color selection
       option_nom: option.nom,
       option_prix_ht: option.prix_ht
     };
@@ -231,6 +247,95 @@ export class Bc2Component implements OnInit {
     if ([15, 21, 22].includes(optionId)) {
       this.standisteForm.reset();
     }
+  }
+
+  // Methods for grouped options (category ID 4 - Electricité, Internet, Elingues)
+  getGroupedOptions(categoryId: number) {
+    console.log('getGroupedOptions called with categoryId:', categoryId);
+    console.log('Available categories:', this.option2Categories.map(c => `${c.id}: ${c.name}`));
+    console.log('option2sByCategory keys:', Object.keys(this.option2sByCategory));
+
+    if (categoryId !== 4) return [];
+
+    if (this.groupedOptionsCache[categoryId]) {
+      console.log('Returning cached grouped options:', this.groupedOptionsCache[categoryId]);
+      return this.groupedOptionsCache[categoryId];
+    }
+
+    const options = this.option2sByCategory[categoryId] || [];
+    console.log('Options for category 4:', options);
+
+    const grouped: { [baseName: string]: Option2[] } = {};
+
+    // Group options by base name (first word before space or dash)
+    options.forEach(option => {
+      const baseName = this.extractBaseName(option.nom);
+      console.log(`Option "${option.nom}" grouped as "${baseName}"`);
+      if (!grouped[baseName]) {
+        grouped[baseName] = [];
+      }
+      grouped[baseName].push(option);
+    });
+
+    // Transform to array format for template
+    const groupedArray = Object.keys(grouped).map(baseName => ({
+      baseName: baseName,
+      options: grouped[baseName],
+      dropdownOptions: grouped[baseName].map(option => ({
+        label: `${option.nom} - ${option.prix_ht} € HT`,
+        value: option
+      }))
+    }));
+
+    console.log('Grouped array result:', groupedArray);
+    this.groupedOptionsCache[categoryId] = groupedArray;
+    return groupedArray;
+  }
+
+  extractBaseName(optionName: string): string {
+    // Extract base name from option name
+    // Examples: "Electricité 3kW" -> "Electricité"
+    //           "Internet - Standard" -> "Internet"
+    //           "Elingues 2T" -> "Elingues"
+
+    const patterns = [
+      /^([A-Za-zàâäéèêëïîôöùûüÿç\s]+?)\s*[-–—]\s*/i,  // Match text before dash
+      /^([A-Za-zàâäéèêëïîôöùûüÿç\s]+?)\s+\d/i,        // Match text before number
+      /^([A-Za-zàâäéèêëïîôöùûüÿç\s]+?)\s+[A-Z]/i,      // Match text before uppercase
+      /^([A-Za-zàâäéèêëïîôöùûüÿç\s]+)/i               // Fallback: take all text
+    ];
+
+    for (const pattern of patterns) {
+      const match = optionName.match(pattern);
+      if (match && match[1].trim().length > 2) {
+        return match[1].trim();
+      }
+    }
+
+    return optionName.trim();
+  }
+
+  onGroupOptionChange(groupName: string, event: any) {
+    this.selectedGroupOptions[groupName] = event.value;
+
+    // Initialize quantity for multiple options
+    if (event.value && event.value.multiple) {
+      this.optionQuantities[event.value.id] = this.optionQuantities[event.value.id] || 1;
+    }
+    // No color selection needed
+  }
+
+  addGroupedOption2(groupName: string) {
+    const selectedOption = this.selectedGroupOptions[groupName];
+    if (!selectedOption) return;
+
+    // Use the existing addOption2 method
+    this.addOption2(selectedOption);
+  }
+
+  getFirstImageOption(options: Option2[]): Option2 | null {
+    // Find the first option that has an image
+    return options.find(option => option.img && option.img.trim() !== '') || null;
   }
 
   getSelectedStandisteOption(): number | null {

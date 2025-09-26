@@ -69,6 +69,52 @@ exports.sendInvoice = (req, res) => {
 };
 const upload = multer({ dest: 'uploads/tmp/' });
 
+exports.sendSimpleEmail = async (req, res) => {
+  try {
+    const {
+      senderEmail,
+      receiverEmail,
+      receiverName,
+      subject,
+      htmlText,
+      ccEmails
+    } = req.body;
+
+    // Validation des champs requis
+    if (!senderEmail || !receiverEmail || !receiverName || !subject || !htmlText) {
+      return res.status(400).json({ error: "Champs requis manquants." });
+    }
+
+    // Parse ccEmails si c'est une chaîne JSON
+    let parsedCcEmails = null;
+    if (ccEmails) {
+      try {
+        parsedCcEmails = typeof ccEmails === 'string' ? JSON.parse(ccEmails) : ccEmails;
+      } catch (parseError) {
+        console.warn('Erreur lors du parsing des ccEmails:', parseError);
+        parsedCcEmails = null;
+      }
+    }
+
+    // Envoi de l'email sans pièce jointe
+    const result = await sendEmail(
+      senderEmail,
+      receiverEmail,
+      receiverName,
+      subject,
+      htmlText,
+      parsedCcEmails,
+      null, // pas d'attachmentName
+      null  // pas d'attachment
+    );
+
+    return res.status(200).json({ message: "Email envoyé avec succès", result });
+  } catch (err) {
+    console.error("Erreur envoi email simple:", err);
+    return res.status(500).json({ error: "Échec de l'envoi de l'email", details: err.message });
+  }
+};
+
 exports.sendEmailWithAttachment = [
   upload.single('file'),
   async (req, res) => {
@@ -86,8 +132,30 @@ exports.sendEmailWithAttachment = [
         return res.status(400).json({ error: "Champs requis manquants." });
       }
 
+      // Parse ccEmails si c'est une chaîne JSON
+      let parsedCcEmails = null;
+      if (ccEmails) {
+        try {
+          parsedCcEmails = typeof ccEmails === 'string' ? JSON.parse(ccEmails) : ccEmails;
+        } catch (parseError) {
+          console.warn('Erreur lors du parsing des ccEmails:', parseError);
+          parsedCcEmails = null;
+        }
+      }
+
+      // Si aucun fichier n'est fourni, envoyer un email simple
       if (!req.file) {
-        return res.status(400).json({ error: "Aucun fichier fourni." });
+        const result = await sendEmail(
+          senderEmail,
+          receiverEmail,
+          receiverName,
+          subject,
+          htmlText,
+          parsedCcEmails,
+          null,
+          null
+        );
+        return res.status(200).json({ message: "Email simple envoyé avec succès", result });
       }
 
       const filePath = req.file.path;
@@ -101,7 +169,7 @@ exports.sendEmailWithAttachment = [
         receiverName,
         subject,
         htmlText,
-        ccEmails,
+        parsedCcEmails,
         attachmentName,
         base64Attachment
       );

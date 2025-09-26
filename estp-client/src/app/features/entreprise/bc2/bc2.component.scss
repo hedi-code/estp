@@ -1,0 +1,14 @@
+// Hide PrimeNG tab navigation since we use custom buttons
+::ng-deep .p-tabview-nav-container,
+::ng-deep .p-tabview-nav {
+    display: none !important;
+}
+
+// Make sure tab content takes full width
+::ng-deep .p-tabview-panels {
+    padding: 0;
+}
+
+::ng-deep .p-tabview-panel {
+    padding: 0;
+}

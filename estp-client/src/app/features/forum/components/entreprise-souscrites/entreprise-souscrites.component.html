@@ -105,7 +105,8 @@
                                 <button *ngIf="role=='rescom' || role=='pres'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
         <p-confirmPopup />
                                 <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom"  pTooltip="Supprimer" icon="pi pi-trash" (click)="deleteEntreprise($event,entreprise)"></button>
-                                <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Détails" icon="pi-info-circle" (click)="afficherDetails(entreprise)"></button>
+                                <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Détails" icon="pi pi-info-circle" (click)="afficherDetails(entreprise)"></button>
+                                <button pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil" (click)="editEntreprise(entreprise)"></button>
 
                 </td>
             </tr>
@@ -284,7 +285,6 @@
         <span *ngIf="!selectedEntreprise.siteweb">-</span>
     </div>
     <div class="field col-12 md:6"><strong>A participé:</strong> {{ selectedEntreprise.has_participated || '-' }}</div>
-    <div class="field col-12 md:6"><strong>Activité:</strong> {{ selectedEntreprise.activity || '-' }}</div>
     <div class="field col-12 md:6"><strong>Créer le:</strong> {{ selectedEntreprise.created || '-' }}</div>
     <h3 class="text-blue-400">Commercial assigné</h3>
     <div class="field col-12 md:6"><strong>Commercial:</strong> {{ selectedEntreprise.commercial || '-' }}</div>
@@ -303,4 +303,78 @@
   <p-footer>
     <button pButton label="Fermer" icon="pi pi-times" (click)="viewEntrepriseDialogVisible=false"></button>
   </p-footer>
+</p-dialog>
+
+<!-- EDIT ENTERPRISE DIALOG -->
+<p-dialog *ngIf="selectedEntreprise" header="Modifier Entreprise" [(visible)]="editEntrepriseDialogVisible" [modal]="true" [closable]="true" [style]="{width:'800px', maxHeight: '90vh'}" [contentStyle]="{'overflow-y': 'auto'}">
+  <form [formGroup]="editEntrepriseForm" class="p-fluid grid">
+
+    <div class="col-12">
+      <h4 class="text-primary border-bottom-1 pb-2">Informations générales</h4>
+    </div>
+
+    <!-- Nom de l'entreprise -->
+    <div class="field col-12 md:col-6">
+      <label for="edit_nom" class="font-semibold">Nom *</label>
+      <input pInputText id="edit_nom" formControlName="nom" class="w-full" placeholder="Forum ESTP" />
+    </div>
+
+    <!-- SIREN -->
+    <div class="field col-12 md:col-6">
+      <label for="edit_siren" class="font-semibold">SIREN</label>
+      <input pInputText id="edit_siren" formControlName="siren" class="w-full" placeholder="552037806" />
+    </div>
+
+    <!-- Adresse -->
+    <div class="field col-12">
+      <label for="edit_adresse" class="font-semibold">Adresse</label>
+      <input pInputText id="edit_adresse" formControlName="adresse" class="w-full" placeholder="ai-50000-loin" />
+    </div>
+
+    <!-- Téléphones -->
+    <div class="field col-12 md:col-6">
+      <label for="edit_telephone_standard" class="font-semibold">Téléphone standard</label>
+      <input pInputText id="edit_telephone_standard" formControlName="telephone_standard" class="w-full" placeholder="0604030201" />
+    </div>
+
+    <div class="field col-12 md:col-6">
+      <label for="edit_telephone_fax" class="font-semibold">Téléphone fax</label>
+      <input pInputText id="edit_telephone_fax" formControlName="telephone_fax" class="w-full" placeholder="-" />
+    </div>
+
+    <!-- Site web -->
+    <div class="field col-12 md:col-12">
+      <label for="edit_siteweb" class="font-semibold">Site web</label>
+      <input pInputText id="edit_siteweb" type="url" formControlName="siteweb" class="w-full" placeholder="forumetp.fr" />
+    </div>
+
+
+    <div class="col-12 mt-3">
+      <h4 class="text-primary border-bottom-1 pb-2">Informations de facturation</h4>
+    </div>
+
+    <!-- Facturation Nom -->
+    <div class="field col-12 md:col-6">
+      <label for="edit_fct_nom" class="font-semibold">Nom de facturation</label>
+      <input pInputText id="edit_fct_nom" formControlName="fct_nom" class="w-full" />
+    </div>
+
+    <!-- Facturation Adresse -->
+    <div class="field col-12 md:col-6">
+      <label for="edit_fct_adresse" class="font-semibold">Adresse de facturation</label>
+      <input pInputText id="edit_fct_adresse" formControlName="fct_adresse" class="w-full" />
+    </div>
+
+    <!-- Messages d'erreur -->
+    <div class="col-12">
+      <p-message *ngIf="editEntrepriseForm.get('nom')?.invalid && editEntrepriseForm.get('nom')?.touched"
+                 severity="error" text="Le nom est requis" styleClass="w-full mt-1"></p-message>
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="cancelEdit()"></button>
+    <button pButton label="Enregistrer" icon="pi pi-check" [disabled]="editEntrepriseForm.invalid" (click)="saveEntrepriseChanges()"></button>
+  </ng-template>
 </p-dialog>

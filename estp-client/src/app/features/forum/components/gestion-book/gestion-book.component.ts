@@ -25,7 +25,9 @@ export class GestionBookComponent {
   displayEditDialog = false;
   displayDeleteDialog = false;
   selectedFile: File | null = null;
-  selectedUser!: User
+  selectedUser!: User;
+  displayBatDialog = false;
+  expandedRows: {[s: string]: boolean} = {};
 
 
   constructor(
@@ -167,5 +169,9 @@ export class GestionBookComponent {
         file: this.selectedFile 
       }).subscribe();
     }
+  }
+
+  isExpanded(book: Book): boolean {
+    return this.expandedRows[book.id!.toString()] || false;
   }
 }

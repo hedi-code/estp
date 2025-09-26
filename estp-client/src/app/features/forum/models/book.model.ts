@@ -13,4 +13,13 @@ export interface Book {
   created_at?: string;
   updated_at?: string;
   entreprise_nom?: string;
+  chiffreAff?: string;
+  // New fields
+  annee_creation?: number;
+  profils_recherches?: string;
+  methode_recrutement?: string;
+  offres_stage_emploi?: string;
+  adresse_postale?: string;
+  telephone_contact?: string;
+  email_recrutement?: string;
 }

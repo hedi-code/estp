@@ -19,7 +19,16 @@ interface SendEmailWithAttachmentPayload {
   subject: string;
   htmlText: string;
   ccEmails?: string[];
-  file: File; // actual File instead of just filename
+  file?: File; // optional attachment file
+}
+
+interface SendEmailPayload {
+  senderEmail: string;
+  receiverEmail: string;
+  receiverName: string;
+  subject: string;
+  htmlText: string;
+  ccEmails?: string[];
 }
 
 @Injectable({
@@ -32,6 +41,10 @@ export class EmailService {
 
   sendInvoice(payload: SendInvoicePayload): Observable<any> {
     return this.http.post(`${this.apiUrl}/send-invoice`, payload);
+  }
+
+  sendEmail(payload: SendEmailPayload): Observable<any> {
+    return this.http.post(`${this.apiUrl}/send-email`, payload);
   }
   
    sendEmailWithAttachment(payload: SendEmailWithAttachmentPayload): Observable<any> {
@@ -46,7 +59,9 @@ export class EmailService {
       formData.append('ccEmails', JSON.stringify(payload.ccEmails));
     }
 
-    formData.append('file', payload.file, payload.file.name);
+    if (payload.file) {
+      formData.append('file', payload.file, payload.file.name);
+    }
 
     return this.http.post(`${this.apiUrl}/send-email-with-attachment`, formData);
   }

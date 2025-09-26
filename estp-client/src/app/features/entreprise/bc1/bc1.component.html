@@ -293,20 +293,67 @@
 
   <div class="field">
     <label for="logo">Logo de l'entreprise</label>
-<p-fileUpload 
+<p-fileUpload
     mode="advanced"
-    chooseIcon="pi pi-upload" 
-    (onSelect)="onFileSelected($event)" 
-    [multiple]="false" 
-     name="demo[]" 
-    url="https://www.primefaces.org/cdn/api/upload.php" 
-    accept="image/*" 
+    chooseIcon="pi pi-upload"
+    (onSelect)="onFileSelected($event)"
+    [multiple]="false"
+     name="demo[]"
+    url="https://www.primefaces.org/cdn/api/upload.php"
+    accept="image/*"
     chooseLabel="Choisir logo"
     showUploadButton="false"
     showCancelButton="false"
     maxFileSize="1000000">
-        
-</p-fileUpload>    
+
+</p-fileUpload>
+  </div>
+
+  <!-- New fields added from database -->
+  <h3 class="mt-4 mb-3">Informations supplémentaires</h3>
+
+  <div class="grid">
+    <div class="field col-6">
+      <label for="annee_creation">Année de création</label>
+      <input pInputText type="number" formControlName="annee_creation" class="w-full"
+        placeholder="Ex: 2020" min="1900" max="2025" />
+    </div>
+
+    <div class="field col-6">
+      <label for="telephone_contact">Téléphone de contact</label>
+      <input pInputText formControlName="telephone_contact" class="w-full"
+        placeholder="Ex: +33 1 23 45 67 89" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="email_recrutement">Email de recrutement</label>
+    <input pInputText type="email" formControlName="email_recrutement" class="w-full"
+      placeholder="recrutement@entreprise.com" />
+  </div>
+
+  <div class="field">
+    <label for="adresse_postale">Adresse postale</label>
+    <textarea pInputTextarea formControlName="adresse_postale" class="w-full" rows="2"
+      maxlength="255" placeholder="Adresse complète pour courrier (255 caractères max)"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="profils_recherches">Profils recherchés</label>
+    <textarea pInputTextarea formControlName="profils_recherches" class="w-full" rows="3"
+      maxlength="390" placeholder="Types de profils recherchés (390 caractères max)"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="methode_recrutement">Méthode de recrutement</label>
+    <textarea pInputTextarea formControlName="methode_recrutement" class="w-full" rows="3"
+      maxlength="370" placeholder="Comment vous recrutez (370 caractères max)"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="offres_stage_emploi">Offres de stage et emploi</label>
+    <textarea pInputTextarea formControlName="offres_stage_emploi" class="w-full" rows="3"
+      maxlength="365" placeholder="Vos offres de stage et d'emploi (365 caractères max)"></textarea>
   </div>
 </form>
 

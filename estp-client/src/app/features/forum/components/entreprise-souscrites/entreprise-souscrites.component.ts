@@ -31,13 +31,27 @@ export class EntrepriseSouscritesComponent implements OnInit {
   registerForm: FormGroup;
   labelSiren = "Numéro SIREN de l'entreprise";
   viewEntrepriseDialogVisible = false;
+  editEntrepriseDialogVisible = false;
   selectedEntreprise: Entreprise | null = null
+  editEntrepriseForm: FormGroup;
 
   constructor(private fb: FormBuilder, private entrepriseService: EntrepriseService, 
     private authService: AuthService,    private contactService: ContactService,
     private userService: UserService, private cookieService: AuthCookieService, 
         private confirmationService: ConfirmationService,
     private messageService: MessageService) {
+    this.editEntrepriseForm = this.fb.group({
+      nom: ['', Validators.required],
+      siren: [''],
+      adresse: [''],
+      telephone_standard: [''],
+      telephone_fax: [''],
+      siteweb: [''],
+      activity: [''],
+      fct_nom: [''],
+      fct_adresse: ['']
+    });
+
     this.registerForm = this.fb.group({
       lastname: ['', Validators.required],
       firstname: ['', Validators.required],
@@ -256,6 +270,63 @@ export class EntrepriseSouscritesComponent implements OnInit {
         });
       }
       this.viewEntrepriseDialogVisible = true;
+    }
+
+    editEntreprise(entreprise: Entreprise) {
+      this.selectedEntreprise = { ...entreprise };
+      this.editEntrepriseForm.patchValue({
+        nom: entreprise.nom || '',
+        siren: entreprise.siren || '',
+        adresse: entreprise.adresse || '',
+        telephone_standard: entreprise.telephone_standard || '',
+        telephone_fax: entreprise.telephone_fax || '',
+        siteweb: entreprise.siteweb || '',
+        activity: 0,
+        fct_nom: entreprise.fct_nom || '',
+        fct_adresse: entreprise.fct_adresse || ''
+      });
+      this.editEntrepriseDialogVisible = true;
+    }
+
+    saveEntrepriseChanges() {
+      if (this.editEntrepriseForm.valid && this.selectedEntreprise) {
+        const formValue = this.editEntrepriseForm.value;
+        const updatedEntreprise = {
+          ...this.selectedEntreprise,
+          ...formValue
+        };
+
+        this.entrepriseService.updateEntreprise(this.selectedEntreprise.id!, updatedEntreprise).subscribe({
+          next: (response) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succès',
+              detail: 'Entreprise mise à jour avec succès',
+              life: 3000
+            });
+            this.editEntrepriseDialogVisible = false;
+            // Update the entreprise in the local array
+            const index = this.entreprises.findIndex(e => e.id === this.selectedEntreprise!.id);
+            if (index !== -1) {
+              this.entreprises[index] = { ...this.entreprises[index], ...formValue };
+            }
+          },
+          error: (err) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: 'Erreur lors de la mise à jour de l\'entreprise',
+              life: 3000
+            });
+            console.error('Error updating entreprise:', err);
+          }
+        });
+      }
+    }
+
+    cancelEdit() {
+      this.editEntrepriseDialogVisible = false;
+      this.editEntrepriseForm.reset();
     }
     // getEntrepriseContact(entreprise: Entreprise): Observable<Contact[]>{
     //   return this.contactService.getContactByUserId(entreprise.user_id ?? -1)

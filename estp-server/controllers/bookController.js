@@ -53,7 +53,9 @@ exports.createBook = (req, res) => {
     entreprise_id,
     description, nombre_collaborateurs, implantation,
     activite, slogan, site_web,
-    logo_url, valide_forum, valide_entreprise, chiffreAff
+    logo_url, valide_forum, valide_entreprise, chiffreAff,
+    annee_creation, profils_recherches, methode_recrutement,
+    offres_stage_emploi, adresse_postale, telephone_contact, email_recrutement
   } = req.body;
 
   const now = new Date();
@@ -74,14 +76,18 @@ exports.createBook = (req, res) => {
       INSERT INTO book (
         entreprise_id, description, nombre_collaborateurs, implantation,
         activite, slogan, site_web,
-        logo_url, valide_forum, valide_entreprise, created_at, updated_at, chiffreAff
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        logo_url, valide_forum, valide_entreprise, created_at, updated_at, chiffreAff,
+        annee_creation, profils_recherches, methode_recrutement,
+        offres_stage_emploi, adresse_postale, telephone_contact, email_recrutement
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
       entreprise_id, description, nombre_collaborateurs, implantation,
       activite, slogan, site_web,
-      logo_url, !!valide_forum, !!valide_entreprise, now, now, chiffreAff
+      logo_url, !!valide_forum, !!valide_entreprise, now, now, chiffreAff,
+      annee_creation, profils_recherches, methode_recrutement,
+      offres_stage_emploi, adresse_postale, telephone_contact, email_recrutement
     ];
 
     db.query(insertQuery, values, (err, result) => {
@@ -109,7 +115,9 @@ exports.updateBook = (req, res) => {
     entreprise_id,
     description, nombre_collaborateurs, implantation,
     activite, slogan, site_web,
-    logo_url, valide_forum, valide_entreprise, chiffreAff
+    logo_url, valide_forum, valide_entreprise, chiffreAff,
+    annee_creation, profils_recherches, methode_recrutement,
+    offres_stage_emploi, adresse_postale, telephone_contact, email_recrutement
   } = req.body;
 
   const now = new Date();
@@ -118,14 +126,18 @@ exports.updateBook = (req, res) => {
     UPDATE book SET
       entreprise_id = ?, description = ?, nombre_collaborateurs = ?, implantation = ?,
       activite = ?, slogan = ?, site_web = ?,
-      logo_url = ?, valide_forum = ?, valide_entreprise = ?, updated_at = ?, chiffreAff = ?
+      logo_url = ?, valide_forum = ?, valide_entreprise = ?, updated_at = ?, chiffreAff = ?,
+      annee_creation = ?, profils_recherches = ?, methode_recrutement = ?,
+      offres_stage_emploi = ?, adresse_postale = ?, telephone_contact = ?, email_recrutement = ?
     WHERE id = ?
   `;
 
   const values = [
     entreprise_id, description, nombre_collaborateurs, implantation,
     activite, slogan, site_web,
-    logo_url, !!valide_forum, !!valide_entreprise, now, chiffreAff, id 
+    logo_url, !!valide_forum, !!valide_entreprise, now, chiffreAff,
+    annee_creation, profils_recherches, methode_recrutement,
+    offres_stage_emploi, adresse_postale, telephone_contact, email_recrutement, id
   ];
 
   db.query(updateQuery, values, (err, result) => {

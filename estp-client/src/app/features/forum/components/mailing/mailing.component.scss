@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.enterprise-tag {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p-error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.selected-count {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::ng-deep .p-dialog-content {
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .p-dialog-footer {
+  padding-top: 1rem;
+}
