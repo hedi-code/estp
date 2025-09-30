@@ -312,7 +312,7 @@
     </div>
   </p-tabPanel>
 
-  <p-tabPanel header="Récapitulatif" *ngIf="option2Categories && option2Categories.length>0" [closable]="false">
+  <p-tabPanel header="Récapitulatif" *ngIf="option2Categories && option2Categories.length>0" [closable]="false" [disabled]="true">
     <form [formGroup]="reservationForm" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
       <h2 class="mb-4">Facturation</h2>
 

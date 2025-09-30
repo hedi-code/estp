@@ -195,6 +195,17 @@
 
         <!-- Block Detail Prix Total -->
         <table class="table" width="100%">
+            <!-- TVA Groups - Total HT by rate -->
+            <ng-container *ngFor="let tvaGroup of getTVAGroups()">
+                <tr>
+                    <td width="40%"></td>
+                    <td width="10%"></td>
+                    <td width="10%"></td>
+                    <td width="25%" class="lightBlueBg">Total HT {{tvaGroup.taux}}% (&euro;)</td>
+                    <td width="15%" class="lightBlueBg t-r">{{tvaGroup.totalHT | number:'1.2-2'}}</td>
+                </tr>
+            </ng-container>
+
             <tr>
                 <td width="40%"></td>
                 <td width="10%"></td>
@@ -202,13 +213,18 @@
                 <td width="25%" class="lightBlueBg">Total HT (&euro;)</td>
                 <td width="15%" class="lightBlueBg t-r">{{calculateTotalHT() | number:'1.2-2'}}</td>
             </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="lightBlueBg">TVA (&euro;)</td>
-                <td class="lightBlueBg t-r">{{calculateTVA() | number:'1.2-2'}}</td>
-            </tr>
+
+            <!-- TVA amounts by rate -->
+            <ng-container *ngFor="let tvaGroup of getTVAGroups()">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="lightBlueBg">TVA {{tvaGroup.taux}}%</td>
+                    <td class="lightBlueBg t-r">{{tvaGroup.totalTVA | number:'1.2-2'}}</td>
+                </tr>
+            </ng-container>
+
             <tr>
                 <td></td>
                 <td></td>
