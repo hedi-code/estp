@@ -18,7 +18,9 @@ exports.createCommande2 = (req, res) => {
     standiste_demande,
     standiste_status,
     validation_lieu,
-    valide = 0
+    valide = 0,
+    fct_payee = 0,
+    fct_envoyee = 0
   } = req.body;
 
   const now = new Date();
@@ -33,8 +35,8 @@ exports.createCommande2 = (req, res) => {
       }
 
       db.query(
-        `INSERT INTO commande2s (entreprise_id, pack2_id, pack2_color, reduc_pct, remise_pack_plus, valide, total_ht_avt_remise, total_ht, created, modified, standiste_nom, standiste_prenom, standiste_entreprise, standiste_telephone, standiste_demande, standiste_status, validation_lieu)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO commande2s (entreprise_id, pack2_id, pack2_color, reduc_pct, remise_pack_plus, valide, total_ht_avt_remise, total_ht, created, modified, standiste_nom, standiste_prenom, standiste_entreprise, standiste_telephone, standiste_demande, standiste_status, validation_lieu, fct_payee, fct_envoyee)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entreprise_id,
           pack2_id,
@@ -52,7 +54,9 @@ exports.createCommande2 = (req, res) => {
           standiste_telephone,
           standiste_demande,
           standiste_status,
-          validation_lieu
+          validation_lieu,
+          fct_payee,
+          fct_envoyee
         ],
         (err, result) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
@@ -96,14 +100,16 @@ exports.updateCommande2 = (req, res) => {
     standiste_demande,
     standiste_status,
     validation_lieu,
-    valide
+    valide,
+    fct_payee = 0,
+    fct_envoyee = 0
   } = req.body;
 
   const modified = new Date();
 
   db.query(
     `UPDATE commande2s
-     SET pack2_id = ?, pack2_color = ?, reduc_pct = ?, remise_pack_plus = ?, total_ht_avt_remise = ?, total_ht = ?, modified = ?, standiste_nom = ?, standiste_prenom = ?, standiste_entreprise = ?, standiste_telephone = ?, standiste_demande = ?, standiste_status = ?, validation_lieu = ?, valide = ?
+     SET pack2_id = ?, pack2_color = ?, reduc_pct = ?, remise_pack_plus = ?, total_ht_avt_remise = ?, total_ht = ?, modified = ?, standiste_nom = ?, standiste_prenom = ?, standiste_entreprise = ?, standiste_telephone = ?, standiste_demande = ?, standiste_status = ?, validation_lieu = ?, valide = ?, fct_payee = ?, fct_envoyee = ?
      WHERE id = ?`,
     [
       pack2_id,
@@ -121,6 +127,8 @@ exports.updateCommande2 = (req, res) => {
       standiste_status,
       validation_lieu,
       valide,
+      fct_payee,
+      fct_envoyee,
       id
     ],
     (err) => {
@@ -166,4 +174,28 @@ exports.getCommande2WithDetails = (req, res) => {
     if (result.length === 0) return res.status(404).json({ error: "Commande non trouvée" });
     res.json(result[0]);
   });
+};
+
+exports.setFactureEnvoyee = (req, res) => {
+  const id = req.params.id;
+  db.query(
+    `UPDATE commande2s SET fct_envoyee = 1 WHERE id = ?`,
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Erreur base de données" });
+      res.json({ message: "Facture marquée comme envoyée" });
+    }
+  );
+};
+
+exports.setFacturePayee = (req, res) => {
+  const id = req.params.id;
+  db.query(
+    `UPDATE commande2s SET fct_payee = 1 WHERE id = ?`,
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Erreur base de données" });
+      res.json({ message: "Facture marquée comme payée" });
+    }
+  );
 };

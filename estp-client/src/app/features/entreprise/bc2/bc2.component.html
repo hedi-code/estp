@@ -1,4 +1,4 @@
- <p-tabView [(activeIndex)]="activeIndex" [controlClose]="true" [scrollable]="false">
+<p-tabView [(activeIndex)]="activeIndex" *ngIf="option2Categories.length > 0">
   <p-tabPanel *ngFor="let category of option2Categories; let i = index" [header]="category.name" [closable]="false">
     <div class="grid">
       <div class="col-9 pt-4">
@@ -6,11 +6,11 @@
           <ng-container *ngFor="let option of option2sByCategory[category.id]">
             <div class="col-12 mb-3">
               <div class="border-2 border-round-xl border-solid border-primary grid flex">
-                <div *ngIf="option.img" class="col-4 m-0 p-0 flex items-center justify-center overflow-hidden relative">
+                <div *ngIf="option.img" class="col-4 m-0 p-0 flex align-items-center justify-content-center overflow-hidden relative">
                   <img [src]="baseUrl+'/api/uploads/img/option2s/' +option.id+'/'+ option.img"
                        alt=""
-                       class="border-round-left-xl w-full"
-                       style="object-fit: cover; height: 200px; width: 200px; aspect-ratio: 1/1;" />
+                       class="border-round-left-xl"
+                       style="object-fit: cover; height: 200px; width: 100%; max-width: 300px;" />
                   <span class="absolute bottom-0 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 border-round z-5">
                     *photo non contractuelle
                   </span>
@@ -67,11 +67,11 @@
           <div *ngFor="let group of getGroupedOptions(category.id); let i = index" class="col-12 sm:col-6 md:col-4">
             <p-card styleClass="h-full" [header]="group.baseName">
               <ng-template pTemplate="header">
-                <div *ngIf="getFirstImageOption(group.options); else noImagePlaceholder" class="text-center">
+                <div *ngIf="getFirstImageOption(group.options); else noImagePlaceholder" class="text-center flex align-items-center justify-content-center" style="height: 200px;">
                   <img alt="Option"
                        [src]="baseUrl+'/api/uploads/img/option2s/' + getFirstImageOption(group.options)?.id + '/' + getFirstImageOption(group.options)?.img"
-                       class="w-full border-round-top-md"
-                       style="height: 200px; object-fit: cover; margin: 0 auto;" />
+                       class="border-round-top-md"
+                       style="height: 180px; width: auto; max-width: 100%; object-fit: cover;" />
                 </div>
                 <ng-template #noImagePlaceholder>
                   <div class="flex align-items-center justify-content-center bg-gray-100 text-center"
@@ -84,59 +84,68 @@
                 </ng-template>
               </ng-template>
 
-              <div [innerHTML]="group.options[0]?.description || 'Pas de description'" class="mb-3"></div>
+              <div class="flex flex-column h-full">
+                <!-- Top section: Options and controls -->
+                <div class="flex-grow-0">
+                  <div class="field">
+                    <label class="text-sm font-semibold">Choisir l'option :</label>
+                    <p-dropdown
+                      [options]="group.dropdownOptions"
+                      [(ngModel)]="selectedGroupOptions[group.baseName]"
+                      placeholder="Sélectionner une option"
+                      optionLabel="label"
+                      optionValue="value"
+                      styleClass="w-full"
+                      (onChange)="onGroupOptionChange(group.baseName, $event)">
+                    </p-dropdown>
+                  </div>
 
-              <div class="field">
-                <label class="text-sm font-semibold">Choisir l'option :</label>
-                <p-dropdown
-                  [options]="group.dropdownOptions"
-                  [(ngModel)]="selectedGroupOptions[group.baseName]"
-                  placeholder="Sélectionner une option"
-                  optionLabel="label"
-                  optionValue="value"
-                  styleClass="w-full"
-                  (onChange)="onGroupOptionChange(group.baseName, $event)">
-                </p-dropdown>
-              </div>
+                  <div *ngIf="selectedGroupOptions[group.baseName]?.coloris" class="field">
+                    <label>Couleurs disponibles:</label>
+                    <div class="flex flex-wrap gap-2">
+                      <span *ngFor="let color of selectedGroupOptions[group.baseName]?.coloris?.split(',')"
+                            class="inline-flex align-items-center px-3 py-1 border-round bg-blue-100 text-blue-800 text-sm">
+                        {{color.trim()}}
+                      </span>
+                    </div>
+                  </div>
 
-              <div *ngIf="selectedGroupOptions[group.baseName]?.coloris" class="field">
-                <label>Couleurs disponibles:</label>
-                <div class="flex flex-wrap gap-2">
-                  <span *ngFor="let color of selectedGroupOptions[group.baseName]?.coloris?.split(',')"
-                        class="inline-flex align-items-center px-3 py-1 border-round bg-blue-100 text-blue-800 text-sm">
-                    {{color.trim()}}
-                  </span>
+                  <div *ngIf="selectedGroupOptions[group.baseName]?.multiple" class="field">
+                    <label class="text-sm">Quantité :</label>
+                    <p-inputNumber
+                      [(ngModel)]="optionQuantities[selectedGroupOptions[group.baseName]?.id || 0]"
+                      [showButtons]="true"
+                      buttonLayout="horizontal"
+                      [step]="1"
+                      [min]="1"
+                      [max]="selectedGroupOptions[group.baseName]?.qmax || 1"
+                      class="w-full"
+                      styleClass="w-full"
+                      inputStyleClass="w-full"
+                      decrementButtonClass="p-button-secondary outlined"
+                      incrementButtonClass="p-button-secondary outlined"
+                      incrementButtonIcon="pi pi-plus"
+                      decrementButtonIcon="pi pi-minus"
+                      mode="decimal" />
+                  </div>
+                </div>
+
+                <!-- Middle section: Description -->
+                <div class="flex-grow-1 flex align-items-center justify-content-center py-3">
+                  <div [innerHTML]="group.options[0]?.description || 'Pas de description'" class="text-center"></div>
+                </div>
+
+                <!-- Bottom section: Button -->
+                <div class="flex-grow-0">
+                  <p-button
+                    label="Ajouter"
+                    class="w-full"
+                    styleClass="w-full"
+                    [disabled]="!selectedGroupOptions[group.baseName]"
+                    (click)="addGroupedOption2(group.baseName)">
+                  </p-button>
                 </div>
               </div>
-
-              <div *ngIf="selectedGroupOptions[group.baseName]?.multiple" class="field">
-                <label class="text-sm">Quantité :</label>
-                <p-inputNumber
-                  [(ngModel)]="optionQuantities[selectedGroupOptions[group.baseName]?.id || 0]"
-                  [showButtons]="true"
-                  buttonLayout="horizontal"
-                  [step]="1"
-                  [min]="1"
-                  [max]="selectedGroupOptions[group.baseName]?.qmax || 1"
-                  class="w-full"
-                  styleClass="w-full"
-                  inputStyleClass="w-full"
-                  decrementButtonClass="p-button-secondary outlined"
-                  incrementButtonClass="p-button-secondary outlined"
-                  incrementButtonIcon="pi pi-plus"
-                  decrementButtonIcon="pi pi-minus"
-                  mode="decimal" />
-              </div>
-
-              <ng-template pTemplate="footer">
-                <p-button
-                  label="Ajouter"
-                  class="w-full"
-                  styleClass="w-full"
-                  [disabled]="!selectedGroupOptions[group.baseName]"
-                  (click)="addGroupedOption2(group.baseName)">
-                </p-button>
-              </ng-template>
             </p-card>
           </div>
         </div>
@@ -148,11 +157,11 @@
               <p-card styleClass="h-full" [header]="option.nom"
                       [subheader]="option.prix_ht + ' € HT'">
                 <ng-template pTemplate="header">
-                  <div *ngIf="option.img; else noImageDefault" class="text-center">
+                  <div *ngIf="option.img; else noImageDefault" class="text-center flex align-items-center justify-content-center" style="height: 200px;">
                     <img alt="Option"
                          [src]="baseUrl+'/api/uploads/img/option2s/' +option.id+'/'+ option.img"
-                         class="w-full border-round-top-md"
-                         style="height: 200px; object-fit: cover; margin: 0 auto;" />
+                         class="border-round-top-md"
+                         style="height: 180px; width: auto; max-width: 100%; object-fit: cover;" />
                   </div>
                   <ng-template #noImageDefault>
                     <div class="flex align-items-center justify-content-center bg-gray-100 text-center"
@@ -165,45 +174,54 @@
                   </ng-template>
                 </ng-template>
 
-                <div [innerHTML]="option.description || 'Pas de description'"></div>
+                <div class="flex flex-column h-full">
+                  <!-- Top section: Colors and quantity -->
+                  <div class="flex-grow-0">
+                    <div *ngIf="option.coloris" class="field">
+                      <label>Couleurs disponibles:</label>
+                      <div class="flex flex-wrap gap-2">
+                        <span *ngFor="let color of option.coloris?.split(',')"
+                              class="inline-flex align-items-center px-3 py-1 border-round bg-blue-100 text-blue-800 text-sm">
+                          {{color.trim()}}
+                        </span>
+                      </div>
+                    </div>
 
-                <div *ngIf="option.coloris" class="field">
-                  <label>Couleurs disponibles:</label>
-                  <div class="flex flex-wrap gap-2">
-                    <span *ngFor="let color of option.coloris?.split(',')"
-                          class="inline-flex align-items-center px-3 py-1 border-round bg-blue-100 text-blue-800 text-sm">
-                      {{color.trim()}}
-                    </span>
+                    <div *ngIf="option.multiple" class="field">
+                      <label class="text-sm">Quantité :</label>
+                      <p-inputNumber
+                        [(ngModel)]="optionQuantities[option.id]"
+                        [showButtons]="true"
+                        buttonLayout="horizontal"
+                        [step]="1"
+                        [min]="1"
+                        [max]="option.qmax"
+                        class="w-full"
+                        styleClass="w-full"
+                        inputStyleClass="w-full"
+                        decrementButtonClass="p-button-secondary outlined"
+                        incrementButtonClass="p-button-secondary outlined"
+                        incrementButtonIcon="pi pi-plus"
+                        decrementButtonIcon="pi pi-minus"
+                        mode="decimal" />
+                    </div>
+                  </div>
+
+                  <!-- Middle section: Description -->
+                  <div class="flex-grow-1 flex align-items-center justify-content-center py-3">
+                    <div [innerHTML]="option.description || 'Pas de description'" class="text-center"></div>
+                  </div>
+
+                  <!-- Bottom section: Button -->
+                  <div class="flex-grow-0">
+                    <p-button
+                      label="Ajouter"
+                      class="w-full"
+                      styleClass="w-full"
+                      (click)="addOption2(option)">
+                    </p-button>
                   </div>
                 </div>
-
-                <div *ngIf="option.multiple" class="field">
-                  <label class="text-sm">Quantité :</label>
-                  <p-inputNumber
-                    [(ngModel)]="optionQuantities[option.id]"
-                    [showButtons]="true"
-                    buttonLayout="horizontal"
-                    [step]="1"
-                    [min]="1"
-                    [max]="option.qmax"
-                    class="w-full"
-                    styleClass="w-full"
-                    inputStyleClass="w-full"
-                    decrementButtonClass="p-button-secondary outlined"
-                    incrementButtonClass="p-button-secondary outlined"
-                    incrementButtonIcon="pi pi-plus"
-                    decrementButtonIcon="pi pi-minus"
-                    mode="decimal" />
-                </div>
-
-                <ng-template pTemplate="footer">
-                  <p-button
-                    label="Ajouter"
-                    class="w-full"
-                    styleClass="w-full"
-                    (click)="addOption2(option)">
-                  </p-button>
-                </ng-template>
               </p-card>
             </div>
           </ng-container>
@@ -247,10 +265,10 @@
       <h2 class="mb-4">Informations du Standiste</h2>
 
       <div *ngIf="getSelectedStandisteOption() === 21">
-        <h3 class="mb-3">Description du projet standiste</h3>
+        <h3 class="mb-3">Description</h3>
         <form [formGroup]="standisteForm">
           <div class="field">
-            <label for="standiste_demande">Description du projet *</label>
+            <label for="standiste_demande">Description</label>
             <textarea pInputTextarea id="standiste_demande" formControlName="standiste_demande"
                       placeholder="Décrivez votre projet de standiste" class="w-full" rows="4"></textarea>
           </div>

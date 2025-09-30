@@ -28,6 +28,10 @@ export class Option2Service {
     return this.http.get<Option2[]>(`${this.apiUrl}/category/${categoryId}`);
   }
 
+  getOption2sByIds(ids: number[]): Observable<Option2[]> {
+    return this.http.post<Option2[]>(`${this.apiUrl}/by-ids`, { ids });
+  }
+
   updateOption2(id: number, data: Partial<Option2>): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.apiUrl}/${id}`, data);
   }

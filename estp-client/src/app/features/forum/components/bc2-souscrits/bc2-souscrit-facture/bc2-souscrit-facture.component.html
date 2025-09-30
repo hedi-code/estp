@@ -1,0 +1,345 @@
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            padding: 20px;
+        }
+
+        table,
+        tr,
+        td,
+        th,
+        tbody,
+        thead,
+        tfoot {
+            page-break-inside: avoid !important;
+        }
+
+        body,
+        table {
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 10px;
+        }
+
+        input {
+            margin: 0;
+        }
+
+        p {
+            margin: 0;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .blockTitle {
+            width: 130px;
+            font-weight: bold;
+        }
+
+        .blockContent {
+            width: 170px;
+        }
+
+        .darkBlueBg {
+            background-color: #4274b6;
+        }
+
+        .grayBlueBg {
+            background-color: #f7f6fb;
+        }
+
+        .lightBlueBg {
+            background-color: #ecf4fd;
+        }
+
+        td {
+            padding: 2px;
+        }
+
+        .t-r {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .contact-details tr {
+            padding: 0;
+        }
+
+        .contact-details tr td {
+            padding: 0;
+        }
+
+        .contact-details tr td p {
+            padding: 2px 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body class="px-5">
+    <p-dialog header="Modification de la facture BC2" [(visible)]="visible" [modal]="true" [responsive]="true">
+        <ng-container *ngIf="modifyCommandeFact && modifyCommandeFact.entreprise">
+            <div class="field">
+                <label for="companyName">Nom d'entreprise</label>
+                <input pInputText id="companyName" placeholder="Entrez le nom" [(ngModel)]="modifyCommandeFact.entreprise.nom"
+                    class="w-full" />
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="modificationContact && modificationContact.nom && modificationContact.prenom">
+            <div class="grid">
+                <div class="field col-6">
+                    <label for="contactFirstname">Prénom contact principale</label>
+                    <input pInputText id="contactFirstname" placeholder="Entrez le prénom" class="w-full"
+                        [(ngModel)]="modificationContact.prenom" />
+                </div>
+                <div class="field col-6">
+                    <label for="contactLastname">Nom contact principale</label>
+                    <input pInputText id="contactLastname" placeholder="Entrez le nom" class="w-full"
+                        [(ngModel)]="modificationContact.nom" />
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="modifyCommandeFact && modifyCommandeFact.entreprise">
+            <div class="field">
+                <label for="companyAddress">Adresse de l'entreprise</label>
+                <input pInputText id="companyAddress" placeholder="Entrez l'adresse"
+                    [(ngModel)]="modifyCommandeFact.entreprise.adresse" class="w-full" />
+            </div>
+        </ng-container>
+
+        <div class="grid">
+            <div class="field col-6">
+                <label for="dateAcompte">Date limite acompte</label>
+                <p-calendar id="dateAcompte" [(ngModel)]="customDateAcompte" dateFormat="dd/mm/yy" showIcon="true" class="w-full"></p-calendar>
+            </div>
+            <div class="field col-6">
+                <label for="dateSolde">Date limite solde</label>
+                <p-calendar id="dateSolde" [(ngModel)]="customDateSolde" dateFormat="dd/mm/yy" showIcon="true" class="w-full"></p-calendar>
+            </div>
+        </div>
+
+        <p-button label="Mettre à jour" severity="primary" (click)="emitToParent(); visible = false" styleClass="w-full" />
+    </p-dialog>
+
+    <div style="width: 100%; display: block; padding-left: 10px;">
+        <img src="assets/logo.png" width="200" alt="Logo">
+    </div>
+
+    <!-- Company info blocks -->
+    <div style="float:left;width:300px; color:#000; padding:10px;">
+        <p>Forum ESTP<br />
+            28, avenue du Pr&eacute;sident Wilson<br />
+            94234 CACHAN CEDEX<br />
+            SIRET : 479 877 367 00017<br />
+            APE : 913E<br />
+            TVA intracommunautaire : FR17479877367
+        <p style="clear:left"></p>
+    </div>
+
+    <div style="float:right;width:200px; color:#000; border:2px solid black; padding:6px;">
+        <p><b>{{getCompanyInfo()?.nom}}</b></p>
+        <p>{{getResponsableInfo()?.nom}}</p>
+        <p>{{getCompanyInfo()?.adresse}}</p>
+        <p>{{getResponsableInfo()?.email}}</p>
+    </div>
+    <!-- end company info blocks -->
+
+    <div style="clear:both"></div>
+
+    <div style="color:gray; font-size:20px; font-weight:bold; margin:40px 0; text-align:center;">
+        Facture <span style="color:#000">festp.2025.{{modifyCommandeFact?.entreprise?.id}}.fct2</span> du <span
+            style="color:#000">{{ today | date:'dd-MM-yyyy' }}
+        </span>
+    </div>
+
+    <div style="color:#000; text-decoration:underline; font-size:16px; font-weight:bold; margin:40px 0">
+        Participation au Forum ESTP 2025, le 25 novembre - Options BC2
+    </div>
+
+    <div style="border:2px solid black;margin-top:30px;">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">D&eacute;tails de la commande BC2</div>
+
+        <!-- Block detail produits -->
+        <table class="table" width="100%">
+            <thead class="grayBlueBg">
+                <tr>
+                    <th width="40%">Option</th>
+                    <th width="10%">Quantit&eacute;</th>
+                    <th width="10%">TVA</th>
+                    <th width="25%">Prix Unitaire HT</th>
+                    <th width="15%">Prix Total HT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="lightBlueBg" *ngFor="let option of getFilteredOptions()">
+                    <td>{{option.option_nom}}</td>
+                    <td style="text-align:right">{{option.qty}}</td>
+                    <td style="text-align:right">{{option.option_taux_tva || 20}}%</td>
+                    <td style="text-align:right">{{option.option_prix_ht | number:'1.2-2'}} €</td>
+                    <td style="text-align:right">{{(option.option_prix_ht || 0) * (option.qty || 1) | number:'1.2-2'}} €</td>
+                </tr>
+                <tr *ngIf="getFilteredOptions().length === 0">
+                    <td colspan="5" style="text-align:center; padding:20px; color:#666;">
+                        Aucune option sélectionnée
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- Fin Block detail produits -->
+
+        <!-- Block Detail Prix Total -->
+        <table class="table" width="100%">
+            <tr>
+                <td width="40%"></td>
+                <td width="10%"></td>
+                <td width="10%"></td>
+                <td width="25%" class="lightBlueBg">Total HT (&euro;)</td>
+                <td width="15%" class="lightBlueBg t-r">{{calculateTotalHT() | number:'1.2-2'}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="lightBlueBg">TVA (&euro;)</td>
+                <td class="lightBlueBg t-r">{{calculateTVA() | number:'1.2-2'}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="lightBlueBg bold">Total TTC (&euro;)</td>
+                <td class="lightBlueBg t-r bold">{{calculateTotalTTC() | number:'1.2-2'}}</td>
+            </tr>
+        </table>
+        <!-- Fin Block Detail Prix Total -->
+
+        <table class="table" width="100%">
+            <tr>
+                <td style="text-align:right" width="85%" class="lightBlueBg bold">
+                    Montant de l'acompte &agrave; r&eacute;gler avant le {{customDateAcompte | date:'dd/MM/yyyy'}}
+                </td>
+                <td width="15%" class="lightBlueBg t-r bold">
+                    {{calculateTotalTTC() / 2 | number:'1.2-2'}} €
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right" class="lightBlueBg bold">
+                    Montant du solde &agrave; r&eacute;gler avant le {{customDateSolde | date:'dd/MM/yyyy'}}
+                </td>
+                <td class="lightBlueBg t-r bold">
+                    {{calculateTotalTTC() / 2 | number:'1.2-2'}} €
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Standiste Information Block -->
+    <div *ngIf="getStandisteDetails()" style="border:2px solid black;margin-top:20px;">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">Informations Standiste</div>
+
+        <div style="padding:10px;">
+            <div *ngIf="getSelectedStandisteOption() === 15" style="text-align:center; color:#666; font-style:italic;">
+                Cette entreprise ne souhaite pas de standiste
+            </div>
+
+            <div *ngIf="getSelectedStandisteOption() === 21">
+                <p><strong>Type:</strong> Demande de standiste</p>
+                <p><strong>Description du projet:</strong></p>
+                <p style="margin-left:10px; font-style:italic;">{{getStandisteDetails()?.description}}</p>
+            </div>
+
+            <div *ngIf="getSelectedStandisteOption() === 22">
+                <p><strong>Type:</strong> Standiste fourni par l'entreprise</p>
+                <table width="100%" style="margin-top:10px;">
+                    <tr>
+                        <td width="25%"><strong>Nom:</strong></td>
+                        <td width="25%">{{getStandisteDetails()?.nom}}</td>
+                        <td width="25%"><strong>Prénom:</strong></td>
+                        <td width="25%">{{getStandisteDetails()?.prenom}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Entreprise:</strong></td>
+                        <td>{{getStandisteDetails()?.entreprise}}</td>
+                        <td><strong>Téléphone:</strong></td>
+                        <td>{{getStandisteDetails()?.telephone}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signature Block -->
+    <div *ngIf="signature" style="border:2px solid black;margin-top:20px;">
+        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
+            class="darkBlueBg">Signature</div>
+        <div style="padding:10px; text-align:center;">
+            <p><strong>Fait à:</strong> {{fait || 'Non spécifié'}}</p>
+            <p><strong>Date:</strong> {{today | date:'dd/MM/yyyy'}}</p>
+            <div style="margin-top:10px;">
+                <img [src]="signature" alt="Signature" style="max-width:200px; max-height:100px; border:1px solid #ccc;">
+            </div>
+        </div>
+    </div>
+
+    <div style="color:gray; font-size:15px; margin:40px 0">
+        En votre aimable r&egrave;glement &agrave; l'ordre de <strong
+            style="color:#000; text-decoration:underline;font-weight:bold;">FORUM ETP</strong>, par ch&egrave;que ou
+        virement bancaire.
+    </div>
+
+    <table width="100%">
+        <tr>
+            <td>
+                <div
+                    style="float:left; width:60%; margin-top:20px; padding:10px; font-size:12px; border:2px solid #000">
+                    <p>R&eacute;f&eacute;rences bancaires :</p>
+                    <p><b>Domiciliation : HSBC FR PARIS MAUBERT</b></p>
+                    <p><b>IBAN : FR76 3005 6000 6500 6520 0106 830</b></p>
+                    <p><b>BIC : CCFRFRPP</b></p>
+                    <table style="text-align:center" width="100%">
+                        <tr style="background:#CCC; font-weight:bold">
+                            <td>Banque</td>
+                            <td>Indicatif</td>
+                            <td>N° de compte</td>
+                            <td>Cl&eacute; R.I.B.</td>
+                        </tr>
+                        <tr>
+                            <td>30056</td>
+                            <td>00065</td>
+                            <td>00652001068</td>
+                            <td>30</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div
+                    style="float:right; text-align:right; font-size:13px;margin-top:40px; padding-right:30px;width:300px">
+                    <p>Tr&eacute;soriere : Kahina Saibi</p>
+                    <p>Mail : Kahina.saibi&#64;forumestp.fr</p>
+                    <p>T&eacute;l : 07 81 61 67 66</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div style="clear:both"></div>
+    <div style="color:black;font-size:12px; margin:40px 0">
+        Pas d'escompte en cas de paiement anticip&eacute;.<br />
+        Conform&eacute;ment &agrave; la loi du 15 mai 2001, des p&eacute;nalit&eacute;s de retard &eacute;gales &agrave;
+        2 fois le taux d'int&eacute;r&ecirc;t l&eacute;gal hors taxes, toutes taxes en sus, seront exigibles sans qu'un
+        rappel ne soit n&eacute;cessaire.
+    </div>
+</body>
+
+</html>

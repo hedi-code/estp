@@ -28,18 +28,13 @@
         <p-stepperPanel header="Bon de commande 1">
             <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
                 let-index="index">
-                <app-bc1></app-bc1>
+                <app-bc1 (stepCompleted)="incrementStep()"></app-bc1>
             </ng-template>
         </p-stepperPanel>
         <p-stepperPanel header="Bon de commande 2">
-            <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
+           <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
                 let-index="index">
                 <app-bc2></app-bc2>
-                <div class="flex justify-content-between">
-                    <p-button label="Retour" icon="pi pi-arrow-left" iconPos="left" (onClick)="decrementStep()" />
-                    <p-button label="Suivant" icon="pi pi-arrow-right" iconPos="right"
-                        (onClick)="incrementStep()" />
-                </div>
             </ng-template>
         </p-stepperPanel>
         <p-stepperPanel header="Récapitulatif">

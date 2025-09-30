@@ -6,7 +6,9 @@ const {
   updateCommande2,
   deleteCommande2,
   getAllCommande2s,
-  getCommande2WithDetails
+  getCommande2WithDetails,
+  setFactureEnvoyee,
+  setFacturePayee
 } = require("../controllers/commande2Controller");
 
 const router = express.Router();
@@ -17,6 +19,8 @@ router.get("/:id", getCommande2ById);
 router.get("/entreprise/:id", getCommande2ByEntrepriseId);
 router.get("/:id/details", getCommande2WithDetails);
 router.put("/:id", updateCommande2);
+router.put("/:id/facture-envoyee", setFactureEnvoyee);
+router.put("/:id/facture-payee", setFacturePayee);
 router.delete("/:id", deleteCommande2);
 
 module.exports = router;

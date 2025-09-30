@@ -1,0 +1,42 @@
+/* BC2 Facture specific styles */
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* Ensure print-friendly styles */
+@media print {
+  .px-5 {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .p-dialog {
+    display: none !important;
+  }
+}
+
+/* Custom PrimeNG dialog styling for BC2 */
+:host ::ng-deep {
+  .p-dialog {
+    .p-dialog-header {
+      background: #4274b6;
+      color: white;
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem;
+    }
+  }
+
+  .p-inputtext {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5rem;
+  }
+
+  .p-button {
+    background: #4274b6;
+    border: 1px solid #4274b6;
+  }
+}

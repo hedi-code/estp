@@ -1,0 +1,257 @@
+<div class="card">
+  <div class="card-header">
+    <h2 class="text-2xl font-bold text-primary">Gestion des Standistes</h2>
+    <p class="text-gray-600 mt-2">Vue d'ensemble des demandes de standistes par entreprise</p>
+  </div>
+
+  <div class="card-body">
+    <p-progressSpinner *ngIf="loading" class="flex justify-content-center w-full"></p-progressSpinner>
+
+    <p-tabView [(activeIndex)]="activeIndex" *ngIf="!loading && standisteOptions.length > 0">
+      <p-tabPanel *ngFor="let option of standisteOptions; let i = index"
+                  [header]="getTabLabel(option)"
+                  [closable]="false">
+
+        <div class="mb-4">
+          <div class="flex align-items-center justify-content-between mb-3">
+            <h3 class="text-xl font-semibold">{{ getTabLabel(option) }}</h3>
+          </div>
+        </div>
+
+        <div *ngIf="getDataForActiveTab().length === 0" class="text-center py-8">
+          <i class="pi pi-info-circle text-4xl text-gray-400 mb-3"></i>
+          <p class="text-gray-500 text-lg">Aucune entreprise n'a sélectionné cette option</p>
+        </div>
+
+        <!-- Tab 1: Je ne souhaite pas de standiste (Option 15) -->
+        <p-table [value]="getDataForActiveTab()"
+                 *ngIf="getDataForActiveTab().length > 0 && option.id === 15"
+                 [paginator]="true"
+                 [rows]="10"
+                 [rowsPerPageOptions]="[10, 25, 50]"
+                 [responsive]="true"
+                 styleClass="p-datatable-gridlines">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="entreprise.nom">
+                Entreprise
+                <p-sortIcon field="entreprise.nom"></p-sortIcon>
+              </th>
+              <th pSortableColumn="commande2.created">
+                Date commande
+                <p-sortIcon field="commande2.created"></p-sortIcon>
+              </th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-data>
+            <tr>
+              <td>
+                <div class="font-semibold">{{ data.entreprise.nom }}</div>
+              </td>
+              <td>
+                {{ data.commande2.created | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td>
+                <p-badge value="Confirmé - Pas de standiste" severity="success"></p-badge>
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-eye"
+                    severity="info"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Voir les détails"
+                    (click)="viewDetails(data)">
+                  </p-button>
+                  <p-button
+                    icon="pi pi-download"
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Télécharger BC2"
+                    (click)="downloadBC2(data)">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <!-- Tab 2: Je souhaite avoir un standiste (Option 21) -->
+        <p-table [value]="getDataForActiveTab()"
+                 *ngIf="getDataForActiveTab().length > 0 && option.id === 21"
+                 [paginator]="true"
+                 [rows]="10"
+                 [rowsPerPageOptions]="[10, 25, 50]"
+                 [responsive]="true"
+                 styleClass="p-datatable-gridlines">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="entreprise.nom">
+                Entreprise
+                <p-sortIcon field="entreprise.nom"></p-sortIcon>
+              </th>
+              <th pSortableColumn="commande2.created">
+                Date commande
+                <p-sortIcon field="commande2.created"></p-sortIcon>
+              </th>
+              <th>Description du projet</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-data>
+            <tr>
+              <td>
+                <div class="font-semibold">{{ data.entreprise.nom }}</div>
+              </td>
+              <td>
+                {{ data.commande2.created | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td>
+                <div class="max-w-md">
+                  <p class="text-sm" [title]="data.standisteDetails.description">
+                    {{ data.standisteDetails.description | slice:0:150 }}
+                    <span *ngIf="data.standisteDetails.description?.length > 150">...</span>
+                  </p>
+                </div>
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-eye"
+                    severity="info"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Voir les détails"
+                    (click)="viewDetails(data)">
+                  </p-button>
+                  <p-button
+                    icon="pi pi-download"
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Télécharger BC2"
+                    (click)="downloadBC2(data)">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <!-- Tab 3: J'ai un standiste (Option 22) -->
+        <p-table [value]="getDataForActiveTab()"
+                 *ngIf="getDataForActiveTab().length > 0 && option.id === 22"
+                 [paginator]="true"
+                 [rows]="10"
+                 [rowsPerPageOptions]="[10, 25, 50]"
+                 [responsive]="true"
+                 styleClass="p-datatable-gridlines">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="entreprise.nom">
+                Entreprise
+                <p-sortIcon field="entreprise.nom"></p-sortIcon>
+              </th>
+              <th pSortableColumn="commande2.created">
+                Date commande
+                <p-sortIcon field="commande2.created"></p-sortIcon>
+              </th>
+              <th>Nom Standiste</th>
+              <th>Prénom Standiste</th>
+              <th>Entreprise Standiste</th>
+              <th>Téléphone</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-data>
+            <tr>
+              <td>
+                <div class="font-semibold">{{ data.entreprise.nom }}</div>
+              </td>
+              <td>
+                {{ data.commande2.created | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td>{{ data.standisteDetails.nom }}</td>
+              <td>{{ data.standisteDetails.prenom }}</td>
+              <td>{{ data.standisteDetails.entreprise }}</td>
+              <td>{{ data.standisteDetails.telephone }}</td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button
+                    icon="pi pi-eye"
+                    severity="info"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Voir les détails"
+                    (click)="viewDetails(data)">
+                  </p-button>
+                  <p-button
+                    icon="pi pi-download"
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    pTooltip="Télécharger BC2"
+                    (click)="downloadBC2(data)">
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+    </p-tabView>
+
+    <div *ngIf="!loading && standisteOptions.length === 0" class="text-center py-8">
+      <i class="pi pi-exclamation-triangle text-4xl text-yellow-500 mb-3"></i>
+      <p class="text-gray-600 text-lg">Aucune option de standiste trouvée</p>
+    </div>
+  </div>
+</div>
+
+<!-- Details Dialog -->
+<p-dialog header="Détails de la commande" [(visible)]="detailsDialogVisible" [style]="{ width: '600px' }" [modal]="true">
+  <div *ngIf="selectedData">
+    <div class="grid">
+      <div class="col-12">
+        <h4 class="text-primary">Informations Entreprise</h4>
+        <p><strong>Nom:</strong> {{ selectedData.entreprise.nom }}</p>
+        <p><strong>Téléphone:</strong> {{ selectedData.entreprise.telephone_standard || 'Non disponible' }}</p>
+        <p><strong>Date commande:</strong> {{ selectedData.commande2.created | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+
+      <div class="col-12" *ngIf="selectedData.commande2.standiste_status === 21">
+        <h4 class="text-primary">Description du projet standiste</h4>
+        <p class="whitespace-pre-wrap">{{ selectedData.standisteDetails.description }}</p>
+      </div>
+
+      <div class="col-12" *ngIf="selectedData.commande2.standiste_status === 22">
+        <h4 class="text-primary">Informations Standiste</h4>
+        <div class="grid">
+          <div class="col-6">
+            <p><strong>Nom:</strong> {{ selectedData.standisteDetails.nom }}</p>
+            <p><strong>Prénom:</strong> {{ selectedData.standisteDetails.prenom }}</p>
+          </div>
+          <div class="col-6">
+            <p><strong>Entreprise:</strong> {{ selectedData.standisteDetails.entreprise }}</p>
+            <p><strong>Téléphone:</strong> {{ selectedData.standisteDetails.telephone }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12" *ngIf="selectedData.commande2.standiste_status === 15">
+        <h4 class="text-primary">Statut</h4>
+        <p class="text-green-600 font-semibold">Cette entreprise ne souhaite pas de standiste</p>
+      </div>
+    </div>
+  </div>
+</p-dialog>

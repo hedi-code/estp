@@ -20,6 +20,8 @@ import { GestionBc2Component } from './features/forum/components/gestion-bc2/ges
 import { GestionBookComponent } from './features/forum/components/gestion-book/gestion-book.component';
 import { DashboardComponent } from './features/forum/components/dashboard/dashboard.component';
 import { MailingComponent } from './features/forum/components/mailing/mailing.component';
+import { StandisteComponent } from './features/forum/components/standiste/standiste.component';
+import { RoleGuard } from './core/guards/role.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -44,15 +46,16 @@ const routes: Routes = [
     path: 'forum',
     component: LayoutComponent,
     children: [
-      { path: '', component: DashboardComponent },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'entreprise', component: EntrepriseSouscritesComponent },
-      { path: 'bc1', component: Bc1SouscritsComponent },
-      { path: 'bc2', component: Bc2SouscritsComponent },
-      { path: 'gestion-bc1', component: GestionBc1Component},
-      { path: 'gestion-bc2', component: GestionBc2Component },
-      { path: 'gestion-book', component: GestionBookComponent },
-      { path: 'mailing', component: MailingComponent },
+      { path: '', redirectTo: 'entreprise', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent, canActivate: [RoleGuard], data: { roles: ['tres', 'pres', 'comm'] } },
+      { path: 'entreprise', component: EntrepriseSouscritesComponent, canActivate: [RoleGuard], data: { roles: ['rescom', 'pres', 'comm', 'tres'] } },
+      { path: 'bc1', component: Bc1SouscritsComponent, canActivate: [RoleGuard], data: { roles: ['rescom', 'pres', 'comm', 'tres'] } },
+      { path: 'bc2', component: Bc2SouscritsComponent, canActivate: [RoleGuard], data: { roles: ['rescom', 'pres', 'comm', 'tres'] } },
+      { path: 'gestion-bc1', component: GestionBc1Component, canActivate: [RoleGuard], data: { roles: ['pres'] } },
+      { path: 'gestion-bc2', component: GestionBc2Component, canActivate: [RoleGuard], data: { roles: ['pres'] } },
+      { path: 'gestion-book', component: GestionBookComponent, canActivate: [RoleGuard], data: { roles: ['resbook', 'pres'] } },
+      { path: 'mailing', component: MailingComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
+      { path: 'standiste', component: StandisteComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
     ]
   }
 

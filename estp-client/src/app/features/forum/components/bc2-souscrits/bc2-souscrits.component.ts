@@ -58,7 +58,13 @@ export class Bc2SouscritsComponent implements OnInit {
   standisteForm!: FormGroup;
   modifyStandisteForm!: FormGroup;
 
+  // PDF viewing
+  factureDialog: boolean = false;
+  factureVisible: boolean = false;
+  currentFactureCommande: CommandeWithEntreprise | undefined;
+
   @ViewChild('dt') table!: Table;
+  @ViewChild('factureBc2') factureBc2!: any;
 
   constructor(
     private commande2Service: Commande2Service,
@@ -266,7 +272,7 @@ export class Bc2SouscritsComponent implements OnInit {
         standiste_demande: cmd.standiste_demande || ''
       });
 
-      this.modifyDialog = true;
+      this.factureVisible = true;
     }
   }
 
@@ -279,7 +285,7 @@ export class Bc2SouscritsComponent implements OnInit {
     });
   }
 
-  validerOptionCommande() {
+  async validerOptionCommande() {
     if (this.modifyCommande) {
       const selectedStandiste = this.getSelectedStandisteOptionForModify();
       const standisteFormValues = this.modifyStandisteForm.value;
@@ -296,40 +302,48 @@ export class Bc2SouscritsComponent implements OnInit {
       this.modifyCommande.standiste_demande = selectedStandiste === 21 ? standisteFormValues.standiste_demande : null;
       this.modifyCommande.standiste_status = selectedStandiste || 0;
 
-      this.commande2Service.updateCommande2(this.modifyCommande?.id ?? -1, this.modifyCommande).subscribe({
-        error: (err) => console.log(err)
-      });
+      // Update commande in database
+      await lastValueFrom(this.commande2Service.updateCommande2(this.modifyCommande?.id ?? -1, this.modifyCommande));
 
-      this.modificationsOptions.forEach(o => {
+      // Update options
+      const updatePromises = this.modificationsOptions.map(async (o) => {
         if (o.qteCommande == 0) {
-          this.commande2OptionService.removeOptionFromCommande2(this.modificationCommandeOption.find(op => op.option2_id === o.id)?.id ?? -1).subscribe({
-            error: (err: any) => console.log(err)
-          });
+          const existingOption = this.modificationCommandeOption.find(op => op.option2_id === o.id);
+          if (existingOption) {
+            await lastValueFrom(this.commande2OptionService.removeOptionFromCommande2(existingOption.id ?? -1));
+          }
         }
         else if (o.qteCommande && o.qteCommande > 0) {
           let option: Commande2Option | undefined = this.modificationCommandeOption.find(op => op.option2_id === o.id);
           if (option) {
-            this.commande2OptionService.updateCommande2Option(option.id ?? -1, {
+            await lastValueFrom(this.commande2OptionService.updateCommande2Option(option.id ?? -1, {
               qty: o.qteCommande || -1,
               color: o.colorCommande || undefined
-            }).subscribe({
-              error: (err: any) => console.log(err)
-            });
+            }));
           }
           else {
-            this.commande2OptionService.addOptionToCommande2({
+            await lastValueFrom(this.commande2OptionService.addOptionToCommande2({
               commande2_id: this.modifyCommande?.id ?? -1,
               option2_id: o.id,
               qty: o.qteCommande,
               color: o.colorCommande
-            }).subscribe();
+            }));
           }
         }
       });
 
+      await Promise.all(updatePromises);
+
+      // Regenerate BC2 PDF with updated data
+      await this.factureBc2.generatedPdf("facture", "festp.2025." + this.modifyCommande?.entreprise_id + ".fct2", "contentToExport");
+
+      // Update local data
       this.commandes[this.commandes.findIndex(c => c.id == this.modifyCommande?.id)].total_ht = this.modifyTotalHt ?? 0;
+
+      // Reload the commande options for the facture
+      await this.loadCommandeOptionsForFacture(this.modifyCommande?.id ?? -1);
     }
-    this.modifyDialog = false;
+    this.factureBc2.visible = false;
   }
 
   async getContactPrincipalNom(): Promise<Contact | undefined> {
@@ -509,5 +523,169 @@ export class Bc2SouscritsComponent implements OnInit {
     if (selectedStandiste === 21) return this.modifyStandisteForm.get('standiste_demande')?.valid ?? false;
     if (selectedStandiste === 22) return this.modifyStandisteForm.valid;
     return true; // No standiste option selected
+  }
+
+  async showFactureDialog(cmd: CommandeWithEntreprise) {
+    this.currentFactureCommande = cmd;
+    this.modificationCommandeOption = [];
+
+    // Load the options for the facture
+    await this.loadCommandeOptionsForFacture(cmd.id ?? -1);
+
+    // Load contact information
+    this.modificationContact = await this.getContactPrincipalNom();
+
+    this.factureDialog = true;
+  }
+
+  async loadCommandeOptionsForFacture(commandeId: number): Promise<void> {
+    return new Promise((resolve) => {
+      this.commande2OptionService.getOptionsByCommande2Id(commandeId).subscribe({
+        next: (response: Commande2Option[]) => {
+          if (response && Array.isArray(response)) {
+            // Map the response to include option details with correct TVA rates
+            this.modificationCommandeOption = response.map(cmdOption => {
+              const foundOption = this.optionsBc2.find(o => o.id === cmdOption.option2_id);
+              return {
+                ...cmdOption,
+                option_nom: foundOption?.nom || 'Option inconnue',
+                option_prix_ht: foundOption?.prix_ht || 0,
+                option_taux_tva: foundOption?.taux_tva || 20 // Ensure we get the correct TVA rate
+              };
+            });
+          }
+          resolve();
+        },
+        error: (err) => {
+          console.error('Error loading commande options:', err);
+          resolve();
+        }
+      });
+    });
+  }
+
+  viewPDF(cmd: CommandeWithEntreprise) {
+    const pdfUrl = `${this.baseUrl}/api/uploads/bc2/${cmd.entreprise?.id}_BC2.pdf`;
+    window.open(pdfUrl, '_blank');
+  }
+
+  async envoyerFacture() {
+    const today = new Date();
+    const dueDate = new Date(today);
+    dueDate.setDate(today.getDate() + 15);
+    const formattedDate = dueDate.toLocaleDateString('fr-FR');
+
+    try {
+      // Step 1: Wait for PDF to be generated and uploaded
+      await this.factureBc2.generatedPdf(
+        "facture",
+        `festp.2025.${this.modifyCommande?.entreprise_id}.fct2`,
+        "contentToExport"
+      );
+
+      // Step 2: Send the email with attachment
+      await lastValueFrom(this.emailService.sendInvoice({
+        senderEmail: "ne-pas-repondre.facturation@forumestp.fr",
+        receiverEmail: this.modificationContact?.email ?? "hedibensafegine.noxaved@gmail.com",
+        receiverName: `${this.factureBc2.modificationContact?.prenom} ${this.factureBc2.modificationContact?.nom}`,
+        subject: this.modificationContact?.email ? "Facture BC2-Forum ESTP 2025" : "ERREUR FACTURATION",
+        htmlText: `
+          <p>Cher(e) <strong>${this.factureBc2.modificationContact?.prenom} ${this.factureBc2.modificationContact?.nom}</strong>,</p>
+          <p>J'espère que vous allez bien.</p>
+          <p>
+          Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement tout le nécessaire pour que votre journée au Forum soit une réussite.
+          </p>
+          <p>
+          Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct2</strong> relative à votre bon de commande <strong>BC2</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
+          </p>
+          <p>
+          Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${this.decimalPipe.transform(((this.modifyCommande?.total_ht ?? 0) * 1.2 / 2),'1.2-2') }€</strong> avant le <strong>${formattedDate}</strong>.
+          <br/>
+          Le solde restant de <strong>${this.decimalPipe.transform(((this.modifyCommande?.total_ht ?? 0) * 1.2 / 2),'1.2-2') }€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
+          </p>
+          <p>
+          Nous vous remercions par avance pour le respect de ces échéances nécessaires à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n'hésitez pas à me contacter directement.
+          </p>
+          <p>Merci pour votre confiance et votre collaboration.</p>
+          <p>Cordialement,</p>
+          <p>
+          <strong>Kahina SAIBI</strong><br />
+          Trésorière FORUM ESTP<br />
+          0781616766<br />
+          <a href="mailto:kahina.saibi@forumestp.fr">kahina.saibi@forumestp.fr</a>
+          </p>
+        `,
+        ccEmails: ["kahina.saibi@forumestp.fr"],
+        attachmentName: `festp.2025.${this.modifyCommande?.entreprise_id}.fct2.pdf`
+      }));
+
+      // Step 3: Set fct_envoyee = true in backend
+      this.commande2Service.setFactureEnvoyee(this.modifyCommande?.id ?? -1).subscribe({
+        next: () => {
+          const index = this.commandes.findIndex(c => c.id === this.modifyCommande?.id);
+          if (index !== -1) this.commandes[index].fct_envoyee = true;
+        }
+      });
+
+    } catch (err) {
+      console.error("❌ Error during envoyerFacture:", err);
+    }
+  }
+
+  async downloadFacture() {
+    await this.factureBc2.generatedPdf(
+      "facture",
+      "festp.2025." + this.modifyCommande?.entreprise_id + ".fct2",
+      "contentToExport"
+    );
+
+    const filePath = `${this.baseUrl}/api/uploads/facture/festp.2025.${this.modifyCommande?.entreprise_id}.fct2.pdf`;
+    const link = document.createElement('a');
+    link.href = filePath;
+    link.setAttribute('target', '_blank');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  openModifierFactureDialog() {
+    this.factureBc2.visible = true;
+  }
+
+  calculateTotalHTForFacture(): number {
+    // Filter out standiste options for calculation
+    const nonStandisteOptions = this.modificationCommandeOption.filter(option =>
+      ![15, 21, 22].includes(option.option2_id)
+    );
+
+    return nonStandisteOptions.reduce((total, option) => {
+      return total + ((option.option_prix_ht || 0) * (option.qty || 1));
+    }, 0);
+  }
+
+  setFacturePayee(cmd: CommandeWithEntreprise) {
+    this.commande2Service.setFacturePayee(cmd.id).subscribe({
+      next: (success) => {
+        this.commandes[this.commandes.findIndex(c => c.id === cmd.id)].fct_payee = true;
+      }
+    });
+  }
+
+  async openFactureDialog(cmd: CommandeWithEntreprise) {
+    this.modifyCommande = cloneDeep(cmd);
+    this.modifyTotalHt = cmd.total_ht;
+    this.getCommandeOptionModification();
+    this.modificationContact = await this.getContactPrincipalNom();
+
+    // Populate standiste form with existing data
+    this.modifyStandisteForm.patchValue({
+      standiste_nom: cmd.standiste_nom || '',
+      standiste_prenom: cmd.standiste_prenom || '',
+      standiste_telephone: cmd.standiste_telephone || '',
+      standiste_entreprise: cmd.standiste_entreprise || '',
+      standiste_demande: cmd.standiste_demande || ''
+    });
+
+    this.factureVisible = true;
   }
 }

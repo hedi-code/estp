@@ -87,7 +87,7 @@ export class EntrepriseSouscritesComponent implements OnInit {
       next: (response) => {
         this.commercials = response
           this.entreprises.forEach(element => {
-      element.commercial = this.commercials.find(e => e.id == element.commercial_id)?.first_name + " " + this.commercials.find(e => e.id == element.commercial_id)?.first_name;
+      element.commercial = this.commercials.find(e => e.id == element.commercial_id)?.first_name + " " + this.commercials.find(e => e.id == element.commercial_id)?.last_name;
           console.log(this.entreprises)
     })
       },

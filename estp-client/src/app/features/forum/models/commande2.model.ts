@@ -17,6 +17,8 @@ export interface Commande2 {
   standiste_demande?: string | null;
   standiste_status?: number | null;
   validation_lieu?: string | null;
+   fct_payee?: boolean;
+  fct_envoyee?: boolean;
 }
 
 export interface NewCommande2 extends Omit<Commande2, 'id'> {}

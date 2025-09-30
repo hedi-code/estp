@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Option2Service } from '../../forum/services/option2.service';
 import { Option2CategoriesService } from '../../forum/services/option2-categories.service';
 import { Commande2Service } from '../../forum/services/commande2.service';
@@ -40,7 +40,6 @@ export class Bc2Component implements OnInit {
 
   isDisabled = true;
   savedSignature: any;
-  visible = false;
 
   reservationForm!: FormGroup;
   standisteForm!: FormGroup;
@@ -69,7 +68,8 @@ export class Bc2Component implements OnInit {
     private cookieService: AuthCookieService,
     private contactService: ContactService,
     private confirmationService: ConfirmationService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -77,7 +77,6 @@ export class Bc2Component implements OnInit {
     await this.initializeForms();
     await this.checkBC1ExistenceAndProceed();
     this.activeIndex = 0;
-
   }
 
   initializeForms() {
@@ -94,6 +93,7 @@ export class Bc2Component implements OnInit {
       emailResponsable: ['', [Validators.required, Validators.email]]
     });
 
+
     this.standisteForm = this.fb.group({
       standiste_nom: [''],
       standiste_prenom: [''],
@@ -103,28 +103,35 @@ export class Bc2Component implements OnInit {
     });
   }
 
-  checkBC1ExistenceAndProceed() {
+  checkBC1ExistenceAndProceed(): Promise<void> {
+    return new Promise((resolve, reject) => {
     const entrepriseId = Number(this.cookieService.getEntrepriseId());
+    console.log('Checking BC1 existence for entreprise ID:', entrepriseId);
 
     // Check if BC1 exists first
     this.commande1Service.getCommande1ByEntrepriseId(entrepriseId).subscribe({
       next: (bc1Response) => {
+        console.log('BC1 response received:', bc1Response);
         if (bc1Response && bc1Response.id) {
           // BC1 exists, proceed to load BC2 data
           console.log('BC1 exists, loading BC2 data');
           this.loadData();
           this.checkExistingCommande2();
+          resolve();
         } else {
           // BC1 doesn't exist, redirect to BC1
           console.log('BC1 does not exist, redirecting to BC1');
           this.router.navigate(['/entreprise/bc1']);
+          resolve();
         }
       },
       error: (error) => {
         // If error (likely 404), BC1 doesn't exist
-        console.log('BC1 does not exist (error), redirecting to BC1');
+        console.log('BC1 does not exist (error), redirecting to BC1. Error:', error);
         this.router.navigate(['/entreprise/bc1']);
+        resolve();
       }
+    });
     });
   }
 
@@ -149,16 +156,20 @@ export class Bc2Component implements OnInit {
   }
 
   loadData() {
+    console.log('loadData() called');
     // Load categories and options
     this.option2CategoriesService.getAllOption2Categories().subscribe({
       next: (categories) => {
         console.log('Categories loaded:', categories);
         console.log('Number of categories:', categories.length);
         this.option2Categories = categories;
+        console.log('option2Categories after assignment:', this.option2Categories);
         // Ensure we start on the first category tab after categories are loaded
         this.activeIndex = 0;
         console.log('activeIndex set to:', this.activeIndex);
         console.log('Total tabs will be:', this.getTotalTabsCount());
+        // Force change detection
+        this.cdr.detectChanges();
 
         // Load options for each category
         categories.forEach(category => {
@@ -230,7 +241,8 @@ export class Bc2Component implements OnInit {
       qty: qty,
       color: '', // No color selection
       option_nom: option.nom,
-      option_prix_ht: option.prix_ht
+      option_prix_ht: option.prix_ht,
+      option_taux_tva: option.taux_tva
     };
 
     // Check if option already exists in selected options
@@ -437,32 +449,27 @@ export class Bc2Component implements OnInit {
     this.isDrawing = false;
   }
 
-  clearCanvas() {
+ clearCanvas() {
     this.ctx.clearRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
   }
 
   showFactureDialog(): void {
     // Save the signature before showing the dialog
-    this.savedSignature = this.canvasRef.nativeElement.toDataURL();
+   // this.savedSignature = this.canvasRef.nativeElement.toDataURL();
+    console.log('Setting factureDialogVisible to true');
     this.factureDialogVisible = true;
+    console.log('factureDialogVisible is now:', this.factureDialogVisible);
+    // Force change detection to ensure dialog appears
+    this.cdr.detectChanges();
   }
 
   async saveCanvas() {
     const dataUrl = this.canvasRef.nativeElement.toDataURL();
     this.savedSignature = dataUrl;
-
-    this.updateEntreprise();
-    this.updateContactPrincipal();
-
-    // Generate PDF first
-    await this.factureBc2Dialog.generatedPdf("bc2", this.entreprise?.id + '_BC2', "contentToExport");
-
-    // Then create the BC2
     this.createBC2();
   }
 
   async createBC2() {
-
     this.updateEntreprise();
     this.updateContactPrincipal();
 
@@ -490,10 +497,13 @@ export class Bc2Component implements OnInit {
     };
 
     try {
-      // Create commande2
+      // 🔸 Step 1: Wait for PDF generation
+      await this.factureBc2Dialog.generatedPdf("bc2", this.entreprise?.id + '_BC2', "contentToExport");
+
+      // 🔸 Step 2: Create commande2 and wait
       const commandeResponse = await lastValueFrom(this.commande2Service.createCommande2(commande2));
 
-      // Create all options in parallel
+      // 🔸 Step 3: Create all options in parallel and wait
       const optionObservables = this.selectedOptions.map(option =>
         this.commande2OptionsService.addOptionToCommande2({
           commande2_id: commandeResponse.id,
@@ -508,12 +518,11 @@ export class Bc2Component implements OnInit {
       }
 
       console.log('✅ Commande2 and all options created successfully');
-      this.visible = false;
-      // Show success message
+      // Show success message and close dialog
       alert('Commande BC2 créée avec succès!');
-      // Close the dialog and stay on current tab
       this.factureDialogVisible = false;
-      // Don't automatically jump to Récapitulatif - let user navigate naturally
+      // Navigate to recap page to show the final result
+      this.router.navigate(['/entreprise/recap']);
 
     } catch (err) {
       console.error("❌ Error during BC2 creation", err);
@@ -540,13 +549,11 @@ export class Bc2Component implements OnInit {
       // On category tabs, move to next category or to Récapitulatif
       this.activeIndex++;
     } else if (this.activeIndex === recapTabIndex) {
-      // On Récapitulatif tab - validate form and show facture dialog
-      if (this.reservationForm.valid) {
-        this.showFactureDialog();
-      } else {
-        // Mark all fields as touched to show validation errors
-        this.reservationForm.markAllAsTouched();
-      }
+      // On Récapitulatif tab - show facture dialog (validation will be done in the dialog)
+      console.log('Showing facture dialog...');
+      console.log('Form valid:', this.reservationForm.valid);
+      console.log('Form errors:', this.reservationForm.errors);
+      this.showFactureDialog();
     }
   }
 
@@ -559,6 +566,7 @@ export class Bc2Component implements OnInit {
   getTotalTabsCount(): number {
     return this.option2Categories.length + 1; // Categories + Récapitulatif
   }
+
 
   updateEntreprise() {
     if (this.reservationForm.touched && this.reservationForm.valid && this.entreprise) {

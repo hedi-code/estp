@@ -52,6 +52,8 @@ import { EntrepriseSouscritesComponent } from './features/forum/components/entre
 import { Bc1SouscritsComponent } from './features/forum/components/bc1-souscrits/bc1-souscrits.component';
 import { Bc2SouscritsComponent } from './features/forum/components/bc2-souscrits/bc2-souscrits.component';
 import { TagModule } from 'primeng/tag';
+import { BadgeModule } from 'primeng/badge';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
@@ -66,7 +68,10 @@ import { GestionBookComponent } from './features/forum/components/gestion-book/g
 import { DashboardComponent } from './features/forum/components/dashboard/dashboard.component';
 import { CommonModule } from '@angular/common';
 import { MailingComponent } from './features/forum/components/mailing/mailing.component';
+import { StandisteComponent } from './features/forum/components/standiste/standiste.component';
+import { Bc2SouscritFactureComponent } from './features/forum/components/bc2-souscrits/bc2-souscrit-facture/bc2-souscrit-facture.component';
 import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2-charts';
+import { CalendarModule } from 'primeng/calendar';
 
 
 
@@ -101,7 +106,9 @@ import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2
     GestionBc2Component,
     GestionBookComponent,
     DashboardComponent,
-    MailingComponent
+    MailingComponent,
+    StandisteComponent,
+    Bc2SouscritFactureComponent
     ],
   imports: [
     BrowserModule,
@@ -126,6 +133,8 @@ import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2
     DialogModule,
     TableModule,
     TagModule,
+    BadgeModule,
+    ProgressSpinnerModule,
     ConfirmDialogModule,
     ToolbarModule,
     TooltipModule,
@@ -134,7 +143,8 @@ import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2
     InputTextareaModule,
     AccordionModule,
     CommonModule,
-    BaseChartDirective
+    BaseChartDirective,
+    CalendarModule
   ],
   providers: [
     provideAnimations(),

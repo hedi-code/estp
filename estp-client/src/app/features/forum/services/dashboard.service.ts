@@ -15,6 +15,28 @@ export interface DashboardStats {
   totalEntreprises: number;
 }
 
+export interface CommercialDashboardStats {
+  paidBC1Count: number;
+  unpaidBC1Count: number;
+  paidBC2Count: number;
+  unpaidBC2Count: number;
+  totalBC1Count: number;
+  totalBC2Count: number;
+  paidBC1Total: number;
+  unpaidBC1Total: number;
+  paidBC2Total: number;
+  unpaidBC2Total: number;
+  totalBC1Total: number;
+  totalBC2Total: number;
+  commercialBC1Total: number;
+  commercialBC2Total: number;
+}
+
+export interface TopOptionsData {
+  topBC1Options: any[];
+  topBC2Options: any[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -66,5 +88,13 @@ export class DashboardService {
         };
       })
     );
+  }
+
+  getCommercialDashboardStats(commercialId: number): Observable<CommercialDashboardStats> {
+    return this.http.get<CommercialDashboardStats>(`${this.apiUrl}/dashboard/commercial/${commercialId}`);
+  }
+
+  getTopOptions(): Observable<TopOptionsData> {
+    return this.http.get<TopOptionsData>(`${this.apiUrl}/dashboard/top-options`);
   }
 }

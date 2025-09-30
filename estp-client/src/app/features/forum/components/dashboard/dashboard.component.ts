@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ChartData, ChartOptions } from 'chart.js';
 import { DashboardService, DashboardStats } from '../../services/dashboard.service';
+import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
+import { EntrepriseService } from '../../../entreprise/entreprise.service';
+import { Entreprise } from '../../../entreprise/entreprise.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,6 +15,28 @@ export class DashboardComponent implements OnInit {
 
   stats: DashboardStats | null = null;
   loading = true;
+  role: string | null = '';
+
+  // Commercial specific data
+  assignedEntreprises: Entreprise[] = [];
+  paidBC1Count = 0;
+  unpaidBC1Count = 0;
+  paidBC2Count = 0;
+  unpaidBC2Count = 0;
+  totalBC1Count = 0;
+  totalBC2Count = 0;
+  paidBC1Total = 0;
+  unpaidBC1Total = 0;
+  paidBC2Total = 0;
+  unpaidBC2Total = 0;
+  totalBC1Total = 0;
+  totalBC2Total = 0;
+  commercialBC1Total = 0;
+  commercialBC2Total = 0;
+
+  // President specific data
+  topBC1Options: any[] = [];
+  topBC2Options: any[] = [];
 
   // Bar Chart for counts
   barChartData: ChartData<'bar'> = {
@@ -120,10 +145,21 @@ export class DashboardComponent implements OnInit {
 
   doughnutChartType = 'doughnut' as const;
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private authCookieService: AuthCookieService,
+    private entrepriseService: EntrepriseService
+  ) {}
 
   ngOnInit(): void {
+    this.role = this.authCookieService.getRole();
     this.loadDashboardData();
+
+    if (this.role === 'comm') {
+      this.loadCommercialData();
+    } else if (this.role === 'pres') {
+      this.loadPresidentData();
+    }
   }
 
   loadDashboardData(): void {
@@ -163,5 +199,50 @@ export class DashboardComponent implements OnInit {
       this.stats.totalBc1,
       this.stats.totalBc2
     ];
+  }
+
+  loadCommercialData(): void {
+    const userId = this.authCookieService.getUserId();
+    if (!userId) return;
+
+    // Load assigned enterprises
+    this.entrepriseService.getAllEntreprises().subscribe({
+      next: (entreprises) => {
+        this.assignedEntreprises = entreprises.filter(e => e.commercial_id === Number(userId));
+      },
+      error: (err) => console.error('Error loading enterprises:', err)
+    });
+
+    // Load commercial-specific dashboard data
+    this.dashboardService.getCommercialDashboardStats(Number(userId)).subscribe({
+      next: (data) => {
+        this.paidBC1Count = data.paidBC1Count;
+        this.unpaidBC1Count = data.unpaidBC1Count;
+        this.paidBC2Count = data.paidBC2Count;
+        this.unpaidBC2Count = data.unpaidBC2Count;
+        this.totalBC1Count = data.totalBC1Count;
+        this.totalBC2Count = data.totalBC2Count;
+        this.paidBC1Total = data.paidBC1Total;
+        this.unpaidBC1Total = data.unpaidBC1Total;
+        this.paidBC2Total = data.paidBC2Total;
+        this.unpaidBC2Total = data.unpaidBC2Total;
+        this.totalBC1Total = data.totalBC1Total;
+        this.totalBC2Total = data.totalBC2Total;
+        this.commercialBC1Total = data.commercialBC1Total;
+        this.commercialBC2Total = data.commercialBC2Total;
+      },
+      error: (err) => console.error('Error loading commercial data:', err)
+    });
+  }
+
+  loadPresidentData(): void {
+    // Load top options data
+    this.dashboardService.getTopOptions().subscribe({
+      next: (data) => {
+        this.topBC1Options = data.topBC1Options;
+        this.topBC2Options = data.topBC2Options;
+      },
+      error: (err) => console.error('Error loading president data:', err)
+    });
   }
 }

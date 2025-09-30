@@ -24,6 +24,10 @@ export class Commande2Service {
     return this.http.get<Commande2[]>(this.apiUrl);
   }
 
+  getAllCommande2WithStandiste(): Observable<Commande2[]> {
+    return this.http.get<Commande2[]>(`${this.apiUrl}/with-standiste`);
+  }
+
   getCommande2ById(id: number): Observable<Commande2> {
     return this.http.get<Commande2>(`${this.apiUrl}/${id}`);
   }
@@ -38,5 +42,13 @@ export class Commande2Service {
 
   deleteCommande2(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+  }
+
+  setFactureEnvoyee(id: number): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/facture-envoyee`, {});
+  }
+
+  setFacturePayee(id: number): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/facture-payee`, {});
   }
 }

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { Pack1Service } from '../../forum/services/pack1.service';
 import { environment } from './../../../../environments/environment';
 import { Pack } from '../../forum/models/pack1.model';
@@ -33,6 +33,8 @@ import { Router } from '@angular/router';
   styleUrl: './bc1.component.scss'
 })
 export class Bc1Component implements OnInit {
+  @Output() stepCompleted = new EventEmitter<void>();
+
   activeIndex: number = 0;
   baseUrl: String = environment.apiUrl
   pack1s: Pack[] = []
@@ -371,10 +373,12 @@ async createBC1() {
             }
             // Navigate to BC2 after successful book creation
             console.log('Book created successfully, navigating to BC2');
-            this.router.navigate(['/entreprise/bc2']);
+            this.stepCompleted.emit();
           },
           error: (e) => {
             console.error(e)
+            this.stepCompleted.emit();
+
           }
         });
     // Upload logo first
