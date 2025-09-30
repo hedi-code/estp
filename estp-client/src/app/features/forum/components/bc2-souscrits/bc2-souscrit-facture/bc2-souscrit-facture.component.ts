@@ -35,7 +35,7 @@ export class Bc2SouscritFactureComponent implements OnInit {
   visible = false;
 
   customDateAcompte: Date = new Date();
-  customDateSolde: Date = new Date(2025, 10, 10);
+  customDateSolde: Date = new Date(2025, 10, 25);
 
   constructor(
     private contactService: ContactService,
@@ -43,7 +43,6 @@ export class Bc2SouscritFactureComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.customDateAcompte = this.getDateAcompte();
   }
 
   emitToParent() {
@@ -97,12 +96,6 @@ export class Bc2SouscritFactureComponent implements OnInit {
     });
   }
 
-  getDateAcompte(): Date {
-    const today = new Date();
-    let acompteDate = new Date(today);
-    acompteDate.setDate(acompteDate.getDate() + 15);
-    return acompteDate;
-  }
 
   // Filter out standiste options (IDs: 15, 21, 22)
   getFilteredOptions(): Commande2Option[] {
@@ -154,35 +147,7 @@ export class Bc2SouscritFactureComponent implements OnInit {
     };
   }
 
-  getSelectedStandisteOption(): number | null {
-    const standisteOption = this.modificationCommandeOption.find(option =>
-      [15, 21, 22].includes(option.option2_id)
-    );
-    return standisteOption ? standisteOption.option2_id : null;
-  }
 
-  getStandisteDetails() {
-    const standisteStatus = this.getSelectedStandisteOption();
-    const commande = this.modifyCommandeFact;
 
-    switch (standisteStatus) {
-      case 15:
-        return { message: 'Pas de standiste demandé' };
-      case 21:
-        return {
-          type: 'Description du projet',
-          description: commande?.standiste_demande || 'Aucune description'
-        };
-      case 22:
-        return {
-          type: 'Fiche standiste',
-          nom: commande?.standiste_nom || 'Non renseigné',
-          prenom: commande?.standiste_prenom || 'Non renseigné',
-          entreprise: commande?.standiste_entreprise || 'Non renseigné',
-          telephone: commande?.standiste_telephone || 'Non renseigné'
-        };
-      default:
-        return null;
-    }
-  }
+ 
 }

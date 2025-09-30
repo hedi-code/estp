@@ -118,16 +118,12 @@
 
         <div class="grid">
             <div class="field col-6">
-                <label for="dateAcompte">Date limite acompte</label>
-                <p-calendar id="dateAcompte" [(ngModel)]="customDateAcompte" dateFormat="dd/mm/yy" showIcon="true" class="w-full"></p-calendar>
-            </div>
-            <div class="field col-6">
                 <label for="dateSolde">Date limite solde</label>
                 <p-calendar id="dateSolde" [(ngModel)]="customDateSolde" dateFormat="dd/mm/yy" showIcon="true" class="w-full"></p-calendar>
             </div>
         </div>
 
-        <p-button label="Mettre à jour" severity="primary" (click)="emitToParent(); visible = false" styleClass="w-full" />
+        <p-button label="Mettre à jour" severity="primary" (click)="visible = false" styleClass="w-full" />
     </p-dialog>
 
     <div style="width: 100%; display: block; padding-left: 10px;">
@@ -224,61 +220,19 @@
         <!-- Fin Block Detail Prix Total -->
 
         <table class="table" width="100%">
-            <tr>
-                <td style="text-align:right" width="85%" class="lightBlueBg bold">
-                    Montant de l'acompte &agrave; r&eacute;gler avant le {{customDateAcompte | date:'dd/MM/yyyy'}}
-                </td>
-                <td width="15%" class="lightBlueBg t-r bold">
-                    {{calculateTotalTTC() / 2 | number:'1.2-2'}} €
-                </td>
-            </tr>
+            
             <tr>
                 <td style="text-align:right" class="lightBlueBg bold">
                     Montant du solde &agrave; r&eacute;gler avant le {{customDateSolde | date:'dd/MM/yyyy'}}
                 </td>
                 <td class="lightBlueBg t-r bold">
-                    {{calculateTotalTTC() / 2 | number:'1.2-2'}} €
+                    {{calculateTotalTTC() | number:'1.2-2'}} €
                 </td>
             </tr>
         </table>
     </div>
 
-    <!-- Standiste Information Block -->
-    <div *ngIf="getStandisteDetails()" style="border:2px solid black;margin-top:20px;">
-        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
-            class="darkBlueBg">Informations Standiste</div>
-
-        <div style="padding:10px;">
-            <div *ngIf="getSelectedStandisteOption() === 15" style="text-align:center; color:#666; font-style:italic;">
-                Cette entreprise ne souhaite pas de standiste
-            </div>
-
-            <div *ngIf="getSelectedStandisteOption() === 21">
-                <p><strong>Type:</strong> Demande de standiste</p>
-                <p><strong>Description du projet:</strong></p>
-                <p style="margin-left:10px; font-style:italic;">{{getStandisteDetails()?.description}}</p>
-            </div>
-
-            <div *ngIf="getSelectedStandisteOption() === 22">
-                <p><strong>Type:</strong> Standiste fourni par l'entreprise</p>
-                <table width="100%" style="margin-top:10px;">
-                    <tr>
-                        <td width="25%"><strong>Nom:</strong></td>
-                        <td width="25%">{{getStandisteDetails()?.nom}}</td>
-                        <td width="25%"><strong>Prénom:</strong></td>
-                        <td width="25%">{{getStandisteDetails()?.prenom}}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Entreprise:</strong></td>
-                        <td>{{getStandisteDetails()?.entreprise}}</td>
-                        <td><strong>Téléphone:</strong></td>
-                        <td>{{getStandisteDetails()?.telephone}}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
-
+   
     <!-- Signature Block -->
     <div *ngIf="signature" style="border:2px solid black;margin-top:20px;">
         <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"

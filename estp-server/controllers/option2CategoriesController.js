@@ -3,11 +3,11 @@
 const db = require("../config/db");
 
 exports.createOption2Category = (req, res) => {
-  const { name } = req.body;
+  const { name, ordre } = req.body;
 
   db.query(
-    `INSERT INTO option2_categories (name) VALUES (?)`,
-    [name],
+    `INSERT INTO option2_categories (name, ordre) VALUES (?, ?)`,
+    [name, ordre || 0],
     (err, result) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.status(201).json({ message: "Catégorie d'option 2 créée avec succès", id: result.insertId });
@@ -16,7 +16,7 @@ exports.createOption2Category = (req, res) => {
 };
 
 exports.getAllOption2Categories = (req, res) => {
-  db.query("SELECT * FROM option2_categories ORDER BY name ASC", (err, results) => {
+  db.query("SELECT * FROM option2_categories ORDER BY ordre ASC, name ASC", (err, results) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
     res.json(results);
   });
@@ -80,11 +80,11 @@ exports.getOption2CategoryWithOptions = (req, res) => {
 
 exports.updateOption2Category = (req, res) => {
   const id = req.params.id;
-  const { name } = req.body;
+  const { name, ordre } = req.body;
 
   db.query(
-    `UPDATE option2_categories SET name = ? WHERE id = ?`,
-    [name, id],
+    `UPDATE option2_categories SET name = ?, ordre = ? WHERE id = ?`,
+    [name, ordre || 0, id],
     (err) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.json({ message: "Catégorie d'option 2 mise à jour" });

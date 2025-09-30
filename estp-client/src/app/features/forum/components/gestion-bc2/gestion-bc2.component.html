@@ -13,6 +13,7 @@
           <tr>
             <th>ID</th>
             <th>Nom</th>
+            <th>Ordre</th>
             <th>Nombre d'options</th>
             <th>Actions</th>
           </tr>
@@ -22,6 +23,7 @@
           <tr>
             <td>{{ category.id }}</td>
             <td>{{ category.name }}</td>
+            <td>{{ category.ordre || 0 }}</td>
             <td>{{ getOptionsByCategory(category.id).length }}</td>
             <td>
               <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier"
@@ -226,6 +228,10 @@
       <label for="categoryName">Nom de la catégorie *</label>
       <input id="categoryName" type="text" pInputText [(ngModel)]="newCategory.name" class="w-full mt-2" placeholder="Nom de la catégorie" />
     </div>
+    <div class="p-field">
+      <label for="categoryOrdre">Ordre</label>
+      <p-inputNumber id="categoryOrdre" [(ngModel)]="newCategory.ordre" class="w-full mt-2"></p-inputNumber>
+    </div>
   </div>
 
   <p-footer>
@@ -240,6 +246,10 @@
     <div class="p-field">
       <label for="editCategoryName">Nom de la catégorie *</label>
       <input id="editCategoryName" type="text" pInputText [(ngModel)]="selectedCategory.name" class="w-full mt-2" />
+    </div>
+    <div class="p-field">
+      <label for="editCategoryOrdre">Ordre</label>
+      <p-inputNumber id="editCategoryOrdre" [(ngModel)]="selectedCategory.ordre" class="w-full mt-2"></p-inputNumber>
     </div>
   </div>
 

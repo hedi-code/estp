@@ -591,23 +591,20 @@ export class Bc2SouscritsComponent implements OnInit {
         subject: this.modificationContact?.email ? "Facture BC2-Forum ESTP 2025" : "ERREUR FACTURATION",
         htmlText: `
           <p>Cher(e) <strong>${this.factureBc2.modificationContact?.prenom} ${this.factureBc2.modificationContact?.nom}</strong>,</p>
-          <p>J'espère que vous allez bien.</p>
-          <p>
-          Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement tout le nécessaire pour que votre journée au Forum soit une réussite.
-          </p>
-          <p>
-          Veuillez trouver ci-joint la facture <strong>festp.2025.${this.modifyCommande?.entreprise_id}.fct2</strong> relative à votre bon de commande <strong>BC2</strong> pour le <strong>FORUM ESTP 46ème édition</strong>.
-          </p>
-          <p>
-          Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler un acompte de <strong>${this.decimalPipe.transform(((this.modifyCommande?.total_ht ?? 0) * 1.2 / 2),'1.2-2') }€</strong> avant le <strong>${formattedDate}</strong>.
-          <br/>
-          Le solde restant de <strong>${this.decimalPipe.transform(((this.modifyCommande?.total_ht ?? 0) * 1.2 / 2),'1.2-2') }€</strong> devra être réglé avant le <strong>10 novembre 2025</strong>.
-          </p>
-          <p>
-          Nous vous remercions par avance pour le respect de ces échéances nécessaires à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n'hésitez pas à me contacter directement.
-          </p>
-          <p>Merci pour votre confiance et votre collaboration.</p>
-          <p>Cordialement,</p>
+         
+<p>J’espère que vous allez bien.</p>
+
+<p>Nous tenons à vous remercier pour votre confiance. Nous préparons actuellement tout le nécessaire pour que votre journée au Forum soit une réussite.</p>
+
+<p>Veuillez trouver ci-joint la facture festp.2025.${this.modifyCommande?.entreprise?.id}.fct2 relative à votre bon de commande BC2 pour la 46e édition du FORUM ESTP.</p>
+
+<p>Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler le solde de <?= $rest ?> correspondant au bon de commande 2 avant le <?= $config["date_limite_paiement_acompte_bc1"] ?>.</p>
+
+<p>Nous vous remercions par avance pour le respect de cette échéance nécessaire à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n’hésitez pas à me contacter directement.</p>
+
+<p>Merci pour votre confiance et votre collaboration.</p>
+
+<p>Cordialement,</p>
           <p>
           <strong>Kahina SAIBI</strong><br />
           Trésorière FORUM ESTP<br />

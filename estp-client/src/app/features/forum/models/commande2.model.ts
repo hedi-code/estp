@@ -79,6 +79,7 @@ export interface NewOption2 extends Omit<Option2, 'id'> {}
 export interface Option2Category {
   id: number;
   name: string;
+  ordre?: number;
 }
 
 export interface NewOption2Category extends Omit<Option2Category, 'id'> {}

@@ -1,5 +1,5 @@
 <p-tabView [(activeIndex)]="activeIndex" *ngIf="option2Categories.length > 0">
-  <p-tabPanel *ngFor="let category of option2Categories; let i = index" [header]="category.name" [closable]="false">
+  <p-tabPanel *ngFor="let category of option2Categories; let i = index" [disabled]="true" [header]="category.name" [closable]="false">
     <div class="grid">
       <div class="col-9 pt-4">
         <div *ngIf="category.name.toLowerCase().includes('pack')" class="grid">
@@ -9,7 +9,7 @@
                 <div *ngIf="option.img" class="col-4 m-0 p-0 flex align-items-center justify-content-center overflow-hidden relative">
                   <img [src]="baseUrl+'/api/uploads/img/option2s/' +option.id+'/'+ option.img"
                        alt=""
-                       class="border-round-left-xl"
+                       class="border-round-left-xl w-full border-round-top-md"
                        style="object-fit: cover; height: 200px; width: 100%; max-width: 300px;" />
                   <span class="absolute bottom-0 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 border-round z-5">
                     *photo non contractuelle
@@ -67,11 +67,10 @@
           <div *ngFor="let group of getGroupedOptions(category.id); let i = index" class="col-12 sm:col-6 md:col-4">
             <p-card styleClass="h-full" [header]="group.baseName">
               <ng-template pTemplate="header">
-                <div *ngIf="getFirstImageOption(group.options); else noImagePlaceholder" class="text-center flex align-items-center justify-content-center" style="height: 200px;">
+                <div *ngIf="getFirstImageOption(group.options); else noImagePlaceholder">
                   <img alt="Option"
                        [src]="baseUrl+'/api/uploads/img/option2s/' + getFirstImageOption(group.options)?.id + '/' + getFirstImageOption(group.options)?.img"
-                       class="border-round-top-md"
-                       style="height: 180px; width: auto; max-width: 100%; object-fit: cover;" />
+                       class="w-full border-round-top-md" />
                 </div>
                 <ng-template #noImagePlaceholder>
                   <div class="flex align-items-center justify-content-center bg-gray-100 text-center"
@@ -157,11 +156,10 @@
               <p-card styleClass="h-full" [header]="option.nom"
                       [subheader]="option.prix_ht + ' € HT'">
                 <ng-template pTemplate="header">
-                  <div *ngIf="option.img; else noImageDefault" class="text-center flex align-items-center justify-content-center" style="height: 200px;">
-                    <img alt="Option"
+                  <div  >
+                    <img alt="Option" *ngIf="option.img; else noImageDefault"
                          [src]="baseUrl+'/api/uploads/img/option2s/' +option.id+'/'+ option.img"
-                         class="border-round-top-md"
-                         style="height: 180px; width: auto; max-width: 100%; object-fit: cover;" />
+                          class="w-full border-round-top-md"/>
                   </div>
                   <ng-template #noImageDefault>
                     <div class="flex align-items-center justify-content-center bg-gray-100 text-center"
@@ -370,19 +368,25 @@
                  placeholder="Entrez l'email du responsable" class="w-full" />
         </div>
       </div>
-
-      <h2 class="mb-4">Signature</h2>
-      <div class="grid">
-        <div class="field col-6">
-          <label for="faitA">Fait à</label>
-          <input pInputText id="faitA" formControlName="faitA" placeholder="Lieu" class="w-full" />
-        </div>
-        <div class="signature-pad col-6">
-          <label>Signature</label>
-          <canvas #canvas style="border: 1px solid #d8d8d8;" width="600" height="200"></canvas>
-          <p-button severity="primary" outlined="true" (click)="clearCanvas()" class="mt-2">Effacer</p-button>
-        </div>
-      </div>
+            <h2 class="mb-4">Signature</h2>
+            
+            <div class="grid">
+              <div class="field col-6">
+                <label for="emailResponsable">Fait à:</label>
+                <input pInputText type="email" id="emailResponsable" formControlName="faitA" placeholder="" class="w-full" />
+              </div>
+              <div class="signature-pad field col-6">
+                <label for="lastname">Signature</label>
+                <canvas #canvasBC2 style="border: 1px solid #d8d8d8;" width="600"></canvas>
+                <p-button severity="primary" outlined="true" (click)="clearCanvas()" class="mt-2">Effacer</p-button>
+                <p-dialog header="Votre commande" [modal]="true" [(visible)]="factureDialogVisible" [style]="{ width: '960px' }">
+                  <app-facture-bc1 id="contentToExport" (createBC2Event)="createBC2()" #factureBc1 [signature]="savedSignature"
+                    [contactPrincipal]="contactPrincipal" [nomFichierBc1]="entreprise?.id + '_BC2'" [entreprise]="entreprise"
+                    [fait]="reservationForm.get('faitA')?.value"></app-facture-bc1>
+                  <p-button label="Valider" severity="primary" (click)="createBC2()" styleClass="w-full" />
+                </p-dialog>
+              </div>
+            </div>
 
       <div class="mt-3">
         <p-message class="w-full mb-2" *ngIf="reservationForm.get('nom')?.invalid && reservationForm.get('nom')?.touched"

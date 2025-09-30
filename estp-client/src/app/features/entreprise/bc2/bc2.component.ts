@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { Option2Service } from '../../forum/services/option2.service';
 import { Option2CategoriesService } from '../../forum/services/option2-categories.service';
 import { Commande2Service } from '../../forum/services/commande2.service';
@@ -46,12 +46,12 @@ export class Bc2Component implements OnInit {
   entreprise: Entreprise | undefined;
   contactPrincipal: Contact | undefined;
 
-  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('factureBc2') factureBc2!: FactureBc2Component;
   @ViewChild('factureBc2Dialog') factureBc2Dialog!: FactureBc2Component;
 
   factureDialogVisible = false;
 
+@ViewChild('canvasBC2', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private ctx!: CanvasRenderingContext2D;
   private isDrawing = false;
   private lastX = 0;
@@ -162,8 +162,9 @@ export class Bc2Component implements OnInit {
       next: (categories) => {
         console.log('Categories loaded:', categories);
         console.log('Number of categories:', categories.length);
-        this.option2Categories = categories;
-        console.log('option2Categories after assignment:', this.option2Categories);
+        // Sort categories by ordre field
+        this.option2Categories = categories.sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+        console.log('option2Categories after assignment and sorting:', this.option2Categories);
         // Ensure we start on the first category tab after categories are loaded
         this.activeIndex = 0;
         console.log('activeIndex set to:', this.activeIndex);
@@ -408,17 +409,24 @@ export class Bc2Component implements OnInit {
     return total;
   }
 
-  ngAfterViewInit() {
+  ngAfterViewChecked() {
+     if (!this.canvasRef) {
+    console.error('Canvas reference not found!');
+    return;
+  }
+    console.log("after view init")
     const canvas = this.canvasRef.nativeElement;
     this.ctx = canvas.getContext('2d')!;
-    this.ctx.strokeStyle = 'rgb(66, 133, 244)';
-    this.ctx.lineWidth = 3;
-    this.ctx.lineJoin = 'round';
-    this.ctx.lineCap = 'round';
+    this.ctx.strokeStyle = 'rgb(66, 133, 244)'; // Blue pen color
+    this.ctx.lineWidth = 3; // Pen width
+    this.ctx.lineJoin = 'round'; // Join lines at corners
+    this.ctx.lineCap = 'round'; // Line cap at end of stroke
   }
 
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
+      console.log('Mouse down event', event);
+
     const { offsetX, offsetY } = event;
     this.isDrawing = true;
     this.lastX = offsetX;
@@ -454,6 +462,7 @@ export class Bc2Component implements OnInit {
   }
 
   showFactureDialog(): void {
+    this.saveCanvas()
     // Save the signature before showing the dialog
    // this.savedSignature = this.canvasRef.nativeElement.toDataURL();
     console.log('Setting factureDialogVisible to true');
@@ -465,6 +474,7 @@ export class Bc2Component implements OnInit {
 
   async saveCanvas() {
     const dataUrl = this.canvasRef.nativeElement.toDataURL();
+        console.log('Signature saved:', dataUrl);
     this.savedSignature = dataUrl;
     this.createBC2();
   }
@@ -549,7 +559,17 @@ export class Bc2Component implements OnInit {
       // On category tabs, move to next category or to Récapitulatif
       this.activeIndex++;
     } else if (this.activeIndex === recapTabIndex) {
-      // On Récapitulatif tab - show facture dialog (validation will be done in the dialog)
+      // On Récapitulatif tab - check if faitA field is filled before showing facture dialog
+      const faitAValue = this.reservationForm.get('faitA')?.value;
+
+      if (!faitAValue || faitAValue.trim() === '') {
+        alert('Le champ "Fait à" est requis pour pouvoir ouvrir la facture.');
+        // Mark the field as touched to show validation error
+        this.reservationForm.get('faitA')?.markAsTouched();
+        return;
+      }
+
+      // If faitA is filled, show facture dialog
       console.log('Showing facture dialog...');
       console.log('Form valid:', this.reservationForm.valid);
       console.log('Form errors:', this.reservationForm.errors);

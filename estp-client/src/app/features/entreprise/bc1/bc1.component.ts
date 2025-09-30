@@ -52,9 +52,9 @@ export class Bc1Component implements OnInit {
   selectedFile: File | null = null;
 previewUrl: string | null = null;
 
-  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('factureBc1') factureBc1!: FactureBc1Component;
+@ViewChild('factureBc1') factureBc1!: FactureBc1Component;
 
+@ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private ctx!: CanvasRenderingContext2D;
   private isDrawing = false;
   private lastX = 0;
