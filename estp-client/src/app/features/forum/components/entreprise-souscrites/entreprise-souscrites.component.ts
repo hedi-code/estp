@@ -61,6 +61,12 @@ export class EntrepriseSouscritesComponent implements OnInit {
       companySiren: ['', [Validators.required, Validators.pattern('^(\\d\\s*){4,15}$')]], // Example pattern for SIREN number
       isNotInFrance: [false],
       functionInCompany: ['', Validators.required],
+      companyAdresse: [''],
+      companyTelephoneStandard: [''],
+      companyTelephoneFax: [''],
+      companySiteweb: [''],
+      companyFctNom: [''],
+      companyFctAdresse: [''],
       password: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{10,}$/)]],
       confirmPassword: ['', [Validators.required]],
     }, {
@@ -214,16 +220,37 @@ export class EntrepriseSouscritesComponent implements OnInit {
               siren: formData.companySiren,
               contact_principal_id: contact.id, // Assuming contact has an ID
               user_id: user.user.id,
-              activity: 0
+              activity: 0,
+              adresse: formData.companyAdresse || '',
+              telephone_standard: formData.companyTelephoneStandard || '',
+              telephone_fax: formData.companyTelephoneFax || '',
+              siteweb: formData.companySiteweb || '',
+              fct_nom: formData.companyFctNom || '',
+              fct_adresse: formData.companyFctAdresse || ''
             });
           })
         ).subscribe({
           next: (entreprise) => {
             console.log('Entreprise created:', entreprise);
-            // Handle success (e.g., navigate or show success message)
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Succès',
+              detail: 'Entreprise créée avec succès',
+              life: 3000
+            });
+            this.createDialog = false;
+            this.registerForm.reset();
+            // Reload entreprises list
+            this.ngOnInit();
           },
           error: (error) => {
             console.error('Error in registration flow:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erreur',
+              detail: 'Erreur lors de la création de l\'entreprise',
+              life: 3000
+            });
           }
         });
     

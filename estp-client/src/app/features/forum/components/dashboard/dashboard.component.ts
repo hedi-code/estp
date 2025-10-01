@@ -15,7 +15,7 @@ export class DashboardComponent implements OnInit {
 
   stats: DashboardStats | null = null;
   loading = true;
-  role: string | null = '';
+  role: string = "";
 
   // Commercial specific data
   assignedEntreprises: Entreprise[] = [];
@@ -152,12 +152,12 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.role = this.authCookieService.getRole();
+    this.role = this.authCookieService.getRole() ?? "user";
     this.loadDashboardData();
 
     if (this.role === 'comm') {
       this.loadCommercialData();
-    } else if (this.role === 'pres') {
+    } else if (this.role === 'pres' || this.role === 'tres') {
       this.loadPresidentData();
     }
   }

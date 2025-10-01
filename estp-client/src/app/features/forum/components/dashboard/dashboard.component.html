@@ -103,21 +103,21 @@
 
       <!-- Stats Summary Cards -->
       <div class="grid mb-4">
-        <div class="col-12 md:col-2">
+        <div class="col-12 md:col-3">
           <div class="bg-green-100 border-round p-3 text-center">
             <i class="pi pi-building text-green-500 text-3xl mb-2"></i>
             <h4 class="text-xl font-bold text-green-700">{{assignedEntreprises.length}}</h4>
             <p class="text-green-600 font-medium">Entreprises assignées</p>
           </div>
         </div>
-        <div class="col-12 md:col-2">
+        <div class="col-12 md:col-3">
           <div class="bg-blue-100 border-round p-3 text-center">
             <i class="pi pi-id-card text-blue-500 text-3xl mb-2"></i>
             <h4 class="text-xl font-bold text-blue-700">{{totalBC1Count}}</h4>
             <p class="text-blue-600 font-medium">Total BC1</p>
           </div>
         </div>
-        <div class="col-12 md:col-2">
+        <div class="col-12 md:col-3">
           <div class="bg-purple-100 border-round p-3 text-center">
             <i class="pi pi-mobile text-purple-500 text-3xl mb-2"></i>
             <h4 class="text-xl font-bold text-purple-700">{{totalBC2Count}}</h4>
@@ -131,15 +131,12 @@
             <p class="text-cyan-600 font-medium">Total Payés (BC1+BC2)</p>
           </div>
         </div>
-        <div class="col-12 md:col-3">
-          <div class="bg-orange-100 border-round p-3 text-center">
-            <i class="pi pi-euro text-orange-500 text-3xl mb-2"></i>
-            <h4 class="text-xl font-bold text-orange-700">{{(commercialBC1Total + commercialBC2Total) | currency:'EUR':'symbol':'1.0-0'}}</h4>
-            <p class="text-orange-600 font-medium">Total HT</p>
-          </div>
-        </div>
       </div>
 
+    </div>
+
+    <!-- BC1/BC2 Stats and Financial Summary - Only for President and Treasurer -->
+    <div *ngIf="(role === 'pres' || role === 'tres') && !loading" class="col-12">
       <!-- Detailed BC1 & BC2 Stats -->
       <div class="grid mb-4">
         <div class="col-12 md:col-6">
