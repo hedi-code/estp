@@ -62,6 +62,7 @@ export class Bc2SouscritsComponent implements OnInit {
   factureDialog: boolean = false;
   factureVisible: boolean = false;
   currentFactureCommande: CommandeWithEntreprise | undefined;
+  bc2DialogVisible: boolean = false;
 
   @ViewChild('dt') table!: Table;
   @ViewChild('factureBc2') factureBc2!: any;
@@ -164,9 +165,11 @@ export class Bc2SouscritsComponent implements OnInit {
         response.forEach(element => {
           const foundOption = this.optionsBc2.find(o => o.id == element.option2_id);
           if (foundOption) {
+            // Update the original option in optionsBc2 array
+            foundOption.qteCommande = element.qty;
+            foundOption.colorCommande = element.color || '';
+            // Add a copy to modificationsOptions
             const option: Option2 = { ...foundOption };
-            option.qteCommande = element.qty;
-            option.colorCommande = element.color || '';
             this.modificationsOptions.push(option);
           }
         });
@@ -272,7 +275,7 @@ export class Bc2SouscritsComponent implements OnInit {
         standiste_demande: cmd.standiste_demande || ''
       });
 
-      this.factureVisible = true;
+      this.modifyDialog = true;
     }
   }
 
@@ -334,16 +337,21 @@ export class Bc2SouscritsComponent implements OnInit {
 
       await Promise.all(updatePromises);
 
-      // Regenerate BC2 PDF with updated data
-      await this.factureBc2.generatedPdf("facture", "festp.2025." + this.modifyCommande?.entreprise_id + ".fct2", "contentToExport");
-
       // Update local data
       this.commandes[this.commandes.findIndex(c => c.id == this.modifyCommande?.id)].total_ht = this.modifyTotalHt ?? 0;
 
       // Reload the commande options for the facture
       await this.loadCommandeOptionsForFacture(this.modifyCommande?.id ?? -1);
+
+      // Show BC2 regeneration dialog
+      this.modifyDialog = false;
+      this.bc2DialogVisible = true;
     }
-    this.factureBc2.visible = false;
+  }
+
+  async regenerateBC2Pdf() {
+    await this.factureBc2.generatedPdf("bc2", this.modifyCommande?.entreprise?.id + "_BC2", "contentToExportBc2");
+    this.messageService.add({ severity: 'success', summary: '', detail: 'BC2 regénéré', life: 2000 });
   }
 
   async getContactPrincipalNom(): Promise<Contact | undefined> {

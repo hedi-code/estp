@@ -139,4 +139,57 @@ exports.deleteEntreprise = (req, res) => {
 };
 
 
+// Get all entreprises with pack1s and place_plan
+exports.getEntreprisesWithPack1s = (req, res) => {
+  const query = `
+    SELECT
+      e.id,
+      e.nom,
+      e.siren,
+      e.adresse,
+      e.place_plan,
+      e.user_id,
+      c1.id as commande1_id,
+      c1.pack1_id,
+      c1.total_ht,
+      c1.valide,
+      p1.id as pack_id,
+      p1.titre as pack1_titre,
+      p1.description as pack1_description,
+      ps.id as surface_id,
+      ps.surface,
+      ps.prix as surface_prix
+    FROM entreprises e
+    INNER JOIN commande1s c1 ON e.id = c1.entreprise_id
+    INNER JOIN pack1s_surface ps ON c1.pack1_id = ps.id
+    INNER JOIN pack1s p1 ON ps.id_pack1 = p1.id
+    WHERE c1.pack1_id IS NOT NULL
+    ORDER BY e.nom ASC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+    res.json(results);
+  });
+};
+
+// Update place_plan for an entreprise
+exports.updatePlacePlan = (req, res) => {
+  const { id } = req.params;
+  const { place_plan } = req.body;
+
+  const updateQuery = `
+    UPDATE entreprises SET place_plan = ?, modified = ?
+    WHERE id = ?
+  `;
+
+  const now = new Date();
+  const values = [place_plan, now, id];
+
+  db.query(updateQuery, values, (err, result) => {
+    if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+    res.json({ message: 'Place plan mise à jour', affectedRows: result.affectedRows });
+  });
+};
+
 exports._getEntrepriseByUserId = _getEntrepriseByUserId;

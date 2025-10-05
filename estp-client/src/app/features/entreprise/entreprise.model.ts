@@ -18,9 +18,23 @@ export interface Entreprise {
     has_participated?: number;
     activity?: number;
     commercial?: string;
+    place_plan?: string | null;
     // Contact information (loaded dynamically)
     contact_nom?: string;
     contact_email?: string;
     contact_telephone?: string;
     contact_fonction?: string;
+  }
+
+export interface EntrepriseWithPack1 extends Entreprise {
+    commande1_id?: number;
+    pack1_id?: number;
+    total_ht?: number;
+    valide?: number;
+    pack_id?: number;
+    pack1_titre?: string;
+    pack1_description?: string;
+    surface_id?: number;
+    surface?: number;
+    surface_prix?: number;
   }

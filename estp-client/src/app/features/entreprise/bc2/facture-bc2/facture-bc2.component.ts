@@ -150,4 +150,30 @@ export class FactureBc2Component implements OnInit {
     });
     return totalTVA;
   }
+
+  // Group options by TVA rate
+  getTVAGroups(): any[] {
+    const groups: { [key: number]: any } = {};
+
+    this.getFilteredOptions().forEach(option => {
+      const tauxTVA = option.option_taux_tva || 20;
+      const prixHT = (option.option_prix_ht || 0) * (option.qty || 1);
+      const montantTVA = prixHT * (tauxTVA / 100);
+
+      if (!groups[tauxTVA]) {
+        groups[tauxTVA] = {
+          taux: tauxTVA,
+          totalHT: 0,
+          totalTVA: 0,
+          totalTTC: 0
+        };
+      }
+
+      groups[tauxTVA].totalHT += prixHT;
+      groups[tauxTVA].totalTVA += montantTVA;
+      groups[tauxTVA].totalTTC += prixHT + montantTVA;
+    });
+
+    return Object.values(groups).sort((a, b) => a.taux - b.taux);
+  }
 }

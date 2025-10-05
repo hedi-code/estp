@@ -1,0 +1,192 @@
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
+  <h3 class="text-blue-400 p-2">Gestion des Plans</h3>
+
+  <p-tabView [(activeIndex)]="activeTab">
+    <!-- TAB: Sans Place Plan -->
+    <p-tabPanel header="Sans Place Plan ({{ entreprisesWithoutPlacePlan.length }})">
+      <p-table
+        [value]="entreprisesWithoutPlacePlan"
+        dataKey="id"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [paginator]="true"
+        [resizableColumns]="true"
+        columnResizeMode="expand"
+        styleClass="w-full"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id" style="width: 5%">ID <p-sortIcon field="id" /></th>
+            <th pSortableColumn="nom" style="width: 20%">Entreprise <p-sortIcon field="nom" /></th>
+            <th pSortableColumn="pack1_titre" style="width: 15%">Pack1 <p-sortIcon field="pack1_titre" /></th>
+            <th pSortableColumn="total_ht" style="width: 10%">Total HT <p-sortIcon field="total_ht" /></th>
+            <th pSortableColumn="valide" style="width: 10%">Validé <p-sortIcon field="valide" /></th>
+            <th style="width: 15%">Place Plan</th>
+            <th style="width: 10%">Actions</th>
+          </tr>
+          <tr>
+            <th><p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="nom" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="pack1_titre" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="total_ht" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="valide" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-e>
+          <tr>
+            <td>{{ e.id || '-' }}</td>
+            <td>{{ e.nom || '-' }}</td>
+            <td>{{ getPackDescription(e) }}</td>
+            <td>{{ e.total_ht ? (e.total_ht + ' €') : '-' }}</td>
+            <td>
+              <span [class]="e.valide ? 'text-green-600' : 'text-red-600'">
+                {{ e.valide ? 'Oui' : 'Non' }}
+              </span>
+            </td>
+            <td>
+              <span class="text-gray-400">Non défini</span>
+            </td>
+            <td>
+              <button
+                *ngIf="canManagePlacePlan()"
+                pButton
+                [text]="true"
+                icon="pi pi-pencil"
+                pTooltip="Définir place plan"
+                tooltipPosition="bottom"
+                (click)="openPlacePlanDialog(e)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center p-4">
+              Toutes les entreprises ont une place plan définie
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+
+    <!-- TAB: Avec Place Plan -->
+    <p-tabPanel header="Avec Place Plan ({{ entreprisesWithPlacePlan.length }})">
+      <p-table
+        [value]="entreprisesWithPlacePlan"
+        dataKey="id"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [paginator]="true"
+        [resizableColumns]="true"
+        columnResizeMode="expand"
+        styleClass="w-full"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id" style="width: 5%">ID <p-sortIcon field="id" /></th>
+            <th pSortableColumn="nom" style="width: 20%">Entreprise <p-sortIcon field="nom" /></th>
+            <th pSortableColumn="pack1_titre" style="width: 15%">Pack1 <p-sortIcon field="pack1_titre" /></th>
+            <th pSortableColumn="total_ht" style="width: 10%">Total HT <p-sortIcon field="total_ht" /></th>
+            <th pSortableColumn="valide" style="width: 10%">Validé <p-sortIcon field="valide" /></th>
+            <th pSortableColumn="place_plan" style="width: 15%">Place Plan <p-sortIcon field="place_plan" /></th>
+            <th style="width: 10%">Actions</th>
+          </tr>
+          <tr>
+            <th><p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="nom" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="pack1_titre" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="total_ht" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="valide" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th><p-columnFilter type="text" field="place_plan" [showClearButton]="false" matchMode="contains"></p-columnFilter></th>
+            <th></th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-e>
+          <tr>
+            <td>{{ e.id || '-' }}</td>
+            <td>{{ e.nom || '-' }}</td>
+            <td>{{ getPackDescription(e) }}</td>
+            <td>{{ e.total_ht ? (e.total_ht + ' €') : '-' }}</td>
+            <td>
+              <span [class]="e.valide ? 'text-green-600' : 'text-red-600'">
+                {{ e.valide ? 'Oui' : 'Non' }}
+              </span>
+            </td>
+            <td>
+              <span class="font-semibold text-blue-600">{{ e.place_plan }}</span>
+            </td>
+            <td>
+              <button
+                *ngIf="canManagePlacePlan()"
+                pButton
+                [text]="true"
+                icon="pi pi-pencil"
+                pTooltip="Modifier place plan"
+                tooltipPosition="bottom"
+                (click)="openPlacePlanDialog(e)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center p-4">
+              Aucune entreprise n'a de place plan définie
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+  </p-tabView>
+
+  <!-- DIALOG: Set Place Plan -->
+  <p-dialog
+    header="Définir Place Plan"
+    [(visible)]="displayPlacePlanDialog"
+    [modal]="true"
+    [closable]="false"
+    [style]="{ width: '500px' }"
+  >
+    <div *ngIf="selectedEntreprise" class="p-fluid">
+      <div class="mb-3">
+        <p><strong>Entreprise:</strong> {{ selectedEntreprise.nom }}</p>
+        <p><strong>Pack1:</strong> {{ getPackDescription(selectedEntreprise) }}</p>
+      </div>
+
+      <div class="field">
+        <label for="place_plan">Place Plan</label>
+        <input
+          pInputText
+          id="place_plan"
+          [(ngModel)]="placePlanValue"
+          maxlength="20"
+          placeholder="Ex: A1, B2, C3..."
+        />
+        <small class="text-gray-600">Max 20 caractères. Laisser vide pour supprimer.</small>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        label="Annuler"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="cancelPlacePlan()"
+      ></button>
+      <button
+        pButton
+        label="Enregistrer"
+        icon="pi pi-check"
+        (click)="savePlacePlan()"
+        autofocus
+      ></button>
+    </ng-template>
+  </p-dialog>
+</div>

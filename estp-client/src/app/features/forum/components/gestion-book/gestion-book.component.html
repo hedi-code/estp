@@ -76,16 +76,12 @@
     </ng-template>
 
     <!-- BODY -->
-    <ng-template pTemplate="body" let-b>
+    <ng-template pTemplate="body" let-b let-expanded="expanded">
       <tr>
         <td>
-          <p-button
-            type="button"
-            pRipple
-            [pRowToggler]="b"
-            class="p-button-text p-button-rounded p-button-plain"
-            [icon]="isExpanded(b) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'">
-          </p-button>
+          <a href="#" [pRowToggler]="b">
+            <i class="pi" [ngClass]="expanded ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+          </a>
         </td>
         <td>{{ b.id || '-' }}</td>
         <td>{{ b.entreprise_nom || '-' }}</td>
@@ -145,98 +141,60 @@
     <!-- ROW EXPANSION TEMPLATE -->
     <ng-template pTemplate="rowexpansion" let-b>
       <tr>
-        <td colspan="17">
-          <div class="p-4 bg-gray-50 border-round">
-            <div class="grid">
-              <div class="col-12">
-                <h4 class="text-primary mb-3">Détails complets - {{ b.entreprise_nom }}</h4>
+        <td colspan="21">
+          <p-accordion>
+            <!-- Informations générales -->
+            <p-accordionTab header="Informations générales">
+              <div class="p-3">
+                <p><strong>Description:</strong> {{ b.description || 'Non renseignée' }}</p>
+                <p><strong>Activité:</strong> {{ b.activite || 'Non renseignée' }}</p>
+                <p><strong>Slogan:</strong> {{ b.slogan || 'Non renseigné' }}</p>
+                <p><strong>Site web:</strong>
+                  <a *ngIf="b.site_web" [href]="b.site_web" target="_blank">{{ b.site_web }}</a>
+                  <span *ngIf="!b.site_web">Non renseigné</span>
+                </p>
               </div>
+            </p-accordionTab>
 
-              <!-- Informations générales -->
-              <div class="col-6">
-                <h5 class="text-800 mb-2">Informations générales</h5>
-                <div class="field-group">
-                  <p><strong>Description:</strong></p>
-                  <p class="ml-2 text-700">{{ b.description || 'Non renseignée' }}</p>
-
-                  <p><strong>Activité:</strong></p>
-                  <p class="ml-2 text-700">{{ b.activite || 'Non renseignée' }}</p>
-
-                  <p><strong>Slogan:</strong></p>
-                  <p class="ml-2 text-700">{{ b.slogan || 'Non renseigné' }}</p>
-
-                  <p><strong>Site web:</strong></p>
-                  <p class="ml-2 text-700">
-                    <a *ngIf="b.site_web" [href]="b.site_web" target="_blank" class="text-primary">{{ b.site_web }}</a>
-                    <span *ngIf="!b.site_web">Non renseigné</span>
-                  </p>
-                </div>
+            <!-- Contact et Recrutement -->
+            <p-accordionTab header="Contact et Recrutement">
+              <div class="p-3">
+                <p><strong>Année de création:</strong> {{ b.annee_creation || 'Non renseignée' }}</p>
+                <p><strong>Nombre de collaborateurs:</strong> {{ b.nombre_collaborateurs || 'Non renseigné' }}</p>
+                <p><strong>Implantation:</strong> {{ b.implantation || 'Non renseignée' }}</p>
+                <p><strong>Téléphone contact:</strong> {{ b.telephone_contact || 'Non renseigné' }}</p>
+                <p><strong>Email recrutement:</strong> {{ b.email_recrutement || 'Non renseigné' }}</p>
+                <p><strong>Adresse postale:</strong> {{ b.adresse_postale || 'Non renseignée' }}</p>
               </div>
+            </p-accordionTab>
 
-              <!-- Informations de contact et recrutement -->
-              <div class="col-6">
-                <h5 class="text-800 mb-2">Contact et Recrutement</h5>
-                <div class="field-group">
-                  <p><strong>Année de création:</strong></p>
-                  <p class="ml-2 text-700">{{ b.annee_creation || 'Non renseignée' }}</p>
-
-                  <p><strong>Nombre de collaborateurs:</strong></p>
-                  <p class="ml-2 text-700">{{ b.nombre_collaborateurs || 'Non renseigné' }}</p>
-
-                  <p><strong>Implantation:</strong></p>
-                  <p class="ml-2 text-700">{{ b.implantation || 'Non renseignée' }}</p>
-
-                  <p><strong>Téléphone contact:</strong></p>
-                  <p class="ml-2 text-700">{{ b.telephone_contact || 'Non renseigné' }}</p>
-
-                  <p><strong>Email recrutement:</strong></p>
-                  <p class="ml-2 text-700">{{ b.email_recrutement || 'Non renseigné' }}</p>
-                </div>
+            <!-- Profils et Recrutement -->
+            <p-accordionTab header="Profils et Recrutement" *ngIf="b.profils_recherches || b.methode_recrutement || b.offres_stage_emploi">
+              <div class="p-3">
+                <p *ngIf="b.profils_recherches"><strong>Profils recherchés:</strong> {{ b.profils_recherches }}</p>
+                <p *ngIf="b.methode_recrutement"><strong>Méthode de recrutement:</strong> {{ b.methode_recrutement }}</p>
+                <p *ngIf="b.offres_stage_emploi"><strong>Offres de stage et emploi:</strong> {{ b.offres_stage_emploi }}</p>
               </div>
+            </p-accordionTab>
 
-              <!-- Adresse complète -->
-              <div class="col-12" *ngIf="b.adresse_postale">
-                <h5 class="text-800 mb-2">Adresse postale</h5>
-                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.adresse_postale }}</p>
-              </div>
-
-              <!-- Profils recherchés -->
-              <div class="col-12" *ngIf="b.profils_recherches">
-                <h5 class="text-800 mb-2">Profils recherchés</h5>
-                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.profils_recherches }}</p>
-              </div>
-
-              <!-- Méthode de recrutement -->
-              <div class="col-12" *ngIf="b.methode_recrutement">
-                <h5 class="text-800 mb-2">Méthode de recrutement</h5>
-                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.methode_recrutement }}</p>
-              </div>
-
-              <!-- Offres de stage et emploi -->
-              <div class="col-12" *ngIf="b.offres_stage_emploi">
-                <h5 class="text-800 mb-2">Offres de stage et emploi</h5>
-                <p class="ml-2 text-700 bg-white p-2 border-round">{{ b.offres_stage_emploi }}</p>
-              </div>
-
-              <!-- Statuts et dates -->
-              <div class="col-12 mt-3">
-                <div class="flex gap-4 align-items-center">
-                  <span class="p-2 border-round" [ngClass]="b.valide_forum ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                    Forum: {{ b.valide_forum ? 'Validé' : 'Non validé' }}
+            <!-- Statuts -->
+            <p-accordionTab header="Statuts et Dates">
+              <div class="p-3">
+                <p><strong>Validation Forum:</strong>
+                  <span [ngClass]="b.valide_forum ? 'text-green-600' : 'text-red-600'">
+                    {{ b.valide_forum ? 'Validé' : 'Non validé' }}
                   </span>
-                  <span class="p-2 border-round" [ngClass]="b.valide_entreprise ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                    Entreprise: {{ b.valide_entreprise ? 'Validé' : 'Non validé' }}
+                </p>
+                <p><strong>Validation Entreprise:</strong>
+                  <span [ngClass]="b.valide_entreprise ? 'text-green-600' : 'text-red-600'">
+                    {{ b.valide_entreprise ? 'Validé' : 'Non validé' }}
                   </span>
-                  <span class="p-2 bg-blue-100 text-blue-800 border-round">
-                    Créé: {{ b.created_at | date:'dd/MM/yyyy' }}
-                  </span>
-                  <span class="p-2 bg-blue-100 text-blue-800 border-round" *ngIf="b.updated_at !== b.created_at">
-                    Modifié: {{ b.updated_at | date:'dd/MM/yyyy' }}
-                  </span>
-                </div>
+                </p>
+                <p><strong>Date de création:</strong> {{ b.created_at | date:'dd/MM/yyyy' }}</p>
+                <p *ngIf="b.updated_at !== b.created_at"><strong>Date de modification:</strong> {{ b.updated_at | date:'dd/MM/yyyy' }}</p>
               </div>
-            </div>
-          </div>
+            </p-accordionTab>
+          </p-accordion>
         </td>
       </tr>
     </ng-template>

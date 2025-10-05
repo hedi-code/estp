@@ -22,7 +22,7 @@
         <div class="col-12 md:col-3">
           <div class="bg-red-100 border-round p-3 text-center">
             <i class="pi pi-id-card text-red-500 text-4xl mb-2"></i>
-            <h3 class="text-2xl font-bold text-red-700">{{stats.totalBc1}}</h3>
+            <h3 class="text-2xl font-bold text-red-700">{{stats.totalBc1}}/250</h3>
             <p class="text-red-600 font-medium">Total BC1</p>
           </div>
         </div>
@@ -43,8 +43,8 @@
       </div>
     </div>
 
-    <!-- Charts Row 1 - Only for President and Treasurer -->
-    <div *ngIf="!loading && stats && (role === 'pres' || role === 'tres')" class="col-12 lg:col-6">
+    <!-- Charts Row 1 - Only for Treasurer -->
+    <div *ngIf="!loading && stats && role === 'tres'" class="col-12 lg:col-6">
       <p-panel header="Statistiques générales" class="h-full">
         <canvas baseChart
                 [data]="barChartData"
@@ -54,7 +54,7 @@
       </p-panel>
     </div>
 
-    <div *ngIf="!loading && stats && (role === 'pres' || role === 'tres')" class="col-12 lg:col-6">
+    <div *ngIf="!loading && stats && role === 'tres'" class="col-12 lg:col-6">
       <p-panel header="Répartition BC1 vs BC2" class="h-full">
         <canvas baseChart
                 [data]="doughnutChartData"
@@ -64,8 +64,8 @@
       </p-panel>
     </div>
 
-    <!-- Charts Row 2 - Only for President and Treasurer -->
-    <div *ngIf="!loading && stats && (role === 'pres' || role === 'tres')" class="col-12 lg:col-8">
+    <!-- Charts Row 2 - Only for Treasurer -->
+    <div *ngIf="!loading && stats && role === 'tres'" class="col-12 lg:col-8">
       <p-panel header="Montants HT" class="h-full">
         <canvas baseChart
                 [data]="pieChartData"
@@ -75,7 +75,7 @@
       </p-panel>
     </div>
 
-    <div *ngIf="!loading && stats && (role === 'pres' || role === 'tres')" class="col-12 lg:col-4">
+    <div *ngIf="!loading && stats && role === 'tres'" class="col-12 lg:col-4">
       <p-panel header="Résumé financier" class="h-full">
         <div class="p-3">
           <div class="mb-3">
@@ -103,40 +103,33 @@
 
       <!-- Stats Summary Cards -->
       <div class="grid mb-4">
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-4">
           <div class="bg-green-100 border-round p-3 text-center">
             <i class="pi pi-building text-green-500 text-3xl mb-2"></i>
             <h4 class="text-xl font-bold text-green-700">{{assignedEntreprises.length}}</h4>
             <p class="text-green-600 font-medium">Entreprises assignées</p>
           </div>
         </div>
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-4">
           <div class="bg-blue-100 border-round p-3 text-center">
             <i class="pi pi-id-card text-blue-500 text-3xl mb-2"></i>
-            <h4 class="text-xl font-bold text-blue-700">{{totalBC1Count}}</h4>
+            <h4 class="text-xl font-bold text-blue-700">{{totalBC1Count}}/25</h4>
             <p class="text-blue-600 font-medium">Total BC1</p>
           </div>
         </div>
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-4">
           <div class="bg-purple-100 border-round p-3 text-center">
             <i class="pi pi-mobile text-purple-500 text-3xl mb-2"></i>
-            <h4 class="text-xl font-bold text-purple-700">{{totalBC2Count}}</h4>
+            <h4 class="text-xl font-bold text-purple-700">{{totalBC2Count}}/25</h4>
             <p class="text-purple-600 font-medium">Total BC2</p>
-          </div>
-        </div>
-        <div class="col-12 md:col-3">
-          <div class="bg-cyan-100 border-round p-3 text-center">
-            <i class="pi pi-check-circle text-cyan-500 text-3xl mb-2"></i>
-            <h4 class="text-xl font-bold text-cyan-700">{{paidBC1Count + paidBC2Count}}</h4>
-            <p class="text-cyan-600 font-medium">Total Payés (BC1+BC2)</p>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- BC1/BC2 Stats and Financial Summary - Only for President and Treasurer -->
-    <div *ngIf="(role === 'pres' || role === 'tres') && !loading" class="col-12">
+    <!-- BC1/BC2 Stats and Financial Summary - Only for Treasurer -->
+    <div *ngIf="role === 'tres' && !loading" class="col-12">
       <!-- Detailed BC1 & BC2 Stats -->
       <div class="grid mb-4">
         <div class="col-12 md:col-6">
@@ -206,51 +199,28 @@
             </p-table>
           </p-panel>
         </div>
-        <div class="col-12 md:col-6">
-          <p-panel header="Résumé financier" class="h-full">
-            <div class="p-3">
-              <div class="mb-3">
-                <h5 class="text-lg font-semibold mb-2">Total BC1 HT</h5>
-                <p class="text-2xl font-bold text-blue-600">{{commercialBC1Total | currency:'EUR':'symbol':'1.2-2'}}</p>
-              </div>
-              <div class="mb-3">
-                <h5 class="text-lg font-semibold mb-2">Total BC2 HT</h5>
-                <p class="text-2xl font-bold text-purple-600">{{commercialBC2Total | currency:'EUR':'symbol':'1.2-2'}}</p>
-              </div>
-              <div class="border-top-1 border-300 pt-3">
-                <h5 class="text-lg font-semibold mb-2">Total Général</h5>
-                <p class="text-3xl font-bold text-green-600">{{(commercialBC1Total + commercialBC2Total) | currency:'EUR':'symbol':'1.2-2'}}</p>
-              </div>
-            </div>
-          </p-panel>
-        </div>
       </div>
     </div>
 
     <!-- President Dashboard -->
     <div *ngIf="role === 'pres' && !loading" class="col-12">
-      <h3 class="text-xl font-bold mb-4 text-purple-600">Dashboard Président - Options les plus achetées</h3>
+      <h3 class="text-xl font-bold mb-4 text-purple-600">Dashboard Président - Toutes les options achetées</h3>
 
       <div class="grid">
         <div class="col-12 md:col-6">
-          <p-panel header="Top 5 Options BC1" class="h-full">
-            <p-table [value]="topBC1Options">
+          <p-panel header="Options BC1" class="h-full">
+            <p-table [value]="topBC1Options" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]">
               <ng-template pTemplate="header">
                 <tr>
-                  <th>Option</th>
-                  <th>Prix HT</th>
-                  <th>Quantité</th>
-                  <th>Commandes</th>
+                  <th pSortableColumn="option_name">Option <p-sortIcon field="option_name" /></th>
+                  <th pSortableColumn="prix_ht">Prix HT <p-sortIcon field="prix_ht" /></th>
+                  <th pSortableColumn="total_quantity">Quantité <p-sortIcon field="total_quantity" /></th>
+                  <th pSortableColumn="order_count">Commandes <p-sortIcon field="order_count" /></th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-option let-i="rowIndex">
                 <tr>
-                  <td>
-                    <div class="flex align-items-center">
-                      <span class="border-circle bg-primary text-white w-2rem h-2rem flex align-items-center justify-content-center mr-2">{{i + 1}}</span>
-                      {{option.option_name}}
-                    </div>
-                  </td>
+                  <td>{{option.option_name}}</td>
                   <td>{{option.prix_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
                   <td>{{option.total_quantity}}</td>
                   <td>{{option.order_count}}</td>
@@ -260,24 +230,19 @@
           </p-panel>
         </div>
         <div class="col-12 md:col-6">
-          <p-panel header="Top 5 Options BC2" class="h-full">
-            <p-table [value]="topBC2Options">
+          <p-panel header="Options BC2" class="h-full">
+            <p-table [value]="topBC2Options" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]">
               <ng-template pTemplate="header">
                 <tr>
-                  <th>Option</th>
-                  <th>Prix HT</th>
-                  <th>Quantité</th>
-                  <th>Commandes</th>
+                  <th pSortableColumn="option_name">Option <p-sortIcon field="option_name" /></th>
+                  <th pSortableColumn="prix_ht">Prix HT <p-sortIcon field="prix_ht" /></th>
+                  <th pSortableColumn="total_quantity">Quantité <p-sortIcon field="total_quantity" /></th>
+                  <th pSortableColumn="order_count">Commandes <p-sortIcon field="order_count" /></th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-option let-i="rowIndex">
                 <tr>
-                  <td>
-                    <div class="flex align-items-center">
-                      <span class="border-circle bg-primary text-white w-2rem h-2rem flex align-items-center justify-content-center mr-2">{{i + 1}}</span>
-                      {{option.option_name}}
-                    </div>
-                  </td>
+                  <td>{{option.option_name}}</td>
                   <td>{{option.prix_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
                   <td>{{option.total_quantity}}</td>
                   <td>{{option.order_count}}</td>

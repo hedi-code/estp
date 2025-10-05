@@ -157,7 +157,9 @@ export class DashboardComponent implements OnInit {
 
     if (this.role === 'comm') {
       this.loadCommercialData();
-    } else if (this.role === 'pres' || this.role === 'tres') {
+    } else if (this.role === 'pres') {
+      this.loadPresidentData();
+    } else if (this.role === 'tres') {
       this.loadPresidentData();
     }
   }

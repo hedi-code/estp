@@ -140,26 +140,53 @@ exports.updateCommande1 = (req, res) => {
 
   const modified = new Date();
 
+  // First, get the current pack1_id and entreprise_id
   db.query(
-    `UPDATE commande1s 
-     SET pack1_id = ?, reduc_pct = ?, reduc_lin = ?, total_ht_avt_remise = ?, total_ht = ?, validation_lieu = ?, valide = ?, modified = ?, fct_payee = ?, fct_envoyee = ?
-     WHERE id = ?`,
-    [
-      pack1_id,
-      reduc_pct,
-      reduc_lin,
-      total_ht_avt_remise,
-      total_ht,
-      validation_lieu,
-      valide,
-      modified,
-      fct_payee,
-      fct_envoyee,
-      id
-    ],
-    (err) => {
+    `SELECT pack1_id, entreprise_id FROM commande1s WHERE id = ?`,
+    [id],
+    (err, currentResult) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
-      res.json({ message: "Commande mise à jour" });
+      if (currentResult.length === 0) return res.status(404).json({ error: "Commande non trouvée" });
+
+      const oldPack1Id = currentResult[0].pack1_id;
+      const entrepriseId = currentResult[0].entreprise_id;
+      const pack1Changed = oldPack1Id !== pack1_id;
+
+      db.query(
+        `UPDATE commande1s
+         SET pack1_id = ?, reduc_pct = ?, reduc_lin = ?, total_ht_avt_remise = ?, total_ht = ?, validation_lieu = ?, valide = ?, modified = ?, fct_payee = ?, fct_envoyee = ?
+         WHERE id = ?`,
+        [
+          pack1_id,
+          reduc_pct,
+          reduc_lin,
+          total_ht_avt_remise,
+          total_ht,
+          validation_lieu,
+          valide,
+          modified,
+          fct_payee,
+          fct_envoyee,
+          id
+        ],
+        (err) => {
+          if (err) return res.status(500).json({ error: "Erreur base de données" });
+
+          // If pack1_id changed, set place_plan to null
+          if (pack1Changed) {
+            db.query(
+              `UPDATE entreprises SET place_plan = NULL, modified = ? WHERE id = ?`,
+              [modified, entrepriseId],
+              (err) => {
+                if (err) return res.status(500).json({ error: "Erreur lors de la mise à jour de place_plan" });
+                res.json({ message: "Commande mise à jour et place_plan réinitialisé" });
+              }
+            );
+          } else {
+            res.json({ message: "Commande mise à jour" });
+          }
+        }
+      );
     }
   );
 };

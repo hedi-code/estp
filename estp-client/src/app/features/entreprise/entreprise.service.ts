@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthCookieService } from '../../core/services/auth-cookie.service';
-import { Entreprise } from './entreprise.model';
+import { Entreprise, EntrepriseWithPack1 } from './entreprise.model';
 import { environment } from './../../../environments/environment';
 
 
@@ -36,5 +36,13 @@ export class EntrepriseService {
 
   deleteEntreprise(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  getEntreprisesWithPack1s(): Observable<EntrepriseWithPack1[]> {
+    return this.http.get<EntrepriseWithPack1[]>(`${this.apiUrl}/with-pack1s/all`);
+  }
+
+  updatePlacePlan(id: number, place_plan: string | null): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/place-plan`, { place_plan });
   }
 }

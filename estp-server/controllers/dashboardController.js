@@ -109,7 +109,7 @@ exports.getCommercialDashboardStats = (req, res) => {
 };
 
 exports.getTopOptions = (req, res) => {
-  // Get top 5 most purchased options for BC1
+  // Get all purchased options for BC1
   const topBC1Query = `
     SELECT
       o1.name as option_name,
@@ -120,10 +120,9 @@ exports.getTopOptions = (req, res) => {
     JOIN option1s o1 ON co1.option1_id = o1.id
     GROUP BY o1.id, o1.name, o1.prix_ht
     ORDER BY total_quantity DESC
-    LIMIT 5
   `;
 
-  // Get top 5 most purchased options for BC2
+  // Get all purchased options for BC2
   const topBC2Query = `
     SELECT
       o2.nom as option_name,
@@ -134,7 +133,6 @@ exports.getTopOptions = (req, res) => {
     JOIN option2s o2 ON co2.option2_id = o2.id
     GROUP BY o2.id, o2.nom, o2.prix_ht
     ORDER BY total_quantity DESC
-    LIMIT 5
   `;
 
   // Execute both queries

@@ -97,7 +97,7 @@
                             <p class="blockTitle">Société</p>
                         </td>
                         <td>
-                            <p class="blockContent">{{ getCompanyInfo()?.nom }}</p>
+                            <p class="blockContent">{{ entreprise?.nom | uppercase }}</p>
                         </td>
                     </tr>
                     <tr>
@@ -105,7 +105,7 @@
                             <p class="blockTitle">Adresse</p>
                         </td>
                         <td>
-                            <p class="blockContent">{{ getCompanyInfo()?.adresse | uppercase }}</p>
+                            <p class="blockContent">{{ entreprise?.adresse | uppercase }}</p>
                         </td>
                     </tr>
                     <tr>
@@ -113,7 +113,7 @@
                             <p class="blockTitle">Téléphone</p>
                         </td>
                         <td>
-                            <p class="blockContent">{{ getCompanyInfo()?.telephone | uppercase }}</p>
+                            <p class="blockContent">{{ entreprise?.telephone_standard | uppercase }}</p>
                         </td>
                     </tr>
                 </table>
@@ -132,7 +132,7 @@
                                     <p class="blockTitle">Responsable</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">{{ getResponsableInfo()?.nom || '-' }}</p>
+                                    <p class="blockContent">{{ contactPrincipal?.prenom || '-' }} {{ contactPrincipal?.nom || '-' }}</p>
                                 </td>
                             </tr>
                             <tr>
@@ -140,7 +140,7 @@
                                     <p class="blockTitle">E-mail</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">{{ getResponsableInfo()?.email || '-' }}</p>
+                                    <p class="blockContent">{{ contactPrincipal?.email || '-' }}</p>
                                 </td>
                             </tr>
                             <tr>
@@ -148,7 +148,7 @@
                                     <p class="blockTitle">Téléphone</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">{{ getResponsableInfo()?.telephone || '-' }}</p>
+                                    <p class="blockContent">{{ contactPrincipal?.telephone1 || '-' }}</p>
                                 </td>
                             </tr>
                         </table>
@@ -267,6 +267,19 @@
             class="darkBlueBg">Montant de la commande</div>
 
         <table class="table" width="100%">
+            <!-- TVA Groups - Total HT by rate -->
+            <ng-container *ngFor="let tvaGroup of getTVAGroups()">
+                <tr>
+                    <td width="40%"></td>
+                    <td width="10%"></td>
+                    <td width="10%"></td>
+                    <td width="25%" class="lightBlueBg">Total HT {{tvaGroup.taux}}% (€)</td>
+                    <td width="15%" style="text-align:right">
+                        {{tvaGroup.totalHT | number: '1.2-2'}}
+                    </td>
+                </tr>
+            </ng-container>
+
             <tr>
                 <td width="40%"></td>
                 <td width="10%"></td>
@@ -276,15 +289,20 @@
                     {{calculateTotalHT() | number: '1.2-2'}}
                 </td>
             </tr>
-            <tr>
-                <td width="40%"></td>
-                <td width="10%"></td>
-                <td width="10%"></td>
-                <td width="25%" class="lightBlueBg">TVA (€)</td>
-                <td width="15%" style="text-align:right">
-                    {{calculateTVA() | number: '1.2-2'}}
-                </td>
-            </tr>
+
+            <!-- TVA amounts by rate -->
+            <ng-container *ngFor="let tvaGroup of getTVAGroups()">
+                <tr>
+                    <td width="40%"></td>
+                    <td width="10%"></td>
+                    <td width="10%"></td>
+                    <td width="25%" class="lightBlueBg">TVA {{tvaGroup.taux}}%</td>
+                    <td width="15%" style="text-align:right">
+                        {{tvaGroup.totalTVA | number: '1.2-2'}}
+                    </td>
+                </tr>
+            </ng-container>
+
             <tr>
                 <td width="40%"></td>
                 <td width="10%"></td>
@@ -298,34 +316,14 @@
     </div>
     <!-- Fin Block Detail Prix Total -->
 
-    <div style="border:2px solid black;margin-top:30px; ">
-        <div style="border-bottom:2px solid black;text-align:center; padding:3px; color:#FFF; text-transform:uppercase"
-            class="darkBlueBg">Modalit&eacute;s de r&egrave;glement</div>
-
-        <table class="table" width="830px">
-            <thead style="background-color:red">
-                <tr>
-                    <th width="50%" class="lightBlueBg">Entreprises</th>
-                    <th width="50%" class="lightBlueBg">Associations, Ecole, Organismes, Autres</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan=2 style="vertical-align:top;text-align:center">Régler 50% du montant total TTC mentionné sur le présent bon avant le {{getDateAcompte() | date:'dd/MM/yyyy' }}. Règlement du solde avant le 24 novembre 2025.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <!-- Fin Modalites -->
-
     <hr style="margin-top:10px; margin-bottom:20px" />
 
     <p>Je soussign&eacute;(e), Madame, Monsieur (rayez la mention inutile)
-        <b *ngIf="getResponsableInfo()?.nom">
-            {{getResponsableInfo()?.nom}}
+        <b *ngIf="contactPrincipal">
+            {{ contactPrincipal?.prenom }} {{ contactPrincipal?.nom }}
         </b>
     </p>
-    <p style="margin-top:20px">Repr&eacute;sentant la soci&eacute;t&eacute; <b>{{ getCompanyInfo()?.nom | uppercase }}</b>, m'engage &agrave; effectuer le
+    <p style="margin-top:20px">Repr&eacute;sentant la soci&eacute;t&eacute; <b>{{ entreprise?.nom | uppercase }}</b>, m'engage &agrave; effectuer le
         r&egrave;glement des prestations, suivant le mode choisi ci-dessus, et &agrave; envoyer le pr&eacute;sent bon
         avant la date limite du <b>15 Octobre 2025</b>. Pour tout d&eacute;sistement effectu&eacute; au-del&agrave; de
         cette date, le montant indiqu&eacute; ci-dessus sera d&ucirc;.</p>

@@ -3,7 +3,6 @@
     <h3 class="text-blue-400 p-2">Liste des BC2</h3>
     <div>
       <p-button icon="pi pi-plus" label="Créer un BC2" (click)="openCreateDialog()"></p-button>
-      <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button>
     </div>
   </div>
 
@@ -671,5 +670,22 @@
      <p-button label="Envoyer" severity="primary" (click)="envoyerFacture()" styleClass="w-4" />
      <p-button label="PDF facture" severity="primary" (click)="downloadFacture()" styleClass="w-4" />
 
+  </p-dialog>
+
+  <!-- BC2 Regeneration Dialog -->
+  <p-dialog header="Regénérer le BC2" [(visible)]="bc2DialogVisible" [modal]="true" [style]="{ width: '960px' }" [baseZIndex]="-1">
+    <app-facture-bc2
+      style="z-index: -1;"
+      id="contentToExportBc2"
+      *ngIf="modifyCommande && modifyCommande.entreprise && modificationContact"
+      [selectedOptions]="modificationCommandeOption"
+      [contactPrincipal]="modificationContact"
+      [prixTotal]="modifyTotalHt ?? 0"
+      [nomFichierBc2]="modifyCommande.entreprise.id + '_BC2'"
+      [entreprise]="modifyCommande.entreprise"
+      [signature]=""
+      [fait]=""
+    ></app-facture-bc2>
+    <p-button icon="pi pi-plus" label="Regénérer le BC2" (click)="regenerateBC2Pdf()" styleClass="w-full"></p-button>
   </p-dialog>
 </div>
