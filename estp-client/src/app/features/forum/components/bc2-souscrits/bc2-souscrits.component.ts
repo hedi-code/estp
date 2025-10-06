@@ -606,7 +606,11 @@ export class Bc2SouscritsComponent implements OnInit {
 
 <p>Veuillez trouver ci-joint la facture festp.2025.${this.modifyCommande?.entreprise?.id}.fct2 relative à votre bon de commande BC2 pour la 46e édition du FORUM ESTP.</p>
 
-<p>Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler le solde de <?= $rest ?> correspondant au bon de commande 2 avant le <?= $config["date_limite_paiement_acompte_bc1"] ?>.</p>
+<p>Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler le solde de <?= $rest ?> correspondant au bon de commande 2 avant le ${this.factureBc2.customDateSolde.toLocaleDateString('fr-FR', {
+  day: '2-digit',
+  month: 'long', // full month name
+  year: 'numeric',
+})}.</p>
 
 <p>Nous vous remercions par avance pour le respect de cette échéance nécessaire à la bonne organisation de notre Forum. Pour toute question ou information complémentaire, n’hésitez pas à me contacter directement.</p>
 

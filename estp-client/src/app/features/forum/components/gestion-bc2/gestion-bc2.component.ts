@@ -19,6 +19,7 @@ export class GestionBc2Component implements OnInit {
   options: Option2[] = [];
   activeIndex: number = 0;
   optionsTabActiveIndex: number = 0;
+  imageTimestamp: number = Date.now();
 
   // Option dialogs
   selectedOption!: Option2;
@@ -57,6 +58,7 @@ export class GestionBc2Component implements OnInit {
   loadOptions() {
     this.option2Service.getAllOption2s().subscribe(data => {
       this.options = data;
+      this.imageTimestamp = Date.now(); // Update timestamp to bust cache
     });
   }
 
@@ -74,7 +76,7 @@ export class GestionBc2Component implements OnInit {
       // Create option first, then upload image
       this.option2Service.createOption2(this.newOption).subscribe((response: { message: string; id: number }) => {
         const optionId = response.id;
-        this.uploadOptionImage(optionId, () => {
+        this.uploadOptionImage(optionId, true, () => {
           this.createOptionDialogVisible = false;
           this.loadOptions();
           this.navigateToOptionCategory(this.newOption.category_id ?? null);
@@ -100,7 +102,15 @@ export class GestionBc2Component implements OnInit {
 
   confirmEditOption() {
     if (this.selectedFile?.name) {
-      this.uploadOptionImage(this.selectedOption.id, () => {
+      // Update the selectedOption.img with the new filename before calling updateOptionData
+      const originalName = this.selectedFile.name;
+      const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
+      const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+      const imgPath = `${nameWithoutExt}.${extension}`;
+
+      this.uploadOptionImage(this.selectedOption.id, false, () => {
+        // Update the img property so it doesn't get overwritten
+        this.selectedOption.img = imgPath;
         this.updateOptionData();
       });
     } else {
@@ -190,34 +200,60 @@ export class GestionBc2Component implements OnInit {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
-      // Create preview URL for display
-      if (this.editOptionDialogVisible && this.selectedOption) {
-        this.selectedOption.img = URL.createObjectURL(file);
-      } else if (this.createOptionDialogVisible) {
-        // For new option, we can't show preview until after creation
-      }
+      // Don't modify img path - it will be set after upload completes
     }
   }
 
-  private uploadOptionImage(optionId: number, callback: () => void) {
-    if (!this.selectedFile) return;
+  private uploadOptionImage(optionId: number, isCreate: boolean, callback: () => void) {
+    if (!this.selectedFile) {
+      console.log('No file selected, skipping upload');
+      callback();
+      return;
+    }
 
     const originalName = this.selectedFile.name;
+    console.log('Uploading file:', originalName);
     const extension = originalName.includes('.') ? originalName.split('.').pop() : '';
-    const newName = originalName.includes(extension ?? '') ? originalName.split('.').reverse().pop() : originalName;
+    const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+    console.log('Name without extension:', nameWithoutExt, 'Extension:', extension);
 
-    this.fileService.uploadFile(this.selectedFile, `img%2Foption2s%2F${optionId}`, newName!)
-      .subscribe(() => {
-        const imgPath = `${newName}.${extension}`;
-        // Update the option with the image path
-        const updateData = this.editOptionDialogVisible ? this.selectedOption : this.newOption;
-        updateData.img = imgPath;
+    const folder = `img%2Foption2s%2F${optionId}`;
+    console.log('Upload folder:', folder);
 
-        if (this.editOptionDialogVisible) {
-          this.option2Service.updateOption2(optionId, { img: imgPath }).subscribe(() => {
-            callback();
+    this.fileService.uploadFile(this.selectedFile, folder, nameWithoutExt)
+      .subscribe({
+        next: (uploadResponse) => {
+          console.log('File upload successful, response:', uploadResponse);
+          const imgPath = `${nameWithoutExt}.${extension}`;
+          console.log('Updating database with image path:', imgPath);
+
+          // Always update the database with the image path after upload
+          this.option2Service.updateOption2(optionId, { img: imgPath }).subscribe({
+            next: (updateResponse) => {
+              console.log('Database update successful:', updateResponse);
+              console.log('Image path updated in database:', imgPath);
+              callback();
+            },
+            error: (err) => {
+              console.error('Error updating image path in database:', err);
+              console.error('Full error object:', JSON.stringify(err, null, 2));
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'Erreur lors de la mise à jour du chemin de l\'image'
+              });
+              callback();
+            }
           });
-        } else {
+        },
+        error: (err) => {
+          console.error('Error uploading file:', err);
+          console.error('Full upload error:', JSON.stringify(err, null, 2));
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: 'Erreur lors de l\'upload de l\'image'
+          });
           callback();
         }
       });

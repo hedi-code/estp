@@ -46,6 +46,9 @@ export class MenuComponent {
             {
               label: 'Standiste', icon: 'pi pi-fw pi-users', routerLink: ['/forum/standiste']
             },
+            {
+              label: 'Exposants', icon: 'pi pi-fw pi-user', routerLink: ['/forum/gestion-exposants']
+            },
 
           ]
         }

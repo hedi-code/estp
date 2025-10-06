@@ -34,7 +34,6 @@ export class Bc2SouscritFactureComponent implements OnInit {
   today = new Date();
   visible = false;
 
-  customDateAcompte: Date = new Date();
   customDateSolde: Date = new Date(2025, 10, 25);
 
   constructor(

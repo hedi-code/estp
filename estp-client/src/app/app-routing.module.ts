@@ -22,6 +22,7 @@ import { GestionPlanComponent } from './features/forum/components/gestion-plan/g
 import { DashboardComponent } from './features/forum/components/dashboard/dashboard.component';
 import { MailingComponent } from './features/forum/components/mailing/mailing.component';
 import { StandisteComponent } from './features/forum/components/standiste/standiste.component';
+import { GestionExposantsComponent } from './features/forum/components/gestion-exposants/gestion-exposants.component';
 import { RoleGuard } from './core/guards/role.guard';
 
 const routes: Routes = [
@@ -57,6 +58,7 @@ const routes: Routes = [
       { path: 'gestion-plan', component: GestionPlanComponent, canActivate: [RoleGuard], data: { roles: ['resplan', 'pres'] } },
       { path: 'mailing', component: MailingComponent, canActivate: [RoleGuard], data: { roles: ['pres','rescommu','comman','pres','rescom'] } },
       { path: 'standiste', component: StandisteComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
+      { path: 'gestion-exposants', component: GestionExposantsComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
     ]
   }
 

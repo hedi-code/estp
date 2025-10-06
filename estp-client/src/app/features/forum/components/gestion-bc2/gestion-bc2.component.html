@@ -88,7 +88,7 @@
                          [severity]="option.multiple ? 'success' : 'secondary'"></p-tag>
                 </td>
                 <td>
-                  <img *ngIf="option.img" [src]="baseUrl+'/api/uploads/img/option2s/' + option.id + '/' + option.img"
+                  <img *ngIf="option.img" [src]="baseUrl+'/api/uploads/img/option2s/' + option.id + '/' + option.img + '?v=' + imageTimestamp"
                        alt="image" width="60" height="60" style="object-fit:cover;" />
                   <span *ngIf="!option.img">-</span>
                 </td>
@@ -172,7 +172,7 @@
                          [severity]="option.multiple ? 'success' : 'secondary'"></p-tag>
                 </td>
                 <td>
-                  <img *ngIf="option.img" [src]="baseUrl+'/api/uploads/img/option2s/' + option.id + '/' + option.img"
+                  <img *ngIf="option.img" [src]="baseUrl+'/api/uploads/img/option2s/' + option.id + '/' + option.img + '?v=' + imageTimestamp"
                        alt="image" width="60" height="60" style="object-fit:cover;" />
                   <span *ngIf="!option.img">-</span>
                 </td>
@@ -412,8 +412,13 @@
     <div class="p-field">
       <label for="editOptionImg">Image</label>
       <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-      <img *ngIf="selectedOption.img" [src]="selectedOption.img" alt="preview"
-           width="100" height="100" style="margin-top:10px; border-radius:8px;" />
+      <div *ngIf="selectedOption.img && !selectedFile" style="margin-top:10px;">
+        <img [src]="baseUrl+'/api/uploads/img/option2s/' + selectedOption.id + '/' + selectedOption.img + '?v=' + imageTimestamp"
+             alt="preview" width="100" height="100" style="border-radius:8px;" />
+      </div>
+      <div *ngIf="selectedFile" style="margin-top:10px; color: #666;">
+        <i class="pi pi-image"></i> Nouvelle image sélectionnée: {{ selectedFile.name }}
+      </div>
     </div>
   </div>
 

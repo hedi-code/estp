@@ -84,30 +84,45 @@ exports.getOption2sByCategory = (req, res) => {
 
 exports.updateOption2 = (req, res) => {
   const id = req.params.id;
-  const {
-    category_id,
-    nom,
-    coloris,
-    dispo_si,
-    img,
-    prix_ht,
-    taux_tva,
-    qmax,
-    description,
-    ordre,
-    multiple
-  } = req.body;
+  console.log('updateOption2 called with ID:', id);
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
 
-  db.query(
-    `UPDATE option2s
-     SET category_id = ?, nom = ?, coloris = ?, dispo_si = ?, img = ?, prix_ht = ?, taux_tva = ?, qmax = ?, description = ?, ordre = ?, multiple = ?
-     WHERE id = ?`,
-    [category_id, nom, coloris, dispo_si, img, prix_ht, taux_tva, qmax, description, ordre, multiple, id],
-    (err) => {
-      if (err) return res.status(500).json({ error: "Erreur base de données" });
-      res.json({ message: "Option 2 mise à jour" });
+  const allowedFields = [
+    'category_id', 'nom', 'coloris', 'dispo_si', 'img',
+    'prix_ht', 'taux_tva', 'qmax', 'description', 'ordre', 'multiple'
+  ];
+
+  // Build dynamic UPDATE query based on provided fields
+  const updates = [];
+  const values = [];
+
+  allowedFields.forEach(field => {
+    if (req.body.hasOwnProperty(field)) {
+      updates.push(`${field} = ?`);
+      values.push(req.body[field]);
+      console.log(`Field to update: ${field} = ${req.body[field]}`);
     }
-  );
+  });
+
+  if (updates.length === 0) {
+    console.log('No fields to update');
+    return res.status(400).json({ error: "Aucun champ à mettre à jour" });
+  }
+
+  values.push(id); // Add id for WHERE clause
+
+  const query = `UPDATE option2s SET ${updates.join(', ')} WHERE id = ?`;
+  console.log('SQL Query:', query);
+  console.log('SQL Values:', values);
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error("Error updating option2:", err);
+      return res.status(500).json({ error: "Erreur base de données" });
+    }
+    console.log('Update successful. Affected rows:', result.affectedRows);
+    res.json({ message: "Option 2 mise à jour" });
+  });
 };
 
 exports.deleteOption2 = (req, res) => {
