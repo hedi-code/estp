@@ -97,4 +97,8 @@ export class DashboardService {
   getTopOptions(): Observable<TopOptionsData> {
     return this.http.get<TopOptionsData>(`${this.apiUrl}/dashboard/top-options`);
   }
+
+  getEntreprisesByOption(optionId: number, bcType: 'BC1' | 'BC2'): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/dashboard/entreprises-by-option/${optionId}?bcType=${bcType}`);
+  }
 }

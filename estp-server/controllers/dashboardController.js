@@ -112,6 +112,7 @@ exports.getTopOptions = (req, res) => {
   // Get all purchased options for BC1
   const topBC1Query = `
     SELECT
+      o1.id as option_id,
       o1.name as option_name,
       o1.prix_ht,
       SUM(co1.qty) as total_quantity,
@@ -125,6 +126,7 @@ exports.getTopOptions = (req, res) => {
   // Get all purchased options for BC2
   const topBC2Query = `
     SELECT
+      o2.id as option_id,
       o2.nom as option_name,
       o2.prix_ht,
       SUM(co2.qty) as total_quantity,
@@ -159,5 +161,55 @@ exports.getTopOptions = (req, res) => {
   .catch(err => {
     console.error('Error getting top options:', err);
     res.status(500).json({ error: 'Erreur base de données' });
+  });
+};
+
+exports.getEntreprisesByOption = (req, res) => {
+  const { optionId } = req.params;
+  const { bcType } = req.query;
+
+  let query;
+
+  if (bcType === 'BC1') {
+    query = `
+      SELECT
+        e.nom as entreprise_nom,
+        e.siren,
+        co1.qty as quantite,
+        c1.created as commande_date,
+        c1.id as commande_id
+      FROM commande1_options co1
+      JOIN commande1s c1 ON co1.commande1_id = c1.id
+      JOIN entreprises e ON c1.entreprise_id = e.id
+      WHERE co1.option1_id = ?
+      ORDER BY c1.created DESC
+    `;
+  } else if (bcType === 'BC2') {
+    query = `
+      SELECT
+        e.nom as entreprise_nom,
+        e.siren,
+        co2.qty as quantite,
+        c2.created as commande_date,
+        c2.id as commande_id
+      FROM commande2_options co2
+      JOIN commande2s c2 ON co2.commande2_id = c2.id
+      JOIN entreprises e ON c2.entreprise_id = e.id
+      WHERE co2.option2_id = ?
+      ORDER BY c2.created DESC
+    `;
+  } else {
+    return res.status(400).json({ error: 'Type de BC invalide' });
+  }
+
+  db.query(query, [optionId], (err, results) => {
+    if (err) {
+      console.error('Error getting entreprises by option:', err);
+      console.error('Query:', query);
+      console.error('OptionId:', optionId);
+      console.error('BcType:', bcType);
+      return res.status(500).json({ error: 'Erreur base de données', details: err.message });
+    }
+    res.json(results);
   });
 };

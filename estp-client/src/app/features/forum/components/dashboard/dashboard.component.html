@@ -219,7 +219,7 @@
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-option let-i="rowIndex">
-                <tr>
+                <tr class="cursor-pointer" (click)="showEntreprisesByOption(option, 'BC1')" pTooltip="Cliquer pour voir les entreprises">
                   <td>{{option.option_name}}</td>
                   <td>{{option.prix_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
                   <td>{{option.total_quantity}}</td>
@@ -241,7 +241,7 @@
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-option let-i="rowIndex">
-                <tr>
+                <tr class="cursor-pointer" (click)="showEntreprisesByOption(option, 'BC2')" pTooltip="Cliquer pour voir les entreprises">
                   <td>{{option.option_name}}</td>
                   <td>{{option.prix_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
                   <td>{{option.total_quantity}}</td>
@@ -264,3 +264,59 @@
     </div>
   </div>
 </div>
+
+<!-- Dialog for Entreprises by Option -->
+<p-dialog [(visible)]="displayEntreprisesDialog"
+          [header]="'Entreprises ayant commandé: ' + (selectedOption?.option_name || '')"
+          [modal]="true"
+          [style]="{width: '70vw'}"
+          [draggable]="false"
+          [resizable]="false">
+  <div class="p-3">
+    <p class="mb-3">
+      <strong>Type:</strong> {{selectedBcType}} |
+      <strong>Prix HT:</strong> {{selectedOption?.prix_ht | currency:'EUR':'symbol':'1.2-2'}} |
+      <strong>Quantité totale:</strong> {{selectedOption?.total_quantity}}
+    </p>
+
+    <p-table [value]="entreprisesByOption"
+             [paginator]="true"
+             [rows]="10"
+             [rowsPerPageOptions]="[10, 25, 50]"
+             [globalFilterFields]="['entreprise_nom', 'siren']"
+             styleClass="p-datatable-sm">
+      <ng-template pTemplate="caption">
+        <div class="flex">
+          <span class="p-input-icon-left ml-auto">
+            <i class="pi pi-search"></i>
+            <input pInputText type="text"
+                   (input)="$any($event.target).value"
+                   placeholder="Rechercher..."
+                   class="w-full" />
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="entreprise_nom">Entreprise <p-sortIcon field="entreprise_nom" /></th>
+          <th pSortableColumn="siren">SIREN <p-sortIcon field="siren" /></th>
+          <th pSortableColumn="quantite">Quantité <p-sortIcon field="quantite" /></th>
+          <th pSortableColumn="commande_date">Date Commande <p-sortIcon field="commande_date" /></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entreprise>
+        <tr>
+          <td>{{entreprise.entreprise_nom}}</td>
+          <td>{{entreprise.siren}}</td>
+          <td>{{entreprise.quantite}}</td>
+          <td>{{entreprise.commande_date | date:'dd/MM/yyyy'}}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center">Aucune entreprise trouvée pour cette option</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</p-dialog>

@@ -38,6 +38,12 @@ export class DashboardComponent implements OnInit {
   topBC1Options: any[] = [];
   topBC2Options: any[] = [];
 
+  // Dialog for entreprises by option
+  displayEntreprisesDialog = false;
+  selectedOption: any = null;
+  selectedBcType: 'BC1' | 'BC2' = 'BC1';
+  entreprisesByOption: any[] = [];
+
   // Bar Chart for counts
   barChartData: ChartData<'bar'> = {
     labels: ['Books', 'BC1', 'BC2', 'Entreprises'],
@@ -245,6 +251,23 @@ export class DashboardComponent implements OnInit {
         this.topBC2Options = data.topBC2Options;
       },
       error: (err) => console.error('Error loading president data:', err)
+    });
+  }
+
+  showEntreprisesByOption(option: any, bcType: 'BC1' | 'BC2'): void {
+    this.selectedOption = option;
+    this.selectedBcType = bcType;
+    this.displayEntreprisesDialog = true;
+
+    // Load entreprises for this option
+    this.dashboardService.getEntreprisesByOption(option.option_id, bcType).subscribe({
+      next: (entreprises) => {
+        this.entreprisesByOption = entreprises;
+      },
+      error: (err) => {
+        console.error('Error loading entreprises by option:', err);
+        this.entreprisesByOption = [];
+      }
     });
   }
 }
