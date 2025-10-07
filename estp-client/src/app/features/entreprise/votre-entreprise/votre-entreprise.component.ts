@@ -36,7 +36,7 @@ export class VotreEntrepriseComponent implements OnInit{
     console.log(this.contactPrincipalId)
     this.contactService.getContactByUserId().subscribe({
       next: (response) => { this.contacts = response ; console.log(this.contacts)},
-      error: (error) => { alert(error.error)}
+      error: (error) => { console.log(error.error)}
     })
     this.entrepriseService.getEntrepriseById(Number(this.cookieService.getEntrepriseId())).subscribe({
       next: (response) => {this.entreprise = {

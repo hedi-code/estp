@@ -259,7 +259,7 @@
       </div>
     </div>
 
-    <div *ngIf="getSelectedStandisteOption() !== null" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
+    <div *ngIf="getSelectedStandisteOption() !== null && category.name.toLowerCase().includes('standistes')" class="bg-white p-4 md:p-5 border-round-md shadow-2 mb-5">
       <h2 class="mb-4">Informations du Standiste</h2>
 
       <div *ngIf="getSelectedStandisteOption() === 21">

@@ -529,7 +529,6 @@ export class Bc2Component implements OnInit {
 
       console.log('✅ Commande2 and all options created successfully');
       // Show success message and close dialog
-      alert('Commande BC2 créée avec succès!');
       this.factureDialogVisible = false;
       // Navigate to recap page to show the final result
       this.router.navigate(['/entreprise/recap']);
@@ -563,7 +562,6 @@ export class Bc2Component implements OnInit {
       const faitAValue = this.reservationForm.get('faitA')?.value;
 
       if (!faitAValue || faitAValue.trim() === '') {
-        alert('Le champ "Fait à" est requis pour pouvoir ouvrir la facture.');
         // Mark the field as touched to show validation error
         this.reservationForm.get('faitA')?.markAsTouched();
         return;
