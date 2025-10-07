@@ -11,7 +11,7 @@ exports.addOptionToCommande2 = (req, res) => {
     [commande2_id, option2_id, qty, color],
     (err, result) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
-      res.status(201).json({ message: "Option ajoutée à la commande", id: result.insertId });
+      res.status(201).json({ nonDisplayMessage: "Option ajoutée à la commande", id: result.insertId });
     }
   );
 };
