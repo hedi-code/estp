@@ -39,50 +39,65 @@ export class FactureBc2Component implements OnInit {
     this.createBc2Event.emit();
   }
 
-  generatedPdf(folder: string, filename: string, contentId: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        const element = document.getElementById(contentId);
-        if (!element) {
-          console.error(`Element #${contentId} not found!`);
-          return;
-        }
+generatedPdf(folder: string, filename: string, contentId: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const element = document.getElementById(contentId);
+    if (!element) {
+      console.error(`Element #${contentId} not found!`);
+      return reject('Element not found');
+    }
 
-        html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: '#ffffff'
-        }).then(canvas => {
-          const imgData = canvas.toDataURL('image/jpeg');
-          const imgOriginalWidth = canvas.width;
-          const imgOriginalHeight = canvas.height;
-          const pdfWidth = imgOriginalWidth;
-          const pdfHeight = imgOriginalHeight;
+    html2canvas(element, {
+      scale: 2, // Reduced scale for lower quality and smaller size
+      useCORS: true, // Handle cross-origin images
+      backgroundColor: '#ffffff', // Ensure no transparency
+    }).then(canvas => {
+      const imgData = canvas.toDataURL('image/jpeg'); // Use JPEG with compression (0.8)
 
-          const pdf = new jsPDF({
-            unit: 'px',
-            format: [pdfWidth, pdfHeight],
-          });
+      // Create PDF with jsPDF
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true // Enable compression in jsPDF
+      });
 
-          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-          const pdfBlob = pdf.output('blob');
-          const file = new File([pdfBlob], `${filename}.pdf`, { type: 'application/pdf' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-          this.fileService.uploadFile(file, folder, filename).subscribe({
-            next: () => console.log('PDF uploaded successfully'),
-            error: err => console.error('PDF upload failed', err),
-          });
-        }).catch(err => {
-          console.error('Error generating PDF:', err);
-        });
-        resolve()
-      } catch (error) {
-        console.error(error);
-        reject(error);
-      }
-    })
-  }
+      // Convert canvas dimensions from px to mm (96 DPI)
+      const pxPerMm = 96 / 25.4; // Convert px to mm
+      const canvasWidthMm = canvas.width / pxPerMm; // Width in mm
+      const canvasHeightMm = canvas.height / pxPerMm; // Height in mm
+
+      // Scale the image to fit the width of the PDF page
+      const scaleFactor = pageWidth / canvasWidthMm;
+      const imgHeightScaled = canvasHeightMm * scaleFactor;
+
+      // Add image to PDF (scaled to fit page width)
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeightScaled);
+
+      // Generate the PDF blob and upload it
+      const pdfBlob = pdf.output('blob');
+      const file = new File([pdfBlob], `${filename}.pdf`, { type: 'application/pdf' });
+
+      this.fileService.uploadFile(file, folder, filename).subscribe({
+        next: () => {
+          console.log('PDF uploaded successfully');
+          resolve();
+        },
+        error: err => {
+          console.error('PDF upload failed', err);
+          reject(err);
+        },
+      });
+    }).catch(err => {
+      console.error('Error generating PDF:', err);
+      reject(err);
+    });
+  });
+}
+
 
   getDateAcompte(): Date {
     const today = new Date();

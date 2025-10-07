@@ -508,7 +508,7 @@ export class Bc2Component implements OnInit {
 
     try {
       // 🔸 Step 1: Wait for PDF generation
-      await this.factureBc2Dialog.generatedPdf("bc2", this.entreprise?.id + '_BC2', "contentToExport");
+      await this.factureBc2Dialog.generatedPdf("bc2", this.entreprise?.id + '_BC2', "contentBc2ToExport");
 
       // 🔸 Step 2: Create commande2 and wait
       const commandeResponse = await lastValueFrom(this.commande2Service.createCommande2(commande2));

@@ -1,7 +1,24 @@
 // controllers/commande2Controller.js
 
 const db = require("../config/db");
+const { sendEmail } = require("../utils/email");
+const fs = require('fs');
+const path = require('path');
+function waitForFile(filePath, timeout = 10000, interval = 500) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
 
+    const check = () => {
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (!err) return resolve();
+        if (Date.now() - start >= timeout) return reject(new Error("Fichier PDF non généré à temps"));
+        setTimeout(check, interval);
+      });
+    };
+
+    check();
+  });
+}
 exports.createCommande2 = (req, res) => {
   const {
     entreprise_id,
@@ -61,6 +78,35 @@ exports.createCommande2 = (req, res) => {
         (err, result) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
           res.status(201).json({ message: "Commande 2 créée avec succès", id: result.insertId });
+            db.query(`SELECT u.*, e.nom as nomEntreprise FROM users u, entreprises e WHERE u.id = e.user_id AND e.id = ?`, [entreprise_id],
+            async (err, result) => {
+              if (result.length > 0) {
+                const attachmentPath = path.join(__dirname, '../uploads/bc2/', `${entreprise_id}_BC2.pdf`);
+                try {
+                  await waitForFile(attachmentPath, 20000);
+                  const attachmentBuffer = fs.readFileSync(attachmentPath);
+                  const base64Attachment = attachmentBuffer.toString('base64');
+                  const htmlContent =
+                    "<style>" +
+                    "p { color: black !important; }" +
+                    "</style>" +
+"<p>Bonjour,</p>"+
+"<p>Félicitations, votre bon de commande 2 pour la 46ème édition du Forum ESTP est validé. Nous avons hâte de vous recevoir.</p>"+
+"<p>Vous trouverez ci-joint votre bon de commande 2.<br />La facture associée vous sera bientôt transmise. Pour toute demande concernant la facture, contactez Kahina Saibi sur l’adresse mail suivante : <a href='mailto:kahina.saibi@forumestp.fr'>kahina.saibi@forumestp.fr</a>.</p>"+
+"<p>Vous pouvez dès maintenant enregistrer vos exposants directement dans la rubrique \"récapitulatifs\". Après le 19 Novembre, il ne sera plus possible d’en ajouter.</p>"+
+"<p>Vous pouvez aussi y consulter votre BC1, BC2 et les informations clefs de l’organisation du Forum.</p>"+
+"<p>Si vous avez des questions sur l'organisation le jour J, n'hésitez pas à contacter votre commercial référent.</p>"+
+"<p>Bien cordialement,</p>"+
+                    "<img src=\"https://test.app.forumestp.fr/assets/logo.png\" alt=\"\" style=\"max-width: 300px; max-height: 200px;\" />" +
+                    "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex </p>" +
+                    "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
+                  sendEmail("ne-pas-repondre@forumestp.fr", result[0].email , result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC2.pdf`, base64Attachment);
+                } catch (err) {
+                  console.error("Erreur en attente du PDF avant l'envoi de l'email :", err);
+                }
+              }
+            }
+          );
         }
       );
     }

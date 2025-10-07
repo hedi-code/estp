@@ -415,7 +415,7 @@
     </form>
 
     <p-dialog header="Votre commande" [modal]="true" [(visible)]="factureDialogVisible" [style]="{ width: '960px' }">
-      <app-facture-bc2 id="contentToExport" (createBc2Event)="createBC2()" #factureBc2Dialog
+      <app-facture-bc2 id="contentBc2ToExport" (createBc2Event)="createBC2()" #factureBc2Dialog
         [signature]="savedSignature" [contactPrincipal]="contactPrincipal"
         [entreprise]="entreprise" [fait]="reservationForm.get('faitA')?.value"
         [selectedOptions]="selectedOptions"
