@@ -66,6 +66,7 @@ export class Bc2SouscritsComponent implements OnInit {
 
   @ViewChild('dt') table!: Table;
   @ViewChild('factureBc2') factureBc2!: any;
+  @ViewChild('bc2Pdf') bc2Pdf!: any;
 
   constructor(
     private commande2Service: Commande2Service,
@@ -350,7 +351,7 @@ export class Bc2SouscritsComponent implements OnInit {
   }
 
   async regenerateBC2Pdf() {
-    await this.factureBc2.generatedPdf("bc2", this.modifyCommande?.entreprise?.id + "_BC2", "contentToExportBc2");
+    await this.bc2Pdf.generatedPdf("bc2", this.modifyCommande?.entreprise?.id + "_BC2", "contentToExportBc2");
     this.messageService.add({ severity: 'success', summary: '', detail: 'BC2 regénéré', life: 2000 });
   }
 

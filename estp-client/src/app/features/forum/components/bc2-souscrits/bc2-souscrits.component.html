@@ -673,10 +673,9 @@
   </p-dialog>
 
   <!-- BC2 Regeneration Dialog -->
-  <p-dialog header="Regénérer le BC2" [(visible)]="bc2DialogVisible" [modal]="true" [style]="{ width: '960px' }" [baseZIndex]="-1">
+  <p-dialog header="Regénérer le BC2" [(visible)]="bc2DialogVisible" [modal]="true">
     <app-facture-bc2
-      style="z-index: -1;"
-      id="contentToExportBc2"
+      id="contentToExportBc2" #bc2Pdf
       *ngIf="modifyCommande && modifyCommande.entreprise && modificationContact"
       [selectedOptions]="modificationCommandeOption"
       [contactPrincipal]="modificationContact"
