@@ -17,6 +17,7 @@ export class Commande2OptionsService {
     option2_id: number;
     qty?: number;
     color?: string;
+    reduction?: number;
   }): Observable<{ message: string; id: number }> {
     return this.http.post<{ message: string; id: number }>(this.apiUrl, data);
   }
@@ -32,6 +33,7 @@ export class Commande2OptionsService {
   updateCommande2Option(id: number, data: {
     qty?: number;
     color?: string;
+    reduction?: number;
   }): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.apiUrl}/${id}`, data);
   }

@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ExposantService } from '../../services/exposant.service';
 import { Exposant } from '../../models/exposant.model';
 import { ConfirmationService } from 'primeng/api';
+import { BookService } from '../../services/book.service';
+import { Entreprise } from '../../../entreprise/entreprise.model';
+import { Book } from '../../models/book.model';
+import { EntrepriseService } from '../../../entreprise/entreprise.service';
 
 @Component({
   selector: 'app-gestion-exposants',
@@ -22,14 +26,34 @@ export class GestionExposantsComponent implements OnInit {
   };
   searchText: string = '';
   groupedExposants: { [key: string]: any[] } = {};
+  pdfVisible: boolean = false
+  pdfEntrepriseId: number | undefined
+  pdfBookEntreprise: Book | undefined
+  pdfExposants: any[] | undefined
+  entreprises: Entreprise[] = [];
+  selectedEntreprise: Entreprise | null = null;
 
   constructor(
     private exposantService: ExposantService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private bookService: BookService,
+    private entrepriseService: EntrepriseService
   ) {}
 
   ngOnInit(): void {
     this.loadExposants();
+    this.loadEntreprises();
+  }
+
+  loadEntreprises(): void {
+    this.entrepriseService.getAllEntreprises().subscribe({
+      next: (data) => {
+        this.entreprises = data.sort((a, b) =>
+          (a.nom || '').localeCompare(b.nom || '')
+        );
+      },
+      error: (err) => console.error('Error loading entreprises:', err)
+    });
   }
 
   loadExposants(): void {
@@ -82,6 +106,7 @@ export class GestionExposantsComponent implements OnInit {
       prenom: '',
       fonction: ''
     };
+    this.selectedEntreprise = null;
     this.showDialog = true;
   }
 
@@ -94,6 +119,8 @@ export class GestionExposantsComponent implements OnInit {
       prenom: exposant.prenom,
       fonction: exposant.fonction
     };
+    // Find and select the corresponding entreprise
+    this.selectedEntreprise = this.entreprises.find(e => e.id === exposant.entreprise_id) || null;
     this.showDialog = true;
   }
 
@@ -101,7 +128,18 @@ export class GestionExposantsComponent implements OnInit {
     this.showDialog = false;
   }
 
+  onEntrepriseChange(): void {
+    if (this.selectedEntreprise) {
+      this.currentExposant.entreprise_id = this.selectedEntreprise.id || 0;
+    }
+  }
+
   saveExposant(): void {
+    // Make sure the entreprise_id is set from the selected entreprise
+    if (this.selectedEntreprise) {
+      this.currentExposant.entreprise_id = this.selectedEntreprise.id || 0;
+    }
+
     if (this.isEditMode && this.currentExposant.id) {
       this.exposantService.updateExposant(this.currentExposant.id, this.currentExposant).subscribe({
         next: () => {
@@ -138,4 +176,20 @@ export class GestionExposantsComponent implements OnInit {
       }
     });
   }
+  openPdfDialog(e:Exposant[]){
+    this.pdfEntrepriseId = e[0].entreprise_id
+    this.pdfVisible = true;
+    this.pdfExposants = e;
+    this.getBook();
+  }
+  generatePdf(entrepriseName: string) {
+    // Your PDF generation logic here
+    console.log(`Generating PDF for ${entrepriseName}`);
+}
+  getBook(){
+  this.bookService.getByEntrepriseId(this.pdfEntrepriseId ?? -1).subscribe({
+    next: (book) => {this.pdfBookEntreprise = book},
+    error: (error) => {console.error(error);return}
+  })
+}
 }

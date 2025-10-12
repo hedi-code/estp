@@ -138,10 +138,17 @@ generatedPdf(folder: string, filename: string, contentId: string): Promise<void>
     );
   }
 
+  calculateOptionTotal(option: Commande2Option): number {
+    const subtotal = (option.option_prix_ht || 0) * (option.qty || 1);
+    const reductionPourcentage = option.reduction || 0;
+    const montantReduction = subtotal * (reductionPourcentage / 100);
+    return subtotal - montantReduction;
+  }
+
   calculateTotalHT(): number {
     let total = 0;
     this.getFilteredOptions().forEach(option => {
-      total += (option.option_prix_ht || 0) * (option.qty || 1);
+      total += this.calculateOptionTotal(option);
     });
     return total;
   }
@@ -153,7 +160,7 @@ generatedPdf(folder: string, filename: string, contentId: string): Promise<void>
   calculateTVA(): number {
     let totalTVA = 0;
     this.getFilteredOptions().forEach(option => {
-      const prixHT = (option.option_prix_ht || 0) * (option.qty || 1);
+      const prixHT = this.calculateOptionTotal(option);
       const tauxTVA = (option.option_taux_tva || 20) / 100; // Default to 20% if not set
 
       // Debug log to check what TVA values we're getting
@@ -172,7 +179,7 @@ generatedPdf(folder: string, filename: string, contentId: string): Promise<void>
 
     this.getFilteredOptions().forEach(option => {
       const tauxTVA = option.option_taux_tva || 20;
-      const prixHT = (option.option_prix_ht || 0) * (option.qty || 1);
+      const prixHT = this.calculateOptionTotal(option);
       const montantTVA = prixHT * (tauxTVA / 100);
 
       if (!groups[tauxTVA]) {

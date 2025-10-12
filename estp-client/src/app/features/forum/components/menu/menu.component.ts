@@ -23,7 +23,7 @@ export class MenuComponent {
           ]
         },
       )
-      if (this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "tres" || this.cookieService.getRole() === "comm") {
+      if (this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "tres" || this.cookieService.getRole() === "comm" || this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "reslog" || this.cookieService.getRole() === "resplan") {
         this.model.find(i => i.label == "Tableau de Bord")?.items?.push({ label: 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/forum/dashboard'] },
         )
       }
@@ -55,7 +55,7 @@ export class MenuComponent {
       )
 
     }
-    if (this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "comm" || this.cookieService.getRole() === "tres") {
+    if (this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "comm" || this.cookieService.getRole() === "tres" || this.cookieService.getRole() === "reslog" || this.cookieService.getRole() === "resplan") {
       const gestionIndex = this.model.findIndex(element => element.label === "Gestion");
       if (gestionIndex !== -1) {
         this.model[gestionIndex].items?.push(

@@ -36,6 +36,7 @@ export interface Commande2Option {
   option2_id: number;
   qty: number;
   color?: string | null;
+  reduction?: number;
   option_nom?: string;
   option_coloris?: string;
   option_prix_ht?: number;
@@ -72,6 +73,7 @@ export interface Option2 {
   category_name?: string;
   qteCommande?: number;
   colorCommande?: string;
+  reductionCommande?: number;
 }
 
 export interface NewOption2 extends Omit<Option2, 'id'> {}

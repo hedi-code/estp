@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ChartData, ChartOptions } from 'chart.js';
 import { DashboardService, DashboardStats } from '../../services/dashboard.service';
 import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
 import { EntrepriseService } from '../../../entreprise/entreprise.service';
 import { Entreprise } from '../../../entreprise/entreprise.model';
+import { Option2CategoriesService } from '../../services/option2-categories.service';
+import { Option2Category } from '../../models/commande2.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,6 +39,9 @@ export class DashboardComponent implements OnInit {
   // President specific data
   topBC1Options: any[] = [];
   topBC2Options: any[] = [];
+  option2Categories: Option2Category[] = [];
+  bc2OptionsByCategory: { [categoryId: number]: any[] } = {};
+  uncategorizedBC2Options: any[] = [];
 
   // Dialog for entreprises by option
   displayEntreprisesDialog = false;
@@ -154,7 +159,9 @@ export class DashboardComponent implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authCookieService: AuthCookieService,
-    private entrepriseService: EntrepriseService
+    private entrepriseService: EntrepriseService,
+    private option2CategoriesService: Option2CategoriesService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -163,9 +170,7 @@ export class DashboardComponent implements OnInit {
 
     if (this.role === 'comm') {
       this.loadCommercialData();
-    } else if (this.role === 'pres') {
-      this.loadPresidentData();
-    } else if (this.role === 'tres') {
+    } else if (['pres', 'tres', 'rescom', 'reslog', 'resplan'].includes(this.role)) {
       this.loadPresidentData();
     }
   }
@@ -244,14 +249,78 @@ export class DashboardComponent implements OnInit {
   }
 
   loadPresidentData(): void {
+    // Load payment stats for all enterprises
+    this.dashboardService.getAllPaymentStats().subscribe({
+      next: (stats) => {
+        this.paidBC1Count = stats.paidBC1Count;
+        this.unpaidBC1Count = stats.unpaidBC1Count;
+        this.paidBC2Count = stats.paidBC2Count;
+        this.unpaidBC2Count = stats.unpaidBC2Count;
+        this.totalBC1Count = stats.totalBC1Count;
+        this.totalBC2Count = stats.totalBC2Count;
+        this.paidBC1Total = stats.paidBC1Total;
+        this.unpaidBC1Total = stats.unpaidBC1Total;
+        this.paidBC2Total = stats.paidBC2Total;
+        this.unpaidBC2Total = stats.unpaidBC2Total;
+        this.totalBC1Total = stats.totalBC1Total;
+        this.totalBC2Total = stats.totalBC2Total;
+      },
+      error: (err) => console.error('Error loading payment stats:', err)
+    });
+
+    // Load all enterprises
+    this.entrepriseService.getAllEntreprises().subscribe({
+      next: (entreprises) => {
+        this.assignedEntreprises = entreprises;
+      },
+      error: (err) => console.error('Error loading enterprises:', err)
+    });
+
     // Load top options data
     this.dashboardService.getTopOptions().subscribe({
       next: (data) => {
         this.topBC1Options = data.topBC1Options;
         this.topBC2Options = data.topBC2Options;
+
+        // Load categories and organize BC2 options by category
+        this.option2CategoriesService.getAllOption2Categories().subscribe({
+          next: (categories) => {
+            this.option2Categories = categories.sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+            this.organizeBC2OptionsByCategory();
+          },
+          error: (err) => console.error('Error loading categories:', err)
+        });
       },
       error: (err) => console.error('Error loading president data:', err)
     });
+  }
+
+  organizeBC2OptionsByCategory(): void {
+    // Reset groupings
+    this.bc2OptionsByCategory = {};
+    this.uncategorizedBC2Options = [];
+
+    // Group BC2 options by category
+    this.topBC2Options.forEach(option => {
+      const categoryId = option.category_id;
+
+      if (categoryId === null || categoryId === undefined) {
+        this.uncategorizedBC2Options.push(option);
+      } else {
+        if (!this.bc2OptionsByCategory[categoryId]) {
+          this.bc2OptionsByCategory[categoryId] = [];
+        }
+        this.bc2OptionsByCategory[categoryId].push(option);
+      }
+    });
+
+    // Force change detection
+    this.cdr.detectChanges();
+  }
+
+  getCategoryName(categoryId: number): string {
+    const category = this.option2Categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Catégorie inconnue';
   }
 
   showEntreprisesByOption(option: any, bcType: 'BC1' | 'BC2'): void {

@@ -131,7 +131,7 @@ export class GestionBookComponent {
           const response = await fetch(url);
           if (response.ok) {
             const blob = await response.blob();
-            const fileName = b.logo_url.split('/').pop() || `logo_${b.id}.png`;
+            const fileName = `${b.entreprise_nom}.png`;
             logoFolder?.file(fileName, blob);
           }
         } catch (err) {

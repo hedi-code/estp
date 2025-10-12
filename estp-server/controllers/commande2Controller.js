@@ -100,7 +100,7 @@ exports.createCommande2 = (req, res) => {
                     "<img src=\"https://test.app.forumestp.fr/assets/logo.png\" alt=\"\" style=\"max-width: 300px; max-height: 200px;\" />" +
                     "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex </p>" +
                     "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
-                  sendEmail("ne-pas-repondre@forumestp.fr", result[0].email , result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC2.pdf`, base64Attachment);
+                  sendEmail("ne-pas-repondre@forumestp.fr", result[0].email , result[0].first_name + " " + result[0].last_name, "Forum ESTP : Bon de commande 2", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC2.pdf`, base64Attachment);
                 } catch (err) {
                   console.error("Erreur en attente du PDF avant l'envoi de l'email :", err);
                 }

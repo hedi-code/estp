@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, OnInit, Output, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { Option2Service } from '../../forum/services/option2.service';
 import { Option2CategoriesService } from '../../forum/services/option2-categories.service';
 import { Commande2Service } from '../../forum/services/commande2.service';
@@ -24,6 +24,7 @@ import { Router } from '@angular/router';
   styleUrl: './bc2.component.scss'
 })
 export class Bc2Component implements OnInit {
+  @Output() stepCompleted = new EventEmitter<void>();
   activeIndex: number = 0;
   baseUrl: string = environment.apiUrl;
   option2Categories: Option2Category[] = [];
@@ -530,8 +531,8 @@ export class Bc2Component implements OnInit {
       console.log('✅ Commande2 and all options created successfully');
       // Show success message and close dialog
       this.factureDialogVisible = false;
-      // Navigate to recap page to show the final result
-      this.router.navigate(['/entreprise/recap']);
+      // Emit step completed to trigger navigation to recapitulatif
+      this.stepCompleted.emit();
 
     } catch (err) {
       console.error("❌ Error during BC2 creation", err);

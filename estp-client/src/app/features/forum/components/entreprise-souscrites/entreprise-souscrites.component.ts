@@ -27,6 +27,7 @@ export class EntrepriseSouscritesComponent implements OnInit {
   cmdAssigner: Entreprise | undefined;
   assignModel = false;
   role: String | null = ''
+  readOnly: boolean = false;
   createDialog = false;
   registerForm: FormGroup;
   labelSiren = "Numéro SIREN de l'entreprise";
@@ -76,6 +77,7 @@ export class EntrepriseSouscritesComponent implements OnInit {
   }
   ngOnInit(): void {
     this.role = this.cookieService.getRole();
+    this.readOnly = ['resplan', 'reslog'].includes(this.role as string);
     this.entrepriseService.getAllEntreprises().subscribe({
       next: (response) => {
         if (this.cookieService.getRole() == "comm") {

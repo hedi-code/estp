@@ -128,7 +128,7 @@
 
     </div>
 
-    <!-- BC1/BC2 Stats and Financial Summary - Only for Treasurer -->
+    <!-- BC1/BC2 Stats (Payment info - Only for Treasurer) -->
     <div *ngIf="role === 'tres' && !loading" class="col-12">
       <!-- Detailed BC1 & BC2 Stats -->
       <div class="grid mb-4">
@@ -202,20 +202,21 @@
       </div>
     </div>
 
-    <!-- President Dashboard -->
-    <div *ngIf="role === 'pres' && !loading" class="col-12">
-      <h3 class="text-xl font-bold mb-4 text-purple-600">Dashboard Président - Toutes les options achetées</h3>
+    <!-- Options Dashboard (BC1/BC2 Options by Category) -->
+    <div *ngIf="['pres', 'tres', 'rescom', 'reslog', 'resplan'].includes(role) && !loading" class="col-12">
+      <h3 class="text-xl font-bold mb-4 text-purple-600">Toutes les options achetées</h3>
 
-      <div class="grid">
-        <div class="col-12 md:col-6">
-          <p-panel header="Options BC1" class="h-full">
+      <!-- BC1 Options Section -->
+      <div class="grid mb-4">
+        <div class="col-12">
+          <p-panel header="Options BC1">
             <p-table [value]="topBC1Options" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]">
               <ng-template pTemplate="header">
                 <tr>
                   <th pSortableColumn="option_name">Option <p-sortIcon field="option_name" /></th>
                   <th pSortableColumn="prix_ht">Prix HT <p-sortIcon field="prix_ht" /></th>
-                  <th pSortableColumn="total_quantity">Quantité <p-sortIcon field="total_quantity" /></th>
-                  <th pSortableColumn="order_count">Commandes <p-sortIcon field="order_count" /></th>
+                  <th pSortableColumn="total_quantity">Nb Total Commandé <p-sortIcon field="total_quantity" /></th>
+                  <th pSortableColumn="entreprise_count">Nb Entreprises <p-sortIcon field="entreprise_count" /></th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-option let-i="rowIndex">
@@ -223,29 +224,65 @@
                   <td>{{option.option_name}}</td>
                   <td>{{option.prix_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
                   <td>{{option.total_quantity}}</td>
-                  <td>{{option.order_count}}</td>
+                  <td>{{option.entreprise_count}}</td>
                 </tr>
               </ng-template>
             </p-table>
           </p-panel>
         </div>
-        <div class="col-12 md:col-6">
-          <p-panel header="Options BC2" class="h-full">
-            <p-table [value]="topBC2Options" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]">
+      </div>
+
+      <!-- BC2 Options by Category - Each category in its own panel -->
+      <div class="grid">
+        <!-- Each category gets its own column -->
+        <div class="col-12 lg:col-4" *ngFor="let category of option2Categories">
+          <p-panel [header]="getCategoryName(category.id!) + ' (' + (bc2OptionsByCategory[category.id!]?.length || 0) + ')'" class="h-full">
+            <p-table [value]="bc2OptionsByCategory[category.id!] || []"
+                     *ngIf="category.id && bc2OptionsByCategory && (bc2OptionsByCategory[category.id!]?.length || 0) > 0"
+                     [paginator]="true"
+                     [rows]="5"
+                     [rowsPerPageOptions]="[5, 10, 25]">
               <ng-template pTemplate="header">
                 <tr>
                   <th pSortableColumn="option_name">Option <p-sortIcon field="option_name" /></th>
-                  <th pSortableColumn="prix_ht">Prix HT <p-sortIcon field="prix_ht" /></th>
-                  <th pSortableColumn="total_quantity">Quantité <p-sortIcon field="total_quantity" /></th>
-                  <th pSortableColumn="order_count">Commandes <p-sortIcon field="order_count" /></th>
+                  <th pSortableColumn="total_quantity">Nb Total <p-sortIcon field="total_quantity" /></th>
+                  <th pSortableColumn="entreprise_count">Nb Ent. <p-sortIcon field="entreprise_count" /></th>
                 </tr>
               </ng-template>
-              <ng-template pTemplate="body" let-option let-i="rowIndex">
+              <ng-template pTemplate="body" let-option>
                 <tr class="cursor-pointer" (click)="showEntreprisesByOption(option, 'BC2')" pTooltip="Cliquer pour voir les entreprises">
                   <td>{{option.option_name}}</td>
-                  <td>{{option.prix_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
                   <td>{{option.total_quantity}}</td>
-                  <td>{{option.order_count}}</td>
+                  <td>{{option.entreprise_count}}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+            <div *ngIf="category.id && (!bc2OptionsByCategory[category.id!] || bc2OptionsByCategory[category.id!].length === 0)"
+                 class="p-3 text-center text-gray-600">
+              Aucune option dans cette catégorie
+            </div>
+          </p-panel>
+        </div>
+
+        <!-- Uncategorized options -->
+        <div class="col-12 lg:col-4" *ngIf="uncategorizedBC2Options.length > 0">
+          <p-panel header="Sans catégorie ({{ uncategorizedBC2Options.length }})" class="h-full">
+            <p-table [value]="uncategorizedBC2Options"
+                     [paginator]="true"
+                     [rows]="5"
+                     [rowsPerPageOptions]="[5, 10, 25]">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th pSortableColumn="option_name">Option <p-sortIcon field="option_name" /></th>
+                  <th pSortableColumn="total_quantity">Nb Total <p-sortIcon field="total_quantity" /></th>
+                  <th pSortableColumn="entreprise_count">Nb Ent. <p-sortIcon field="entreprise_count" /></th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-option>
+                <tr class="cursor-pointer" (click)="showEntreprisesByOption(option, 'BC2')" pTooltip="Cliquer pour voir les entreprises">
+                  <td>{{option.option_name}}</td>
+                  <td>{{option.total_quantity}}</td>
+                  <td>{{option.entreprise_count}}</td>
                 </tr>
               </ng-template>
             </p-table>
@@ -258,7 +295,7 @@
     <div *ngIf="!loading" class="col-12 flex justify-content-center mt-4">
       <p-button label="Actualiser les données"
                 icon="pi pi-refresh"
-                (onClick)="loadDashboardData(); role === 'comm' ? loadCommercialData() : role === 'pres' ? loadPresidentData() : null"
+                (onClick)="loadDashboardData(); role === 'comm' ? loadCommercialData() : ['pres', 'tres', 'rescom', 'reslog', 'resplan'].includes(role) ? loadPresidentData() : null"
                 [outlined]="true">
       </p-button>
     </div>

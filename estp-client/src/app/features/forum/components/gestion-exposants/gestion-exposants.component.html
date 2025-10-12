@@ -18,37 +18,44 @@
     </div>
 
     <p-accordion *ngIf="getEntrepriseKeys().length > 0" [multiple]="true">
-        <p-accordionTab *ngFor="let entrepriseName of getEntrepriseKeys()" [header]="entrepriseName + ' (' + groupedExposants[entrepriseName].length + ')'">
-            <p-table [value]="groupedExposants[entrepriseName]" [tableStyle]="{ 'min-width': '50rem' }">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Fonction</th>
-                       
-                        <th style="width: 150px;">Actions</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-exposant>
-                    <tr>
-                        <td>{{ exposant.nom }}</td>
-                        <td>{{ exposant.prenom }}</td>
-                        <td>{{ exposant.fonction }}</td>
-                       
-                        <td>
-                            <!-- <button pButton type="button" icon="pi pi-pencil"
-                                    class="p-button-rounded p-button-text p-button-warning mr-2"
-                                    pTooltip="Modifier"
-                                    (click)="openEditDialog(exposant)"></button> -->
-                            <button pButton type="button" icon="pi pi-trash"
-                                    class="p-button-rounded p-button-text p-button-danger"
-                                    pTooltip="Supprimer"
-                                    (click)="deleteExposant(exposant)"></button>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-accordionTab>
+    <p-accordionTab *ngFor="let entrepriseName of getEntrepriseKeys()" [header]="entrepriseName + ' (' + groupedExposants[entrepriseName].length + ')'">
+    <ng-template pTemplate="header">
+        <div class="header-content">
+            <button pButton type="button" icon="pi pi-file-pdf"
+                class="p-button-rounded p-button-text"
+                pTooltip="Générer/mettre à jour PDF exposant"
+                (click)="openPdfDialog(groupedExposants[entrepriseName])">
+            </button>
+        </div>
+    </ng-template>
+    
+    <p-table [value]="groupedExposants[entrepriseName]" [tableStyle]="{ 'min-width': '50rem' }">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Fonction</th>
+                <th style="width: 150px;">Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-exposant>
+            <tr>
+                <td>{{ exposant.nom }}</td>
+                <td>{{ exposant.prenom }}</td>
+                <td>{{ exposant.fonction }}</td>
+                <td>
+                    <button pButton type="button" icon="pi pi-trash"
+                        class="p-button-rounded p-button-text p-button-danger"
+                        pTooltip="Supprimer"
+                        (click)="deleteExposant(exposant)">
+                    </button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-accordionTab>
+
+
     </p-accordion>
 
     <div *ngIf="getEntrepriseKeys().length === 0" class="text-center py-5 text-500">
@@ -62,9 +69,28 @@
           [modal]="true" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
     <div class="flex flex-column gap-3">
         <div>
-            <label for="entreprise_id" class="block mb-2">ID Entreprise <span class="text-red-500">*</span></label>
-            <input id="entreprise_id" type="number" pInputText [(ngModel)]="currentExposant.entreprise_id"
-                   class="w-full" placeholder="ID de l'entreprise" />
+            <label for="entreprise_select" class="block mb-2">Entreprise <span class="text-red-500">*</span></label>
+            <p-dropdown id="entreprise_select"
+                        [options]="entreprises"
+                        [(ngModel)]="selectedEntreprise"
+                        optionLabel="nom"
+                        [filter]="true"
+                        filterBy="nom"
+                        placeholder="Sélectionner une entreprise"
+                        (onChange)="onEntrepriseChange()"
+                        [showClear]="true"
+                        class="w-full">
+                <ng-template pTemplate="selectedItem">
+                    <div *ngIf="selectedEntreprise">
+                        {{ selectedEntreprise.nom }}
+                    </div>
+                </ng-template>
+                <ng-template let-entreprise pTemplate="item">
+                    <div class="flex flex-column">
+                        <span class="font-bold">{{ entreprise.nom }}</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
         </div>
         <div>
             <label for="nom" class="block mb-2">Nom <span class="text-red-500">*</span></label>
@@ -87,9 +113,23 @@
         <button pButton type="button" label="Annuler" icon="pi pi-times"
                 class="p-button-text" (click)="closeDialog()"></button>
         <button pButton type="button" label="Enregistrer" icon="pi pi-check"
-                [disabled]="!currentExposant.entreprise_id || !currentExposant.nom || !currentExposant.prenom || !currentExposant.fonction"
+                [disabled]="!selectedEntreprise || !currentExposant.nom || !currentExposant.prenom || !currentExposant.fonction"
                 (click)="saveExposant()"></button>
     </ng-template>
 </p-dialog>
 
 <p-confirmDialog></p-confirmDialog>
+<p-dialog header="Exposants" [(visible)]="pdfVisible" [style]="{width: '960px'}" 
+    [maximizable]="true">
+    <div class="grid">
+    <ng-container *ngFor="let exposant of pdfExposants">
+     <div class="col-6 flex flex-column align-content-center align-items-center">
+         <img [src]="this.pdfBookEntreprise?.logo_url" alt="" srcset="" style="width: 75mm; height: 55mm;">
+      <p><span class="uppercase font-bold">{{exposant.nom}} </span><span class="capitalize font-bold">{{exposant.prenom}}</span></p>
+      <p>{{exposant.fonction}}</p>
+     </div>
+    </ng-container>
+</div>
+    
+            
+</p-dialog>

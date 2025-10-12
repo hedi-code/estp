@@ -3,7 +3,7 @@
 
     <h3 class="text-blue-400 p-2">Liste des BC1</h3>
   <div>
-      <p-button icon="pi pi-plus" label="Créer un BC1" (click)="openCreateDialog()"></p-button>
+      <p-button *ngIf="!readOnly" icon="pi pi-plus" label="Créer un BC1" (click)="openCreateDialog()"></p-button>
     <!-- <p-button severity="success" icon="pi pi-file" styleClass="ml-1" (click)="exportCSV()" [disabled]="!commandes.length" label="Exporter CSV"></p-button> -->
   </div>
 
@@ -74,15 +74,15 @@
       <td>{{ cmd.created | date: 'dd/MM/yyyy à HH:mm' }}</td>
       <td>{{ cmd.validation_lieu ?? '-' }}</td>
       <td class="flex justify-content-between">
-        <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC1" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
-        <button *ngIf="role === 'tres' || role === 'pres'" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
+        <button *ngIf="!cmd.valide && !readOnly" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC1" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
+        <button *ngIf="(role === 'tres' || role === 'pres') && !readOnly" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
         <button pButton [text]="true" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" (click)="showDetailsDialog(cmd)"></button>
-        <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
+        <button *ngIf="!readOnly" pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
         <p-confirmPopup />
         <a pButton [text]="true" icon="pi pi-file" pTooltip="Consulter PDF" tooltipPosition="bottom"
            target="_blank" [href]="baseUrl+'/api/uploads/bc1/'+cmd.entreprise?.id+'_BC1.pdf'"></a>
-        <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
-        <button pButton [text]="true" *ngIf="role === 'tres' || role === 'pres'" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
+        <button *ngIf="!readOnly" pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
+        <button pButton [text]="true" *ngIf="(role === 'tres' || role === 'pres') && !readOnly" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
       </td>
     </tr>
   </ng-template>

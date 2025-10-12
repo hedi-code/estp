@@ -2,7 +2,7 @@
   <div class="flex justify-content-between align-items-center">
     <h3 class="text-blue-400 p-2">Liste des BC2</h3>
     <div>
-      <p-button icon="pi pi-plus" label="Créer un BC2" (click)="openCreateDialog()"></p-button>
+      <p-button *ngIf="!readOnly" icon="pi pi-plus" label="Créer un BC2" (click)="openCreateDialog()"></p-button>
     </div>
   </div>
 
@@ -76,15 +76,15 @@
         </td>
         <td>{{ cmd.validation_lieu ?? '-' }}</td>
         <td class="flex justify-content-between">
-          <button *ngIf="!cmd.valide" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC2" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
-          <button *ngIf="role === 'tres' || role === 'pres'" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
+          <button *ngIf="!cmd.valide && !readOnly" pButton [text]="true" severity="success" icon="pi pi-check-circle" pTooltip="Valider BC2" tooltipPosition="bottom" (click)="validerCommande($event, cmd)"></button>
+          <button *ngIf="(role === 'tres' || role === 'pres') && !readOnly" pButton [text]="true" icon="pi pi-receipt" pTooltip="Gestion de facture" tooltipPosition="bottom" (click)="openFactureDialog(cmd)"></button>
           <button pButton [text]="true" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" (click)="showDetailsDialog(cmd)"></button>
-          <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
+          <button *ngIf="!readOnly" pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" (click)="deleteCommande($event, cmd)"></button>
           <p-confirmPopup />
           <a pButton [text]="true" icon="pi pi-file" pTooltip="Consulter PDF" tooltipPosition="bottom"
              target="_blank" [href]="baseUrl+'/api/uploads/bc2/'+cmd.entreprise?.id+'_BC2.pdf'"></a>
-          <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
-          <button pButton [text]="true" *ngIf="role === 'tres' || role === 'pres'" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
+          <button *ngIf="!readOnly" pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier" tooltipPosition="bottom" (click)="openModifyDialog(cmd)"></button>
+          <button pButton [text]="true" *ngIf="(role === 'tres' || role === 'pres') && !readOnly" severity="primary" icon="pi pi-check" pTooltip="Facture payée" tooltipPosition="bottom" (click)="setFacturePayee(cmd)"></button>
         </td>
       </tr>
     </ng-template>
@@ -145,7 +145,7 @@
     header="Modifier le BC2"
     [modal]="true"
     [(visible)]="modifyDialog"
-    [style]="{ width: '50rem' }"
+    [style]="{ width: '70rem' }"
     [maximizable]="true">
 
     <h3 class="text-blue-400">Options par catégorie</h3>
@@ -163,6 +163,7 @@
               <th>Image</th>
               <th>Couleur</th>
               <th>Qté</th>
+              <th>Réduction (%)</th>
             </tr>
           </ng-template>
 
@@ -175,12 +176,12 @@
                 <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
                 <span *ngIf="!opt.img">-</span>
               </td>
-              <td style="width: 20%;">
+              <td style="width: 12%;">
                 <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
                        [placeholder]="opt.coloris" class="w-full" />
                 <span *ngIf="!opt.coloris">-</span>
               </td>
-              <td style="width: 25%;">
+              <td style="width: 180px;">
                 <p-inputNumber
                   [(ngModel)]="opt.qteCommande"
                   [showButtons]="true"
@@ -188,7 +189,7 @@
                   [step]="1"
                   [min]="0"
                   [max]="opt.multiple ? opt.qmax : 1"
-                  class="flex-grow-1 w-full mb-2"
+                  class="w-full"
                   styleClass="w-full"
                   inputStyleClass="w-full"
                   decrementButtonClass="p-button-secondary outlined"
@@ -196,6 +197,27 @@
                   incrementButtonIcon="pi pi-plus"
                   decrementButtonIcon="pi pi-minus"
                   mode="decimal"
+                  (ngModelChange)="modifierOption(opt)"/>
+              </td>
+              <td style="width: 180px;">
+                <p-inputNumber
+                  [(ngModel)]="opt.reductionCommande"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [step]="1"
+                  [min]="0"
+                  [max]="100"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  class="w-full"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  decrementButtonClass="p-button-secondary outlined"
+                  incrementButtonClass="p-button-secondary outlined"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  mode="decimal"
+                  suffix=" %"
                   (ngModelChange)="modifierOption(opt)"/>
               </td>
             </tr>
@@ -217,6 +239,7 @@
               <th>Image</th>
               <th>Couleur</th>
               <th>Qté</th>
+              <th>Réduction (%)</th>
             </tr>
           </ng-template>
 
@@ -229,12 +252,12 @@
                 <img *ngIf="opt.img" [src]="baseUrl + '/api/uploads/img/option2s/' +opt.id+'/'+ opt.img" alt="img" width="40" height="40" />
                 <span *ngIf="!opt.img">-</span>
               </td>
-              <td style="width: 20%;">
+              <td style="width: 12%;">
                 <input *ngIf="opt.coloris" pInputText [(ngModel)]="opt.colorCommande"
                        [placeholder]="opt.coloris" class="w-full" />
                 <span *ngIf="!opt.coloris">-</span>
               </td>
-              <td style="width: 25%;">
+              <td style="width: 180px;">
                 <p-inputNumber
                   [(ngModel)]="opt.qteCommande"
                   [showButtons]="true"
@@ -242,7 +265,7 @@
                   [step]="1"
                   [min]="0"
                   [max]="opt.multiple ? opt.qmax : 1"
-                  class="flex-grow-1 w-full mb-2"
+                  class="w-full"
                   styleClass="w-full"
                   inputStyleClass="w-full"
                   decrementButtonClass="p-button-secondary outlined"
@@ -250,6 +273,27 @@
                   incrementButtonIcon="pi pi-plus"
                   decrementButtonIcon="pi pi-minus"
                   mode="decimal"
+                  (ngModelChange)="modifierOption(opt)"/>
+              </td>
+              <td style="width: 180px;">
+                <p-inputNumber
+                  [(ngModel)]="opt.reductionCommande"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  [step]="1"
+                  [min]="0"
+                  [max]="100"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  class="w-full"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"
+                  decrementButtonClass="p-button-secondary outlined"
+                  incrementButtonClass="p-button-secondary outlined"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  mode="decimal"
+                  suffix=" %"
                   (ngModelChange)="modifierOption(opt)"/>
               </td>
             </tr>

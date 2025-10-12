@@ -203,32 +203,45 @@
         <table class="table" width="830px">
             <thead class="grayBlueBg">
                 <tr>
-                    <th width="40%">Produit</th>
+                    <th width="45%">Produit</th>
                     <th width="10%">Quantité</th>
                     <th width="10%">TVA</th>
-                    <th width="25%">Prix Unitaire HT</th>
+                    <th width="20%">Prix Unitaire HT</th>
                     <th width="15%">Prix Total HT</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let option of getFilteredOptions()" class="lightBlueBg">
-                    <td>
-                        {{option.option_nom}}
-                        <span *ngIf="option.color"> - {{option.color}}</span>
-                    </td>
-                    <td style="text-align:right">
-                        {{option.qty}}
-                    </td>
-                    <td style="text-align:right">
-                        {{option.option_taux_tva || 0}}%
-                    </td>
-                    <td style="text-align:right">
-                        {{option.option_prix_ht | number: '1.2-2'}} €
-                    </td>
-                    <td style="text-align:right">
-                        {{((option.option_prix_ht || 0) * (option.qty || 1)) | number: '1.2-2'}} €
-                    </td>
-                </tr>
+                <ng-container *ngFor="let option of getFilteredOptions()">
+                    <tr class="lightBlueBg">
+                        <td>
+                            {{option.option_nom}}
+                            <span *ngIf="option.color"> - {{option.color}}</span>
+                        </td>
+                        <td style="text-align:right">
+                            {{option.qty}}
+                        </td>
+                        <td style="text-align:right">
+                            {{option.option_taux_tva || 0}}%
+                        </td>
+                        <td style="text-align:right">
+                            {{option.option_prix_ht | number: '1.2-2'}} €
+                        </td>
+                        <td style="text-align:right">
+                            {{(option.option_prix_ht || 0) * (option.qty || 1) | number: '1.2-2'}} €
+                        </td>
+                    </tr>
+                    <tr *ngIf="option.reduction && option.reduction > 0" class="lightBlueBg">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="text-align: right">
+                            Remise commerciale ({{option.reduction}}%)
+                        </td>
+                        <td style="text-align:right">
+                            -{{((option.option_prix_ht || 0) * (option.qty || 1) * (option.reduction / 100)) | number: '1.2-2'}} €
+                        </td>
+                    </tr>
+                </ng-container>
             </tbody>
         </table>
     </div>

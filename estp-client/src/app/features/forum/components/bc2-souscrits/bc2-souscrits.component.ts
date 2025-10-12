@@ -40,6 +40,7 @@ export class Bc2SouscritsComponent implements OnInit {
   detailsOptions: Option2[] = [];
   baseUrl: String = environment.apiUrl;
   role: String | null = '';
+  readOnly: boolean = false;
 
   modifyDialog: boolean = false;
   modifyCommande: CommandeWithEntreprise | undefined;
@@ -87,6 +88,7 @@ export class Bc2SouscritsComponent implements OnInit {
 
   ngOnInit(): void {
     this.role = this.cookieService.getRole();
+    this.readOnly = ['resplan', 'reslog'].includes(this.role as string);
     this.initData();
   }
 
@@ -156,24 +158,38 @@ export class Bc2SouscritsComponent implements OnInit {
 
   getCommandeOptionModification() {
     this.modificationsOptions = [];
+    // Reset all options first
     this.optionsBc2.forEach(option => {
       option.qteCommande = 0;
       option.colorCommande = '';
+      option.reductionCommande = 0;
     });
+
     this.commande2OptionService.getOptionsByCommande2Id(this.modifyCommande?.id ?? -1).subscribe((response: Commande2Option[]) => {
       if (response && Array.isArray(response)) {
         this.modificationCommandeOption = response;
         response.forEach(element => {
           const foundOption = this.optionsBc2.find(o => o.id == element.option2_id);
           if (foundOption) {
-            // Update the original option in optionsBc2 array
-            foundOption.qteCommande = element.qty;
+            // Update the original option in optionsBc2 array - ensure numbers are properly set
+            foundOption.qteCommande = Number(element.qty) || 0;
             foundOption.colorCommande = element.color || '';
-            // Add a copy to modificationsOptions
-            const option: Option2 = { ...foundOption };
+            foundOption.reductionCommande = Number(element.reduction) || 0;
+
+            // Add a copy to modificationsOptions with the updated values
+            const option: Option2 = {
+              ...foundOption,
+              qteCommande: foundOption.qteCommande,
+              colorCommande: foundOption.colorCommande,
+              reductionCommande: foundOption.reductionCommande
+            };
             this.modificationsOptions.push(option);
+
+            console.log(`Loaded option ${foundOption.id}: qty=${foundOption.qteCommande}, reduction=${foundOption.reductionCommande}%`);
           }
         });
+        // Recalculate total after loading
+        this.getModifyCommandePrix();
       }
     });
   }
@@ -284,9 +300,17 @@ export class Bc2SouscritsComponent implements OnInit {
     this.modifyTotalHt = 0;
     this.modificationsOptions.forEach(o => {
       if (o && this.modifyTotalHt !== undefined) {
-        this.modifyTotalHt += (o.qteCommande ?? 0) * (o.prix_ht ?? 0);
+        const subtotal = (o.qteCommande ?? 0) * (o.prix_ht ?? 0);
+        const reduction = o.reductionCommande ?? 0;
+        // Apply percentage reduction
+        const reductionAmount = (reduction / 100) * subtotal;
+        this.modifyTotalHt += subtotal - reductionAmount;
       }
     });
+    // Ensure total doesn't go below 0
+    if (this.modifyTotalHt < 0) {
+      this.modifyTotalHt = 0;
+    }
   }
 
   async validerOptionCommande() {
@@ -322,7 +346,8 @@ export class Bc2SouscritsComponent implements OnInit {
           if (option) {
             await lastValueFrom(this.commande2OptionService.updateCommande2Option(option.id ?? -1, {
               qty: o.qteCommande || -1,
-              color: o.colorCommande || undefined
+              color: o.colorCommande || undefined,
+              reduction: o.reductionCommande || 0
             }));
           }
           else {
@@ -330,7 +355,8 @@ export class Bc2SouscritsComponent implements OnInit {
               commande2_id: this.modifyCommande?.id ?? -1,
               option2_id: o.id,
               qty: o.qteCommande,
-              color: o.colorCommande
+              color: o.colorCommande,
+              reduction: o.reductionCommande || 0
             }));
           }
         }
@@ -338,10 +364,19 @@ export class Bc2SouscritsComponent implements OnInit {
 
       await Promise.all(updatePromises);
 
-      // Update local data
-      this.commandes[this.commandes.findIndex(c => c.id == this.modifyCommande?.id)].total_ht = this.modifyTotalHt ?? 0;
+      // Update local data - update both total_ht and the standiste info
+      const commandeIndex = this.commandes.findIndex(c => c.id == this.modifyCommande?.id);
+      if (commandeIndex !== -1) {
+        this.commandes[commandeIndex].total_ht = this.modifyTotalHt ?? 0;
+        this.commandes[commandeIndex].standiste_nom = this.modifyCommande.standiste_nom;
+        this.commandes[commandeIndex].standiste_prenom = this.modifyCommande.standiste_prenom;
+        this.commandes[commandeIndex].standiste_entreprise = this.modifyCommande.standiste_entreprise;
+        this.commandes[commandeIndex].standiste_telephone = this.modifyCommande.standiste_telephone;
+        this.commandes[commandeIndex].standiste_demande = this.modifyCommande.standiste_demande;
+        this.commandes[commandeIndex].standiste_status = this.modifyCommande.standiste_status;
+      }
 
-      // Reload the commande options for the facture
+      // Reload the commande options for the BC2 and future facture dialogs
       await this.loadCommandeOptionsForFacture(this.modifyCommande?.id ?? -1);
 
       // Show BC2 regeneration dialog
@@ -552,14 +587,15 @@ export class Bc2SouscritsComponent implements OnInit {
       this.commande2OptionService.getOptionsByCommande2Id(commandeId).subscribe({
         next: (response: Commande2Option[]) => {
           if (response && Array.isArray(response)) {
-            // Map the response to include option details with correct TVA rates
+            // Map the response to include option details with correct TVA rates and reduction
             this.modificationCommandeOption = response.map(cmdOption => {
               const foundOption = this.optionsBc2.find(o => o.id === cmdOption.option2_id);
               return {
                 ...cmdOption,
                 option_nom: foundOption?.nom || 'Option inconnue',
                 option_prix_ht: foundOption?.prix_ht || 0,
-                option_taux_tva: foundOption?.taux_tva || 20 // Ensure we get the correct TVA rate
+                option_taux_tva: foundOption?.taux_tva || 20, // Ensure we get the correct TVA rate
+                reduction: cmdOption.reduction || 0 // Preserve the reduction from the command option
               };
             });
           }
@@ -607,7 +643,7 @@ export class Bc2SouscritsComponent implements OnInit {
 
 <p>Veuillez trouver ci-joint la facture festp.2025.${this.modifyCommande?.entreprise?.id}.fct2 relative à votre bon de commande BC2 pour la 46e édition du FORUM ESTP.</p>
 
-<p>Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler le solde de ${this.factureBc2.calculateTotalTTC()} correspondant au bon de commande 2 avant le ${this.factureBc2.customDateSolde.toLocaleDateString('fr-FR', {
+<p>Conformément à nos conditions de paiement, nous vous prions de bien vouloir régler le solde de ${this.factureBc2.calculateTotalTTC()} € correspondant au bon de commande 2 avant le ${this.factureBc2.customDateSolde.toLocaleDateString('fr-FR', {
   day: '2-digit',
   month: 'long', // full month name
   year: 'numeric',
@@ -684,7 +720,10 @@ export class Bc2SouscritsComponent implements OnInit {
   async openFactureDialog(cmd: CommandeWithEntreprise) {
     this.modifyCommande = cloneDeep(cmd);
     this.modifyTotalHt = cmd.total_ht;
-    this.getCommandeOptionModification();
+
+    // Load options with full details for facture (includes option_nom, option_prix_ht, option_taux_tva)
+    await this.loadCommandeOptionsForFacture(cmd.id ?? -1);
+
     this.modificationContact = await this.getContactPrincipalNom();
 
     // Populate standiste form with existing data

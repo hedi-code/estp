@@ -101,4 +101,8 @@ export class DashboardService {
   getEntreprisesByOption(optionId: number, bcType: 'BC1' | 'BC2'): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/dashboard/entreprises-by-option/${optionId}?bcType=${bcType}`);
   }
+
+  getAllPaymentStats(): Observable<CommercialDashboardStats> {
+    return this.http.get<CommercialDashboardStats>(`${this.apiUrl}/dashboard/all-payment-stats`);
+  }
 }

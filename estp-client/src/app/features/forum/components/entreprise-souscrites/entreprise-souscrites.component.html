@@ -1,7 +1,7 @@
 <div class="card p-3 bg-white mt-3 mr-3">
     <div class="flex justify-content-between align-items-center">
         <h3 class="text-blue-400 p-2">Entreprises</h3>
-        <p-button  icon="pi pi-plus" label="Ajouter une entreprise" (click)="openCreateDialog()"></p-button>
+        <p-button *ngIf="!readOnly" icon="pi pi-plus" label="Ajouter une entreprise" (click)="openCreateDialog()"></p-button>
     </div>
     <p-table [value]="entreprises" dataKey="id" [rows]="10" styleClass="w-full"
     [rowsPerPageOptions]="[10, 25, 50]" [resizableColumns]="true" 
@@ -102,11 +102,11 @@
                             {{entreprise.adresse || '-'}}
                 </td>
                 <td >
-                                <button *ngIf="role=='rescom' || role=='pres'" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
+                                <button *ngIf="(role=='rescom' || role=='pres') && !readOnly" pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Assigner" icon="pi pi-check-circle" (click)="assigner(entreprise)"></button>
         <p-confirmPopup />
-                                <button pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom"  pTooltip="Supprimer" icon="pi pi-trash" (click)="deleteEntreprise($event,entreprise)"></button>
+                                <button *ngIf="!readOnly" pButton [text]="true" severity="danger" type="button" tooltipPosition="bottom"  pTooltip="Supprimer" icon="pi pi-trash" (click)="deleteEntreprise($event,entreprise)"></button>
                                 <button pButton [text]="true" type="button" tooltipPosition="bottom"  pTooltip="Détails" icon="pi pi-info-circle" (click)="afficherDetails(entreprise)"></button>
-                                <button pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil" (click)="editEntreprise(entreprise)"></button>
+                                <button *ngIf="!readOnly" pButton [text]="true" severity="warning" type="button" tooltipPosition="bottom" pTooltip="Modifier" icon="pi pi-pencil" (click)="editEntreprise(entreprise)"></button>
 
                 </td>
             </tr>

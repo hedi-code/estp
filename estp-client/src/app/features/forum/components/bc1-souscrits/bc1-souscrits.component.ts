@@ -49,6 +49,7 @@ export class Bc1SouscritsComponent implements OnInit {
   detailsOptions: Option1[] = [];
   baseUrl: String = environment.apiUrl
   role: String | null = ''
+  readOnly: boolean = false;
 
 
   modifyDialog: boolean = false;
@@ -94,6 +95,7 @@ bc1DialogVisible: boolean = false;
 
   ngOnInit(): void {
     this.role = this.cookieService.getRole();
+    this.readOnly = ['resplan', 'reslog'].includes(this.role as string);
     this.initData();
   }
   initData() {

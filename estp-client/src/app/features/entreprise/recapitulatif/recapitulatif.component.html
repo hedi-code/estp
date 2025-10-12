@@ -1,71 +1,6 @@
 <div class="p-5 border-round shadow-1">
     <h1 class="text-blue-400 pb-2">Recapitulatif</h1>
-
-    <h4 class="text-blue-400 text-xl font-bold mb-1">📅 Date du Forum</h4>
-    <hr class="mb-3 mt-1" />
-    <p class="mb-4">Le mardi 25 novembre 2025</p>
-
-    <h4 class="text-blue-400 text-xl font-bold mb-1">📍 Adresse du Forum</h4>
-    <hr class="mb-3 mt-1" />
-    <p class="mb-4">Hall 5 - Parc des Expositions de la porte de Versailles, Paris</p>
-
-    <h4 class="text-blue-400 text-xl font-bold mb-1">⏰ Horaires d'ouverture</h4>
-    <hr class="mb-3 mt-1" />
-    <div class="flex flex-row gap-2 mb-4">
-        <div><strong>Exposants :</strong> à partir de 7h – Merci d’arriver avant 8h40</div>
-        <div><strong>Visiteurs :</strong> de 9h à 17h</div>
-    </div>
-
-    <h4 class="text-blue-400 text-xl font-bold mb-1">🅿️ Parking</h4>
-    <hr class="mb-3 mt-1" />
-    <p class="mb-2">
-        Si vous avez souscrit à des places de parking dans le BC2 pour le jour du Forum, vous devrez vous garer au
-        <strong>parking P6</strong>.
-    </p>
-    <p class="mb-4">
-        Un ticket vous sera remis par votre commercial sur le Forum pour sortir (⚠️ toute sortie est définitive).
-    </p>
-
-    <h4 class="text-blue-400 text-xl font-bold mb-1">📦 Informations Montage / Démontage / Livraisons</h4>
-    <hr class="mb-3 mt-1" />
-    <div class="flex flex-column gap-2 mb-4">
-        <div>Accès aux pavillons 5.2 et 5.3.1 pour montage/démontage/livraisons : <strong>Inscription obligatoire sur
-               <a href="https://logipass.viparis.com/" target="_blank">Logipass VIPARIS</a> </strong></div>
-        <div>Pour l’inscription : <strong><a href="https://drive.google.com/file/d/1t40nhDNRz94O7nzB0fmvhql-mBMxVupl/view" target="_blank">Mode d’emploi LOGIPASS</a> </strong></div>
-        <div>Retrouvez les <a href="https://drive.google.com/file/d/1RspD3y2J4HoZKup202yDAcx_Q3rBCzuR/view" target="_blank">consignes d’accès générales au Forum pour le</a> <strong>montage/démontage et les livraisons</strong> le
-            jour avant l’ouverture au public.</div>
-    </div>
-
-    <h4 class="text-blue-400 text-lg font-semibold mb-1">🛠 Horaires de montage (24/11)</h4>
-    <hr class="mb-3 mt-1" />
-    <div class="flex flex-column gap-4 mb-4">
-        <div>À partir de 10h40 pour les standistes</div>
-        <div>À partir de 17h si vous apportez votre propre mobilier ou matériel (selon horaire Logipass)</div>
-    </div>
-
-    <h4 class="text-blue-400 text-lg font-semibold mb-1">🧹 Horaires de démontage (25/11)</h4>
-    <hr class="mb-3 mt-1" />
-    <div class="flex flex-column gap-2 mb-4">
-        <div>À partir de 17h jusqu'à 19h (sans standiste)</div>
-        <div>Jusqu’à 21h (avec standiste)</div>
-    </div>
-
-    <p class="mb-2">
-        Le <strong>Forum ESTP n’est pas responsable</strong> des colis déposés par un coursier. Il appartient à
-        l’exposant concerné de les récupérer.
-    </p>
-
-    <p class="mb-4">
-       Il faut bien renseigner la <strong>plaque d’immatriculation</strong> du véhicule accédant au Forum sur
-        <strong>LOGIPASS</strong>.
-    </p>
-
-    <p class="text-sm text-600 italic">
-        (Ceci concerne uniquement l'accès au Forum lors du montage, du démontage et pour les livraisons avant
-        l'ouverture au public. Cela ne concerne pas le stationnement payant pendant l'ouverture au public.)
-    </p>
-
-    <h4 class="text-blue-400 text-xl font-bold mb-1 mt-5">👥 Gestion des Exposants</h4>
+<h4 class="text-blue-400 text-xl font-bold mb-1 mt-5">👥 Gestion des Exposants</h4>
     <hr class="mb-3 mt-1" />
 
     <div class="mb-3">
@@ -104,8 +39,73 @@
     <div *ngIf="exposants.length === 0" class="mb-4">
         <p class="text-500">Aucun exposant enregistré pour le moment.</p>
     </div>
+ <h4 class="text-blue-400 text-xl font-bold mb-1">📅 Date du Forum</h4>
+    <hr class="mb-3 mt-1" />
+    <p class="mb-4">Le mardi 25 novembre 2025</p>
 
+    <h4 class="text-blue-400 text-xl font-bold mb-1">📍 Adresse du Forum</h4>
+    <hr class="mb-3 mt-1" />
+    <p class="mb-4">Hall 5 - Parc des Expositions de la porte de Versailles, Paris</p>
+
+    <h4 class="text-blue-400 text-xl font-bold mb-1">⏰ Horaires d'ouverture</h4>
+    <hr class="mb-3 mt-1" />
+    <div class="flex flex-row gap-2 mb-4">
+        <div><strong>Exposants :</strong> à partir de 7h – Merci d’arriver avant 8h40</div>
+        <div><strong>Visiteurs :</strong> de 9h à 17h</div>
+    </div>
+
+    <h4 class="text-blue-400 text-xl font-bold mb-1">🅿️ Parking</h4>
+    <hr class="mb-3 mt-1" />
+    <p class="mb-2">
+        Si vous avez souscrit à des places de parking dans le BC2 pour le jour du Forum, vous devrez vous garer au
+        <strong>parking P6</strong>.
+    </p>
+    <p class="mb-4">
+        Un ticket vous sera remis par votre commercial sur le Forum pour sortir (⚠️ toute sortie est définitive).
+    </p>
+
+    <h4 class="text-blue-400 text-xl font-bold mb-1">📦 Informations Montage / Démontage / Livraisons</h4>
+    <hr class="mb-3 mt-1" />
+    <div class="flex flex-column gap-2 mb-4">
+        <div>Accès aux pavillons 5.2 et 5.3.1 pour montage/démontage/livraisons : <strong>Inscription obligatoire sur
+               <a href="https://logipass.viparis.com/" target="_blank">Logipass VIPARIS</a> </strong></div>
+        <div>Pour l’inscription : <strong><a href="https://drive.google.com/drive/folders/1TSznVNsDC71_Uw3pbRQgpGpAfSLsOomf?usp=drive_link" target="_blank">Mode d’emploi LOGIPASS</a> </strong></div>
+        <div>Retrouvez les <a href="https://drive.google.com/drive/folders/1ug538R5Ie-gPPv2UMumP-R_wEUzkCVum?usp=sharing" target="_blank">consignes d’accès générales au Forum pour le</a> <strong>montage/démontage et les livraisons</strong> le
+            jour avant l’ouverture au public.</div>
+    </div>
+
+    <h4 class="text-blue-400 text-lg font-semibold mb-1">🛠 Horaires de montage (24/11)</h4>
+    <hr class="mb-3 mt-1" />
+    <div class="flex flex-column gap-4 mb-4">
+        <div>À partir de 10h40 pour les standistes</div>
+        <div>À partir de 17h si vous apportez votre propre mobilier ou matériel (selon horaire Logipass)</div>
+    </div>
+
+    <h4 class="text-blue-400 text-lg font-semibold mb-1">🧹 Horaires de démontage (25/11)</h4>
+    <hr class="mb-3 mt-1" />
+    <div class="flex flex-column gap-2 mb-4">
+        <div>À partir de 17h jusqu'à 19h (sans standiste)</div>
+        <div>Jusqu’à 21h (avec standiste)</div>
+    </div>
+
+    <p class="mb-2">
+        Le <strong>Forum ESTP n’est pas responsable</strong> des colis déposés par un coursier. Il appartient à
+        l’exposant concerné de les récupérer.
+    </p>
+
+    <p class="mb-4">
+       Il faut bien renseigner la <strong>plaque d’immatriculation</strong> du véhicule accédant au Forum sur
+        <strong>LOGIPASS</strong>.
+    </p>
+
+    <p class="text-sm text-600 italic">
+        (Ceci concerne uniquement l'accès au Forum lors du montage, du démontage et pour les livraisons avant
+        l'ouverture au public. Cela ne concerne pas le stationnement payant pendant l'ouverture au public.)
+    </p>
+
+    
 </div>
+   
 
 <!-- Dialog for Create/Edit Exposant -->
 <p-dialog [(visible)]="showDialog" [header]="isEditMode ? 'Modifier un exposant' : 'Ajouter un exposant'"

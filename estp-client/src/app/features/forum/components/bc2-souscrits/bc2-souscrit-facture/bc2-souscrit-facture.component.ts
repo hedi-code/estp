@@ -103,10 +103,18 @@ export class Bc2SouscritFactureComponent implements OnInit {
     );
   }
 
+  calculateOptionTotal(option: Commande2Option): number {
+    const subtotal = (option.option_prix_ht || 0) * (option.qty || 1);
+    const reduction = option.reduction || 0;
+    // Apply percentage reduction
+    const reductionAmount = (reduction / 100) * subtotal;
+    return subtotal - reductionAmount;
+  }
+
   calculateTotalHT(): number {
     let total = 0;
     this.getFilteredOptions().forEach(option => {
-      total += (option.option_prix_ht || 0) * (option.qty || 1);
+      total += this.calculateOptionTotal(option);
     });
     return total;
   }
@@ -118,7 +126,7 @@ export class Bc2SouscritFactureComponent implements OnInit {
   calculateTVA(): number {
     let totalTVA = 0;
     this.getFilteredOptions().forEach(option => {
-      const prixHT = (option.option_prix_ht || 0) * (option.qty || 1);
+      const prixHT = this.calculateOptionTotal(option);
       const tauxTVA = (option.option_taux_tva || 20) / 100; // Use option_taux_tva or default to 20%
       totalTVA += prixHT * tauxTVA;
     });
@@ -131,7 +139,7 @@ export class Bc2SouscritFactureComponent implements OnInit {
 
     this.getFilteredOptions().forEach(option => {
       const tauxTVA = option.option_taux_tva || 20;
-      const prixHT = (option.option_prix_ht || 0) * (option.qty || 1);
+      const prixHT = this.calculateOptionTotal(option);
       const montantTVA = prixHT * (tauxTVA / 100);
 
       if (!groups[tauxTVA]) {

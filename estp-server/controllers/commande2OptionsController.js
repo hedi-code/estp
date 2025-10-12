@@ -3,12 +3,12 @@
 const db = require("../config/db");
 
 exports.addOptionToCommande2 = (req, res) => {
-  const { commande2_id, option2_id, qty = 1, color } = req.body;
+  const { commande2_id, option2_id, qty = 1, color, reduction = 0 } = req.body;
 
   db.query(
-    `INSERT INTO commande2_options (commande2_id, option2_id, qty, color)
-     VALUES (?, ?, ?, ?)`,
-    [commande2_id, option2_id, qty, color],
+    `INSERT INTO commande2_options (commande2_id, option2_id, qty, color, reduction)
+     VALUES (?, ?, ?, ?, ?)`,
+    [commande2_id, option2_id, qty, color, reduction],
     (err, result) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.status(201).json({ nonDisplayMessage: "Option ajoutée à la commande", id: result.insertId });
@@ -46,11 +46,34 @@ exports.getOptionsByCommande2Id = (req, res) => {
 
 exports.updateCommande2Option = (req, res) => {
   const id = req.params.id;
-  const { qty, color } = req.body;
+  const { qty, color, reduction } = req.body;
+
+  // Build dynamic query based on provided fields
+  const fields = [];
+  const values = [];
+
+  if (qty !== undefined) {
+    fields.push('qty = ?');
+    values.push(qty);
+  }
+  if (color !== undefined) {
+    fields.push('color = ?');
+    values.push(color);
+  }
+  if (reduction !== undefined) {
+    fields.push('reduction = ?');
+    values.push(reduction);
+  }
+
+  if (fields.length === 0) {
+    return res.status(400).json({ error: "Aucun champ à mettre à jour" });
+  }
+
+  values.push(id);
 
   db.query(
-    `UPDATE commande2_options SET qty = ?, color = ? WHERE id = ?`,
-    [qty, color, id],
+    `UPDATE commande2_options SET ${fields.join(', ')} WHERE id = ?`,
+    values,
     (err) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.json({ message: "Option de commande mise à jour" });
