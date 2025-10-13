@@ -1,6 +1,8 @@
 <div class="p-5 border-round shadow-1">
-    <h1 class="text-blue-400 pb-2">Recapitulatif</h1>
-<h4 class="text-blue-400 text-xl font-bold mb-1 mt-5">👥 Gestion des Exposants</h4>
+    <div class="mb-4">
+        <h1 class="text-blue-400 pb-2 m-0">Recapitulatif</h1>
+    </div>
+    <h4 class="text-blue-400 text-xl font-bold mb-1 mt-5">👥 Gestion des Exposants</h4>
     <hr class="mb-3 mt-1" />
 
     <div class="mb-3">
@@ -39,6 +41,7 @@
     <div *ngIf="exposants.length === 0" class="mb-4">
         <p class="text-500">Aucun exposant enregistré pour le moment.</p>
     </div>
+    
  <h4 class="text-blue-400 text-xl font-bold mb-1">📅 Date du Forum</h4>
     <hr class="mb-3 mt-1" />
     <p class="mb-4">Le mardi 25 novembre 2025</p>
@@ -69,9 +72,9 @@
     <div class="flex flex-column gap-2 mb-4">
         <div>Accès aux pavillons 5.2 et 5.3.1 pour montage/démontage/livraisons : <strong>Inscription obligatoire sur
                <a href="https://logipass.viparis.com/" target="_blank">Logipass VIPARIS</a> </strong></div>
-        <div>Pour l’inscription : <strong><a href="https://drive.google.com/drive/folders/1TSznVNsDC71_Uw3pbRQgpGpAfSLsOomf?usp=drive_link" target="_blank">Mode d’emploi LOGIPASS</a> </strong></div>
-        <div>Retrouvez les <a href="https://drive.google.com/drive/folders/1ug538R5Ie-gPPv2UMumP-R_wEUzkCVum?usp=sharing" target="_blank">consignes d’accès générales au Forum pour le</a> <strong>montage/démontage et les livraisons</strong> le
-            jour avant l’ouverture au public.</div>
+        <div>Pour l'inscription : <strong><a href="https://drive.google.com/drive/folders/1TSznVNsDC71_Uw3pbRQgpGpAfSLsOomf?usp=drive_link" target="_blank">Mode d'emploi LOGIPASS</a> </strong></div>
+        <div>Retrouvez les <a href="https://drive.google.com/drive/folders/1ug538R5Ie-gPPv2UMumP-R_wEUzkCVum?usp=sharing" target="_blank">consignes d'accès générales au Forum pour le</a> <strong>montage/démontage et les livraisons</strong> le
+            jour avant l'ouverture au public.</div>
     </div>
 
     <h4 class="text-blue-400 text-lg font-semibold mb-1">🛠 Horaires de montage (24/11)</h4>
@@ -103,7 +106,33 @@
         l'ouverture au public. Cela ne concerne pas le stationnement payant pendant l'ouverture au public.)
     </p>
 
+    <h4 class="text-blue-400 text-xl font-bold mb-1">BC1/BC2</h4>
+    <hr class="mb-3 mt-1" />
     
+    <div class="grid gap-2">
+        <button pButton type="button" label="Télécharger le BC1" icon="pi pi-download"
+            class="p-button-outlined p-button-primary col-12" (click)="downloadBC1()"></button>
+        <button pButton type="button" label="Télécharger le BC2" icon="pi pi-download"
+            class="p-button-outlined p-button-success col-12" (click)="downloadBC2()"></button>
+    </div>
+    <ng-container *ngIf="ficheSpsConfig && ficheSpsConfig.config_value">
+        <h4 class="text-blue-400 text-xl font-bold mb-1">Fiche SPS</h4>
+        <hr class="mb-3 mt-1" />
+        <div class="flex flex-column gap-2">
+            <p class="mb-4">{{ ficheSpsConfig.description }}</p>
+            <button pButton type="button" label="Télécharger la Fiche SPS" icon="pi pi-download"
+                class="p-button-outlined p-button-info" (click)="downloadFicheSps()"></button>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="dossierTechniqueConfig && dossierTechniqueConfig.config_value">
+        <h4 class="text-blue-400 text-xl font-bold mb-1">Dossier technique standiste</h4>
+        <hr class="mb-3 mt-1" />
+        <div class="flex flex-column gap-2">
+            <p class="mb-4">{{ dossierTechniqueConfig.description }}</p>
+            <button pButton type="button" label="Télécharger le Dossier Technique Standiste" icon="pi pi-download"
+                class="p-button-outlined p-button-warning" (click)="downloadDossierTechnique()"></button>
+        </div>
+    </ng-container>
 </div>
    
 

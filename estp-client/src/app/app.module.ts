@@ -74,6 +74,7 @@ import { Bc2SouscritFactureComponent } from './features/forum/components/bc2-sou
 import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2-charts';
 import { CalendarModule } from 'primeng/calendar';
 import { GestionExposantsComponent } from './features/forum/components/gestion-exposants/gestion-exposants.component';
+import { ConfigComponent } from './features/forum/components/config/config.component';
 
 
 
@@ -112,7 +113,8 @@ import { GestionExposantsComponent } from './features/forum/components/gestion-e
     MailingComponent,
     StandisteComponent,
     Bc2SouscritFactureComponent,
-    GestionExposantsComponent
+    GestionExposantsComponent,
+    ConfigComponent
     ],
   imports: [
     BrowserModule,

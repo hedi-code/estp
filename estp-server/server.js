@@ -20,6 +20,7 @@ const option2Routes = require('./routes/option2Routes'); // <- Import option2 ro
 const option2CategoriesRoutes = require('./routes/option2CategoriesRoutes'); // <- Import option2Categories routes
 const dashboardRoutes = require('./routes/dashboardRoutes'); // <- Import dashboard routes
 const exposantRoutes = require('./routes/exposantRoutes'); // <- Import exposant routes
+const configRoutes = require('./routes/configRoutes'); // <- Import config routes
 const authMiddleware = require('./middleware/auth'); // <- Import JWT middleware
 
 
@@ -83,6 +84,7 @@ app.use('/api/option2', option2Routes); // <- Use option2 routes
 app.use('/api/option2Categories', option2CategoriesRoutes); // <- Use option2Categories routes
 app.use('/api/dashboard', dashboardRoutes); // <- Use dashboard routes
 app.use('/api/exposants', exposantRoutes); // <- Use exposant routes
+app.use('/api/config', configRoutes); // <- Use config routes
 
 
 

@@ -1,0 +1,100 @@
+<div class="card p-3 bg-white mt-3 mr-3">
+  <div class="flex justify-content-between align-items-center mb-3">
+    <h3 class="text-blue-400 p-2">Configuration Logistique</h3>
+  </div>
+
+  <p-table [value]="configs" dataKey="id" [rows]="10" [paginator]="true"
+           [rowsPerPageOptions]="[10, 25, 50]" styleClass="w-full">
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="config_name" style="width:25%">
+          Nom<p-sortIcon field="config_name" />
+        </th>
+        <th pSortableColumn="config_value" style="width:30%">
+          Valeur <p-sortIcon field="config_value" />
+        </th>
+        <th pSortableColumn="description" style="width:35%">
+          Description <p-sortIcon field="description" />
+        </th>
+        <th style="width:10%">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-config>
+      <tr>
+        <td>{{ config.config_name }}</td>
+        <td>
+          <span *ngIf="isFileUploadConfig(config.config_name) && config.config_value">
+            <a [href]="baseUrl + '/api/uploads/config/' + config.config_value"
+               target="_blank" class="text-primary">
+              <i class="pi pi-file-pdf mr-2"></i>{{ config.config_value }}
+            </a>
+          </span>
+          <span *ngIf="!isFileUploadConfig(config.config_name) || !config.config_value">
+            {{ config.config_value || '-' }}
+          </span>
+        </td>
+        <td>{{ config.description || '-' }}</td>
+        <td>
+          <button pButton [text]="true" severity="warning" icon="pi pi-pencil"
+                  pTooltip="Modifier" tooltipPosition="bottom"
+                  (click)="openEditDialog(config)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Edit Dialog -->
+<p-dialog [(visible)]="editDialogVisible" header="Modifier la Configuration"
+          [modal]="true" [style]="{width: '600px'}" [draggable]="false" [resizable]="false">
+  <div class="flex flex-column gap-3" *ngIf="selectedConfig">
+    <div>
+      <label class="block mb-2 font-semibold">Nom de Configuration</label>
+      <input type="text" pInputText [value]="selectedConfig.config_name"
+             class="w-full" [disabled]="true" />
+    </div>
+
+    <div *ngIf="!isFileUploadConfig(selectedConfig.config_name)">
+      <label class="block mb-2 font-semibold">Valeur</label>
+      <input type="text" pInputText [(ngModel)]="selectedConfig.config_value"
+             class="w-full" placeholder="Entrez la valeur" />
+    </div>
+
+    <div *ngIf="isFileUploadConfig(selectedConfig.config_name)">
+      <label class="block mb-2 font-semibold">Fichier PDF</label>
+      <div class="mb-2" *ngIf="selectedConfig.config_value">
+        <small class="text-600">Fichier actuel: </small>
+        <a [href]="baseUrl + '/api/uploads/config/' + selectedConfig.config_value"
+           target="_blank" class="text-primary">
+          <i class="pi pi-file-pdf mr-1"></i>{{ selectedConfig.config_value }}
+        </a>
+      </div>
+      <p-fileUpload mode="basic"
+                    chooseLabel="Choisir un fichier PDF"
+                    [auto]="false"
+                    accept="application/pdf"
+                    [maxFileSize]="10000000"
+                    (onSelect)="onFileSelect($event)"
+                    [showUploadButton]="false"
+                    [showCancelButton]="false">
+      </p-fileUpload>
+      <small class="text-600">Taille maximale: 10 MB</small>
+    </div>
+
+    <div>
+      <label class="block mb-2 font-semibold">Description</label>
+      <textarea pInputTextarea [(ngModel)]="selectedConfig.description"
+                class="w-full" rows="3"
+                placeholder="Entrez une description"></textarea>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Annuler" icon="pi pi-times"
+            class="p-button-text" (click)="closeEditDialog()"></button>
+    <button pButton type="button" label="Enregistrer" icon="pi pi-check"
+            (click)="saveConfig()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

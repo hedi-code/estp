@@ -6,6 +6,7 @@ import { BookService } from '../../services/book.service';
 import { Entreprise } from '../../../entreprise/entreprise.model';
 import { Book } from '../../models/book.model';
 import { EntrepriseService } from '../../../entreprise/entreprise.service';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-gestion-exposants',
@@ -182,10 +183,140 @@ export class GestionExposantsComponent implements OnInit {
     this.pdfExposants = e;
     this.getBook();
   }
-  generatePdf(entrepriseName: string) {
-    // Your PDF generation logic here
-    console.log(`Generating PDF for ${entrepriseName}`);
-}
+  async generateBadgesPdf() {
+    if (!this.pdfExposants || this.pdfExposants.length === 0 || !this.pdfBookEntreprise) {
+      console.error('No exposants or logo available for PDF generation');
+      return;
+    }
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // A4 dimensions: 210mm x 297mm
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const badgeWidth = 75;
+    const badgeHeight = 55;
+    const badgesPerRow = 2;
+    const horizontalMargin = (pageWidth - (badgeWidth * badgesPerRow)) / 3; // Space between and around badges
+    const verticalMargin = 10;
+    let currentX = horizontalMargin;
+    let currentY = verticalMargin;
+    let badgeCount = 0;
+
+    // Load logo image
+    let logoDataUrl: string | null = null;
+    if (this.pdfBookEntreprise.logo_url) {
+      try {
+        logoDataUrl = await this.loadImageAsDataUrl(this.pdfBookEntreprise.logo_url);
+      } catch (err) {
+        console.error('Error loading logo:', err);
+      }
+    }
+
+    for (let i = 0; i < this.pdfExposants.length; i++) {
+      const exposant = this.pdfExposants[i];
+
+      // Add new page if needed (except for first badge)
+      if (badgeCount > 0 && badgeCount % 10 === 0) {
+        pdf.addPage();
+        currentX = horizontalMargin;
+        currentY = verticalMargin;
+      }
+
+      // Draw badge border
+      pdf.setDrawColor(200, 200, 200);
+      pdf.rect(currentX, currentY, badgeWidth, badgeHeight);
+
+      // Add logo if available
+      if (logoDataUrl) {
+        const logoMaxWidth = badgeWidth * 0.7;
+        const logoMaxHeight = badgeHeight * 0.45;
+        const logoX = currentX + (badgeWidth - logoMaxWidth) / 2;
+        const logoY = currentY + 5;
+
+        try {
+          pdf.addImage(logoDataUrl, 'PNG', logoX, logoY, logoMaxWidth, logoMaxHeight);
+        } catch (err) {
+          console.error('Error adding logo to PDF:', err);
+        }
+      }
+
+      // Add name (UPPERCASE) + first name (Capitalized)
+      const nameY = currentY + (logoDataUrl ? 32 : 15);
+      const fullName = `${exposant.nom.toUpperCase()} ${this.capitalize(exposant.prenom)}`;
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+
+      // Center the name
+      const nameWidth = pdf.getTextWidth(fullName);
+      const nameX = currentX + (badgeWidth - nameWidth) / 2;
+      pdf.text(fullName, nameX, nameY);
+
+      // Add fonction
+      const fonctionY = nameY + 6;
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+
+      // Center the fonction
+      const fonctionWidth = pdf.getTextWidth(exposant.fonction);
+      const fonctionX = currentX + (badgeWidth - fonctionWidth) / 2;
+      pdf.text(exposant.fonction, fonctionX, fonctionY);
+
+      // Move to next position
+      badgeCount++;
+      currentX += badgeWidth + horizontalMargin;
+
+      // Move to next row if needed
+      if (badgeCount % badgesPerRow === 0) {
+        currentX = horizontalMargin;
+        currentY += badgeHeight + verticalMargin;
+      }
+    }
+
+    // Save the PDF
+    const entrepriseName = this.pdfExposants[0]?.entreprise_nom || 'Entreprise';
+    pdf.save(`badges_${entrepriseName.replace(/\s+/g, '_')}.pdf`);
+  }
+
+  private capitalize(text: string): string {
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
+
+  private loadImageAsDataUrl(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+
+        try {
+          const dataUrl = canvas.toDataURL('image/png');
+          resolve(dataUrl);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = url;
+    });
+  }
   getBook(){
   this.bookService.getByEntrepriseId(this.pdfEntrepriseId ?? -1).subscribe({
     next: (book) => {this.pdfBookEntreprise = book},

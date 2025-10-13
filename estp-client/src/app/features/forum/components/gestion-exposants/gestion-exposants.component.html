@@ -119,17 +119,23 @@
 </p-dialog>
 
 <p-confirmDialog></p-confirmDialog>
-<p-dialog header="Exposants" [(visible)]="pdfVisible" [style]="{width: '960px'}" 
+<p-dialog header="Badges des Exposants" [(visible)]="pdfVisible" [style]="{width: '960px'}"
     [maximizable]="true">
+    <ng-template pTemplate="header">
+        <div class="flex justify-content-between align-items-center w-full">
+            <span class="font-bold text-xl">Badges des Exposants</span>
+            <button pButton type="button" label="Télécharger PDF" icon="pi pi-download"
+                    class="p-button-success" (click)="generateBadgesPdf()"></button>
+        </div>
+    </ng-template>
+
     <div class="grid">
-    <ng-container *ngFor="let exposant of pdfExposants">
-     <div class="col-6 flex flex-column align-content-center align-items-center">
-         <img [src]="this.pdfBookEntreprise?.logo_url" alt="" srcset="" style="width: 75mm; height: 55mm;">
-      <p><span class="uppercase font-bold">{{exposant.nom}} </span><span class="capitalize font-bold">{{exposant.prenom}}</span></p>
-      <p>{{exposant.fonction}}</p>
-     </div>
-    </ng-container>
-</div>
-    
-            
+        <ng-container *ngFor="let exposant of pdfExposants">
+            <div class="col-6 flex flex-column align-content-center align-items-center border-1 border-200 p-3">
+                <img [src]="this.pdfBookEntreprise?.logo_url" alt="Logo" style="max-width: 70%; max-height: 25mm; object-fit: contain;">
+                <p class="mt-2 mb-1"><span class="uppercase font-bold">{{exposant.nom}} </span><span class="capitalize font-bold">{{exposant.prenom}}</span></p>
+                <p class="mt-0 text-sm">{{exposant.fonction}}</p>
+            </div>
+        </ng-container>
+    </div>
 </p-dialog>

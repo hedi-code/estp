@@ -92,5 +92,13 @@ export class MenuComponent {
         )
       }
     }
+    if (this.cookieService.getRole() === "reslog" || this.cookieService.getRole() === "pres") {
+      const gestionIndex = this.model.findIndex(element => element.label === "Gestion");
+      if (gestionIndex !== -1) {
+        this.model[gestionIndex].items?.push(
+          { label: 'Logistique', icon: 'pi pi-fw pi-truck', routerLink: ['/forum/logistique'] },
+        )
+      }
+    }
   }
 }
