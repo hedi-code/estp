@@ -40,8 +40,11 @@ export class DashboardComponent implements OnInit {
   topBC1Options: any[] = [];
   topBC2Options: any[] = [];
   option2Categories: Option2Category[] = [];
-  bc2OptionsByCategory: { [categoryId: number]: any[] } = {};
+bc2OptionsByCategory: { [categoryId: number]: any[] } = {};
   uncategorizedBC2Options: any[] = [];
+
+  // BC1 Pack statistics - grouped by pack
+  packsByPack: any[] = [];
 
   // Dialog for entreprises by option
   displayEntreprisesDialog = false;
@@ -293,6 +296,18 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => console.error('Error loading president data:', err)
     });
+
+    // Load BC1 Pack statistics
+    this.loadBC1PackStats();
+  }
+
+  loadBC1PackStats(): void {
+    this.dashboardService.getBC1PackStats().subscribe({
+      next: (data) => {
+        this.packsByPack = data.packsByPack || [];
+      },
+      error: (err) => console.error('Error loading BC1 pack stats:', err)
+    });
   }
 
   organizeBC2OptionsByCategory(): void {
@@ -338,5 +353,5 @@ export class DashboardComponent implements OnInit {
         this.entreprisesByOption = [];
       }
     });
-  }
+  };
 }

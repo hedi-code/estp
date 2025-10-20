@@ -27,6 +27,7 @@
         <th style="width: 3%"></th>
         <th pSortableColumn="id" style="width: 5%">ID <p-sortIcon field="id" /></th>
         <th pSortableColumn="entreprise_id" style="width: 10%">Entreprise <p-sortIcon field="entreprise_nom" /></th>
+        <th pSortableColumn="entreprise_commercial" style="width: 10%">Commercial <p-sortIcon field="entreprise_commercial" /></th>
         <th pSortableColumn="chiffreAff" style="width: 12%">Chiffre d'affaire <p-sortIcon field="chiffreAff" /></th>
         <th pSortableColumn="description" style="width: 16%">Description <p-sortIcon field="description" /></th>
         <th pSortableColumn="nombre_collaborateurs" style="width: 12%">Collaborateurs <p-sortIcon field="nombre_collaborateurs" /></th>
@@ -54,6 +55,7 @@
         <th></th>
         <th><p-columnFilter type="text" field="id" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="entreprise_nom" [showClearButton]="false" matchMode="contains" /></th>
+        <th><p-columnFilter type="text" field="entreprise_commercial" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="chiffreAff" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="description" [showClearButton]="false" matchMode="contains" /></th>
         <th><p-columnFilter type="text" field="nombre_collaborateurs" [showClearButton]="false" matchMode="contains" /></th>
@@ -87,6 +89,7 @@
         </td>
         <td>{{ b.id || '-' }}</td>
         <td>{{ b.entreprise_nom || '-' }}</td>
+        <td>{{ b.entreprise_commercial || '-' }}</td>
         <td>{{ b.chiffreAff || '-' }}</td>
         <td [pTooltip]="b.description" tooltipPosition="top">
           {{ (b.description && b.description.length > 50) ? (b.description | slice:0:50) + '...' : (b.description || '-') }}
@@ -144,7 +147,7 @@
     <!-- ROW EXPANSION TEMPLATE -->
     <ng-template pTemplate="rowexpansion" let-b>
       <tr>
-        <td colspan="21">
+        <td colspan="22">
           <p-accordion>
             <!-- Informations générales -->
             <p-accordionTab header="Informations générales">

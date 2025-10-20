@@ -49,7 +49,7 @@ const routes: Routes = [
     path: 'forum',
     component: LayoutComponent,
     children: [
-      { path: 'dashboard', component: DashboardComponent, canActivate: [RoleGuard], data: { roles: ['tres', 'pres', 'comm', 'rescom', 'reslog', 'resplan'] } },
+      { path: 'dashboard', component: DashboardComponent, canActivate: [RoleGuard], data: { roles: ['tres', 'pres', 'comm', 'rescom', 'reslog', 'resplan', 'resbook'] } },
       { path: 'entreprise', component: EntrepriseSouscritesComponent, canActivate: [RoleGuard], data: { roles: ['rescom', 'pres', 'comm', 'tres', 'reslog', 'resplan'] } },
       { path: 'bc1', component: Bc1SouscritsComponent, canActivate: [RoleGuard], data: { roles: ['rescom', 'pres', 'comm', 'tres', 'reslog', 'resplan'] } },
       { path: 'bc2', component: Bc2SouscritsComponent, canActivate: [RoleGuard], data: { roles: ['rescom', 'pres', 'comm', 'tres', 'reslog', 'resplan'] } },
@@ -57,9 +57,9 @@ const routes: Routes = [
       { path: 'gestion-bc2', component: GestionBc2Component, canActivate: [RoleGuard], data: { roles: ['pres'] } },
       { path: 'gestion-book', component: GestionBookComponent, canActivate: [RoleGuard], data: { roles: ['resbook', 'pres'] } },
       { path: 'gestion-plan', component: GestionPlanComponent, canActivate: [RoleGuard], data: { roles: ['resplan', 'pres'] } },
-      { path: 'mailing', component: MailingComponent, canActivate: [RoleGuard], data: { roles: ['pres','rescommu','comman','pres','rescom'] } },
+      { path: 'mailing', component: MailingComponent, canActivate: [RoleGuard], data: { roles: ['pres','rescommu','comman','pres','rescom','comm'] } },
       { path: 'standiste', component: StandisteComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
-      { path: 'gestion-exposants', component: GestionExposantsComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
+      { path: 'gestion-exposants', component: GestionExposantsComponent, canActivate: [RoleGuard], data: { roles: ['pres','rescom','comm'] } },
       { path: 'logistique', component: ConfigComponent, canActivate: [RoleGuard], data: { roles: ['pres', 'reslog'] } },
     ]
   }

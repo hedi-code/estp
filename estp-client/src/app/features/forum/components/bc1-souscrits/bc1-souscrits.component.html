@@ -29,6 +29,7 @@
     <tr>
       <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
       <th pSortableColumn="entreprise.nom" style="width: 200px;">Entreprise <p-sortIcon field="entreprise.nom" /></th>
+      <th pSortableColumn="entreprise.commercial">Commercial <p-sortIcon field="entreprise.commercial" /></th>
       <th pSortableColumn="pack">Pack <p-sortIcon field="pack" /></th>
       <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
       <th pSortableColumn="fct_envoyee" *ngIf="role === 'tres' || role === 'pres'">Envoyée <p-sortIcon field="valide" /></th>
@@ -41,6 +42,7 @@
     <tr>
       <th><p-columnFilter field="id" matchMode="contains" /></th>
       <th><p-columnFilter field="entreprise.nom" matchMode="contains" /></th>
+      <th><p-columnFilter field="entreprise.commercial" matchMode="contains" /></th>
       <th><p-columnFilter field="pack" matchMode="contains" /></th>
       <th></th>
       <th *ngIf="role === 'tres' || role === 'pres'"></th>
@@ -57,6 +59,7 @@
     <tr>
       <td>{{ cmd.id }}</td>
       <td style="padding-right: 150px;">{{ cmd.entreprise?.nom ?? '-' }}</td>
+      <td>{{ cmd.entreprise?.commercial ?? '-' }}</td>
       <td>{{ cmd.packDescription ?? '-' }}</td>
        <td>
         <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>
@@ -255,8 +258,19 @@
         </ng-template>
  </p-dialog>
 
-<p-dialog header="Facture" [responsive]="false" [(visible)]="factureVisible" [modal]="true"  [style]="{width: '900px'}" 
+<p-dialog header="Facture" [responsive]="false" [(visible)]="factureVisible" [modal]="true"  [style]="{width: '900px'}"
 [maximizable]="true">
+ <div class="mb-3">
+   <label for="dateSolde" class="block mb-2 font-semibold">Date du solde à régler :</label>
+   <p-calendar
+     [(ngModel)]="dateSoldeFacture"
+     dateFormat="dd/mm/yy"
+     [showIcon]="true"
+     inputId="dateSolde"
+     [showButtonBar]="true"
+     styleClass="w-full">
+   </p-calendar>
+ </div>
  <app-bc1-souscrit-facture
   [modifyCommandeFact]="modifyCommande"
   [modifyPackId]="modifyPackId"
@@ -266,6 +280,7 @@
   [modifyTotalHt]="modifyTotalHt"
   [modificationCommandeOption]="modificationCommandeOption"
   [modificationContact]="modificationContact"
+  [dateSolde]="dateSoldeFacture"
   (envoyerFactureEvent)="envoyerFacture()"
   id="contentToExport" #factureBc1
  ></app-bc1-souscrit-facture>

@@ -23,7 +23,7 @@ export class MenuComponent {
           ]
         },
       )
-      if (this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "tres" || this.cookieService.getRole() === "comm" || this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "reslog" || this.cookieService.getRole() === "resplan") {
+      if (this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "tres" || this.cookieService.getRole() === "comm" || this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "reslog" || this.cookieService.getRole() === "resplan" || this.cookieService.getRole() === "resbook") {
         this.model.find(i => i.label == "Tableau de Bord")?.items?.push({ label: 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/forum/dashboard'] },
         )
       }
@@ -46,9 +46,6 @@ export class MenuComponent {
             {
               label: 'Standiste', icon: 'pi pi-fw pi-users', routerLink: ['/forum/standiste']
             },
-            {
-              label: 'Exposants', icon: 'pi pi-fw pi-user', routerLink: ['/forum/gestion-exposants']
-            },
 
           ]
         }
@@ -69,13 +66,21 @@ export class MenuComponent {
         )
       }
     }
-     if (this.cookieService.getRole() === "rescommu" || this.cookieService.getRole() === "comman" || this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "rescom") {
+     if (this.cookieService.getRole() === "rescommu" || this.cookieService.getRole() === "comman" || this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "comm") {
           const gestionIndex = this.model.findIndex(element => element.label === "Gestion");
           this.model[gestionIndex].items?.push({
             label: 'Mailing', icon: 'pi pi-fw pi-envelope', routerLink: ['/forum/mailing']
           },)
 
         }
+    if (this.cookieService.getRole() === "pres" || this.cookieService.getRole() === "rescom" || this.cookieService.getRole() === "comm") {
+      const gestionIndex = this.model.findIndex(element => element.label === "Gestion");
+      if (gestionIndex !== -1) {
+        this.model[gestionIndex].items?.push(
+          { label: 'Exposants', icon: 'pi pi-fw pi-user', routerLink: ['/forum/gestion-exposants'] },
+        )
+      }
+    }
     if (this.cookieService.getRole() === "resbook" || this.cookieService.getRole() === "pres") {
       const gestionIndex = this.model.findIndex(element => element.label === "Gestion");
       if (gestionIndex !== -1) {

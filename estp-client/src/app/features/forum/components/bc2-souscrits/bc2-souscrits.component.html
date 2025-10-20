@@ -17,7 +17,7 @@
   >
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td [attr.colspan]="role === 'tres' || role === 'pres' ? 11 : 9" style="text-align: center; color: #999;">Pas de données</td>
+        <td [attr.colspan]="role === 'tres' || role === 'pres' ? 12 : 10" style="text-align: center; color: #999;">Pas de données</td>
       </tr>
     </ng-template>
 
@@ -26,6 +26,7 @@
       <tr>
         <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
         <th pSortableColumn="entreprise.nom" style="width: 200px;">Entreprise <p-sortIcon field="entreprise.nom" /></th>
+        <th pSortableColumn="entreprise.commercial">Commercial <p-sortIcon field="entreprise.commercial" /></th>
         <th pSortableColumn="valide">Valide <p-sortIcon field="valide" /></th>
         <th pSortableColumn="fct_envoyee" *ngIf="role === 'tres' || role === 'pres'">Envoyée <p-sortIcon field="fct_envoyee" /></th>
         <th pSortableColumn="fct_payee" *ngIf="role === 'tres' || role === 'pres'">Payée <p-sortIcon field="fct_payee" /></th>
@@ -37,7 +38,8 @@
       </tr>
       <tr>
         <th><p-columnFilter field="id" matchMode="contains" /></th>
-        <th><p-columnFilter field="entreprise.nom" matchMode="contains" /></th>
+        <th style="min-width: 300px !important;"><p-columnFilter field="entreprise.nom" matchMode="contains" /></th>
+        <th><p-columnFilter field="entreprise.commercial" matchMode="contains" /></th>
         <th></th>
         <th *ngIf="role === 'tres' || role === 'pres'"></th>
         <th *ngIf="role === 'tres' || role === 'pres'"></th>
@@ -53,7 +55,8 @@
     <ng-template pTemplate="body" let-cmd>
       <tr>
         <td>{{ cmd.id }}</td>
-        <td style="padding-right: 150px;">{{ cmd.entreprise?.nom ?? '-' }}</td>
+        <td style="padding-right: 150px;" class="w-fit">{{ cmd.entreprise?.nom ?? '-' }}</td>
+        <td>{{ cmd.entreprise?.commercial ?? '-' }}</td>
         <td>
           <p-tag *ngIf="cmd.valide" icon="pi pi-check" severity="success" value="Oui"></p-tag>
           <p-tag *ngIf="!cmd.valide" icon="pi pi-times" severity="warning" value="Non"></p-tag>
@@ -163,7 +166,7 @@
               <th>Image</th>
               <th>Couleur</th>
               <th>Qté</th>
-              <th>Réduction (%)</th>
+              <th *ngIf="this.role !== 'user' && this.role !== 'comm'">Réduction (%)</th>
             </tr>
           </ng-template>
 
@@ -199,7 +202,7 @@
                   mode="decimal"
                   (ngModelChange)="modifierOption(opt)"/>
               </td>
-              <td style="width: 180px;">
+              <td style="width: 180px;" *ngIf="this.role !== 'user' && this.role !== 'comm'">
                 <p-inputNumber
                   [(ngModel)]="opt.reductionCommande"
                   [showButtons]="true"
@@ -239,7 +242,7 @@
               <th>Image</th>
               <th>Couleur</th>
               <th>Qté</th>
-              <th>Réduction (%)</th>
+              <th *ngIf="this.role !== 'user' && this.role !== 'comm'">Réduction (%)</th>
             </tr>
           </ng-template>
 
@@ -276,7 +279,7 @@
                   (ngModelChange)="modifierOption(opt)"/>
               </td>
               <td style="width: 180px;">
-                <p-inputNumber
+                <p-inputNumber *ngIf="this.role !== 'user' && this.role !== 'comm'"
                   [(ngModel)]="opt.reductionCommande"
                   [showButtons]="true"
                   buttonLayout="horizontal"

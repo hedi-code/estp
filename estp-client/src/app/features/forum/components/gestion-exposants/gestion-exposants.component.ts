@@ -6,6 +6,7 @@ import { BookService } from '../../services/book.service';
 import { Entreprise } from '../../../entreprise/entreprise.model';
 import { Book } from '../../models/book.model';
 import { EntrepriseService } from '../../../entreprise/entreprise.service';
+import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
 import jsPDF from 'jspdf';
 
 @Component({
@@ -33,15 +34,20 @@ export class GestionExposantsComponent implements OnInit {
   pdfExposants: any[] | undefined
   entreprises: Entreprise[] = [];
   selectedEntreprise: Entreprise | null = null;
+  userRole: string = '';
+  userId: number | null = null;
 
   constructor(
     private exposantService: ExposantService,
     private confirmationService: ConfirmationService,
     private bookService: BookService,
-    private entrepriseService: EntrepriseService
+    private entrepriseService: EntrepriseService,
+    private authCookieService: AuthCookieService
   ) {}
 
   ngOnInit(): void {
+    this.userRole = this.authCookieService.getRole() ?? '';
+    this.userId = Number(this.authCookieService.getUserId())
     this.loadExposants();
     this.loadEntreprises();
   }
@@ -49,9 +55,15 @@ export class GestionExposantsComponent implements OnInit {
   loadEntreprises(): void {
     this.entrepriseService.getAllEntreprises().subscribe({
       next: (data) => {
-        this.entreprises = data.sort((a, b) =>
-          (a.nom || '').localeCompare(b.nom || '')
-        );
+        // Filter enterprises based on role
+        if (this.userRole === 'comm' && this.userId) {
+          this.entreprises = data.filter(e => e.commercial_id === this.userId)
+            .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+        } else {
+          this.entreprises = data.sort((a, b) =>
+            (a.nom || '').localeCompare(b.nom || '')
+          );
+        }
       },
       error: (err) => console.error('Error loading entreprises:', err)
     });
@@ -60,9 +72,26 @@ export class GestionExposantsComponent implements OnInit {
   loadExposants(): void {
     this.exposantService.getAllExposantsWithEntreprise().subscribe({
       next: (data) => {
-        this.exposants = data;
-        this.applyFilter();
-        this.groupByEntreprise();
+        // Filter exposants based on role
+        if (this.userRole === 'comm' && this.userId) {
+          // For commercials, only show exposants from their assigned enterprises
+          this.entrepriseService.getAllEntreprises().subscribe({
+            next: (entreprises) => {
+              const assignedEnterpriseIds = entreprises
+                .filter(e => e.commercial_id === this.userId)
+                .map(e => e.id);
+              this.exposants = data.filter(exp =>
+                assignedEnterpriseIds.includes(exp.entreprise_id)
+              );
+              this.applyFilter();
+              this.groupByEntreprise();
+            }
+          });
+        } else {
+          this.exposants = data;
+          this.applyFilter();
+          this.groupByEntreprise();
+        }
       },
       error: (err) => console.error('Error loading exposants:', err)
     });
@@ -183,104 +212,135 @@ export class GestionExposantsComponent implements OnInit {
     this.pdfExposants = e;
     this.getBook();
   }
-  async generateBadgesPdf() {
-    if (!this.pdfExposants || this.pdfExposants.length === 0 || !this.pdfBookEntreprise) {
-      console.error('No exposants or logo available for PDF generation');
-      return;
-    }
+  private loadImageSize(dataUrl: string): Promise<{ width: number; height: number; aspectRatio: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({
+        width: img.width,
+        height: img.height,
+        aspectRatio: img.width / img.height
+      });
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
 
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    // A4 dimensions: 210mm x 297mm
-    const pageWidth = 210;
-    const pageHeight = 297;
-    const badgeWidth = 75;
-    const badgeHeight = 55;
-    const badgesPerRow = 2;
-    const horizontalMargin = (pageWidth - (badgeWidth * badgesPerRow)) / 3; // Space between and around badges
-    const verticalMargin = 10;
-    let currentX = horizontalMargin;
-    let currentY = verticalMargin;
-    let badgeCount = 0;
-
-    // Load logo image
-    let logoDataUrl: string | null = null;
-    if (this.pdfBookEntreprise.logo_url) {
-      try {
-        logoDataUrl = await this.loadImageAsDataUrl(this.pdfBookEntreprise.logo_url);
-      } catch (err) {
-        console.error('Error loading logo:', err);
-      }
-    }
-
-    for (let i = 0; i < this.pdfExposants.length; i++) {
-      const exposant = this.pdfExposants[i];
-
-      // Add new page if needed (except for first badge)
-      if (badgeCount > 0 && badgeCount % 10 === 0) {
-        pdf.addPage();
-        currentX = horizontalMargin;
-        currentY = verticalMargin;
-      }
-
-      // Draw badge border
-      pdf.setDrawColor(200, 200, 200);
-      pdf.rect(currentX, currentY, badgeWidth, badgeHeight);
-
-      // Add logo if available
-      if (logoDataUrl) {
-        const logoMaxWidth = badgeWidth * 0.7;
-        const logoMaxHeight = badgeHeight * 0.45;
-        const logoX = currentX + (badgeWidth - logoMaxWidth) / 2;
-        const logoY = currentY + 5;
-
-        try {
-          pdf.addImage(logoDataUrl, 'PNG', logoX, logoY, logoMaxWidth, logoMaxHeight);
-        } catch (err) {
-          console.error('Error adding logo to PDF:', err);
-        }
-      }
-
-      // Add name (UPPERCASE) + first name (Capitalized)
-      const nameY = currentY + (logoDataUrl ? 32 : 15);
-      const fullName = `${exposant.nom.toUpperCase()} ${this.capitalize(exposant.prenom)}`;
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'bold');
-
-      // Center the name
-      const nameWidth = pdf.getTextWidth(fullName);
-      const nameX = currentX + (badgeWidth - nameWidth) / 2;
-      pdf.text(fullName, nameX, nameY);
-
-      // Add fonction
-      const fonctionY = nameY + 6;
-      pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'normal');
-
-      // Center the fonction
-      const fonctionWidth = pdf.getTextWidth(exposant.fonction);
-      const fonctionX = currentX + (badgeWidth - fonctionWidth) / 2;
-      pdf.text(exposant.fonction, fonctionX, fonctionY);
-
-      // Move to next position
-      badgeCount++;
-      currentX += badgeWidth + horizontalMargin;
-
-      // Move to next row if needed
-      if (badgeCount % badgesPerRow === 0) {
-        currentX = horizontalMargin;
-        currentY += badgeHeight + verticalMargin;
-      }
-    }
-
-    // Save the PDF
-    const entrepriseName = this.pdfExposants[0]?.entreprise_nom || 'Entreprise';
-    pdf.save(`badges_${entrepriseName.replace(/\s+/g, '_')}.pdf`);
+async generateBadgesPdf() {
+  if (!this.pdfExposants || this.pdfExposants.length === 0 || !this.pdfBookEntreprise) {
+    console.error('No exposants or logo available for PDF generation');
+    return;
   }
+
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // A4 dimensions: 210mm x 297mm
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const badgeWidth = 75;
+  const badgeHeight = 55;
+  const badgesPerRow = 2;
+  const horizontalMargin = (pageWidth - (badgeWidth * badgesPerRow)) / 3; // Space between and around badges
+  const verticalMargin = 10;
+  let currentX = horizontalMargin;
+  let currentY = verticalMargin;
+  let badgeCount = 0;
+
+  // Load logo image
+  let logoDataUrl: string | null = null;
+  let logoAspectRatio: number | null = null;
+
+  if (this.pdfBookEntreprise.logo_url) {
+    try {
+      logoDataUrl = await this.loadImageAsDataUrl(this.pdfBookEntreprise.logo_url);
+      const { aspectRatio } = await this.loadImageSize(logoDataUrl);
+      logoAspectRatio = aspectRatio;
+    } catch (err) {
+      console.error('Error loading logo or calculating size:', err);
+    }
+  }
+
+  for (let i = 0; i < this.pdfExposants.length; i++) {
+    const exposant = this.pdfExposants[i];
+
+    // Add new page if needed (except for first badge)
+    if (badgeCount > 0 && badgeCount % 10 === 0) {
+      pdf.addPage();
+      currentX = horizontalMargin;
+      currentY = verticalMargin;
+    }
+
+    // Draw badge border
+    pdf.setDrawColor(200, 200, 200);
+    pdf.rect(currentX, currentY, badgeWidth, badgeHeight);
+
+    // Add logo if available
+    if (logoDataUrl && logoAspectRatio) {
+      const logoMaxWidth = badgeWidth * 0.7;
+      const logoMaxHeight = badgeHeight * 0.45;
+
+      // Calculate dimensions maintaining aspect ratio
+      let logoWidth = logoMaxWidth;
+      let logoHeight = logoWidth / logoAspectRatio;
+
+      // If height exceeds max, scale based on height instead
+      if (logoHeight > logoMaxHeight) {
+        logoHeight = logoMaxHeight;
+        logoWidth = logoHeight * logoAspectRatio;
+      }
+
+      const logoX = currentX + (badgeWidth - logoWidth) / 2;
+      const logoY = currentY + 5;
+      
+      try {
+        pdf.addImage(logoDataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+      } catch (err) {
+        console.error('Error adding logo to PDF:', err);
+      }
+    }
+
+    // Add name (UPPERCASE) + first name (Capitalized)
+    const nameY = currentY + (logoDataUrl ? 32 : 15);
+    const fullName = `${exposant.nom.toUpperCase()} ${this.capitalize(exposant.prenom)}`;
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+
+    // Center the name
+    const nameWidth = pdf.getTextWidth(fullName);
+    const nameX = currentX + (badgeWidth - nameWidth) / 2;
+    pdf.text(fullName, nameX, nameY);
+
+    // Add fonction
+    const fonctionY = nameY + 6;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+
+    // Center the fonction
+    const fonctionWidth = pdf.getTextWidth(exposant.fonction);
+    const fonctionX = currentX + (badgeWidth - fonctionWidth) / 2;
+    pdf.text(exposant.fonction, fonctionX, fonctionY);
+
+    // Move to next position
+    badgeCount++;
+    currentX += badgeWidth + horizontalMargin;
+
+    // Move to next row if needed
+    if (badgeCount % badgesPerRow === 0) {
+      currentX = horizontalMargin;
+      currentY += badgeHeight + verticalMargin;
+    }
+  }
+
+  // Save the PDF
+  const entrepriseName = this.pdfExposants[0]?.entreprise_nom || 'Entreprise';
+  pdf.save(`badges_${entrepriseName.replace(/\s+/g, '_')}.pdf`);
+}
+
 
   private capitalize(text: string): string {
     if (!text) return '';

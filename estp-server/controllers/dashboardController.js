@@ -310,3 +310,63 @@ exports.getAllPaymentStats = (req, res) => {
     res.status(500).json({ error: 'Erreur base de données' });
   });
 };
+
+exports.getBC1PackStats = (req, res) => {
+  // New Query: Get packs with their surfaces grouped by pack
+  // For each pack, show all surfaces with their prices and enterprise counts
+  const packsByPackQuery = `
+    SELECT
+      p.id as pack_id,
+      p.titre as pack_titre,
+      p.type as pack_type,
+      ps.id as surface_id,
+      ps.surface,
+      ps.prix as prix_ht,
+      COUNT(DISTINCT c1.entreprise_id) as enterprise_count
+    FROM pack1s p
+    LEFT JOIN pack1s_surface ps ON p.id = ps.id_pack1
+    LEFT JOIN commande1s c1 ON ps.id = c1.pack1_id
+    GROUP BY p.id, p.titre, p.type, ps.id, ps.surface, ps.prix
+    ORDER BY p.titre, ps.surface
+  `;
+
+  db.query(packsByPackQuery, (err, results) => {
+    if (err) {
+      console.error('Error getting BC1 pack stats:', err);
+      return res.status(500).json({ error: 'Erreur base de données' });
+    }
+
+    // Group results by pack
+    const packsByPack = {};
+
+    results.forEach(row => {
+      const packId = row.pack_id;
+
+      if (!packsByPack[packId]) {
+        packsByPack[packId] = {
+          pack_id: row.pack_id,
+          pack_titre: row.pack_titre,
+          pack_type: row.pack_type,
+          surfaces: []
+        };
+      }
+
+      // Only add surface if it exists (LEFT JOIN can return null surfaces)
+      if (row.surface_id) {
+        packsByPack[packId].surfaces.push({
+          surface_id: row.surface_id,
+          surface: row.surface,
+          prix_ht: row.prix_ht,
+          enterprise_count: row.enterprise_count || 0
+        });
+      }
+    });
+
+    // Convert object to array
+    const packsArray = Object.values(packsByPack);
+
+    res.json({
+      packsByPack: packsArray
+    });
+  });
+};

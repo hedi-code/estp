@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { BookService } from './book.service';
 import { Commande1Service } from './commande1.service';
 import { Commande2Service } from './commande2.service';
+import { EntrepriseService } from '../../entreprise/entreprise.service';
 
 export interface DashboardStats {
   totalBooks: number;
@@ -47,7 +48,8 @@ export class DashboardService {
     private http: HttpClient,
     private bookService: BookService,
     private commande1Service: Commande1Service,
-    private commande2Service: Commande2Service
+    private commande2Service: Commande2Service,
+    private entrepriseService: EntrepriseService
   ) { }
 
   getDashboardStats(): Observable<DashboardStats> {
@@ -55,7 +57,7 @@ export class DashboardService {
       books: this.bookService.getAll(),
       commandes1: this.commande1Service.getAllCommande1s(),
       commandes2: this.commande2Service.getAllCommande2s(),
-      entreprises: this.http.get<any[]>(`${this.apiUrl}/user`)
+      entreprises: this.entrepriseService.getAllEntreprises()
     }).pipe(
       map(({ books, commandes1, commandes2, entreprises }) => {
         console.log('Commandes1 data:', commandes1);
@@ -76,7 +78,7 @@ export class DashboardService {
         console.log('Total BC1 Amount:', totalBc1Amount);
         console.log('Total BC2 Amount:', totalBc2Amount);
 
-        const totalEntreprises = entreprises.filter(user => user.role === 'comm' || user.entreprise).length;
+        const totalEntreprises = entreprises.length;
 
         return {
           totalBooks: books.length,
@@ -104,5 +106,9 @@ export class DashboardService {
 
   getAllPaymentStats(): Observable<CommercialDashboardStats> {
     return this.http.get<CommercialDashboardStats>(`${this.apiUrl}/dashboard/all-payment-stats`);
+  }
+
+  getBC1PackStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/dashboard/bc1-pack-stats`);
   }
 }

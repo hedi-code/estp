@@ -36,7 +36,8 @@
         <div class="col-12 md:col-3">
           <div class="bg-teal-100 border-round p-3 text-center">
             <i class="pi pi-building text-teal-500 text-4xl mb-2"></i>
-            <h3 class="text-2xl font-bold text-teal-700">{{stats.totalEntreprises}}</h3>
+            <h3 class="text-2xl font-bold text-teal-700" *ngIf="role !== 'comm'">{{stats.totalEntreprises}}</h3>
+            <h3 class="text-2xl font-bold text-teal-700" *ngIf="role == 'comm'">{{assignedEntreprises.length}}</h3>
             <p class="text-teal-600 font-medium">Total Entreprises</p>
           </div>
         </div>
@@ -113,14 +114,14 @@
         <div class="col-12 md:col-4">
           <div class="bg-blue-100 border-round p-3 text-center">
             <i class="pi pi-id-card text-blue-500 text-3xl mb-2"></i>
-            <h4 class="text-xl font-bold text-blue-700">{{totalBC1Count}}/25</h4>
+            <h4 class="text-xl font-bold text-blue-700">{{totalBC1Count}}</h4>
             <p class="text-blue-600 font-medium">Total BC1</p>
           </div>
         </div>
         <div class="col-12 md:col-4">
           <div class="bg-purple-100 border-round p-3 text-center">
             <i class="pi pi-mobile text-purple-500 text-3xl mb-2"></i>
-            <h4 class="text-xl font-bold text-purple-700">{{totalBC2Count}}/25</h4>
+            <h4 class="text-xl font-bold text-purple-700">{{totalBC2Count}}</h4>
             <p class="text-purple-600 font-medium">Total BC2</p>
           </div>
         </div>
@@ -202,8 +203,54 @@
       </div>
     </div>
 
+    <!-- BC1 Pack Statistics - Grouped by Pack -->
+    <div *ngIf="['pres', 'tres', 'rescom', 'reslog', 'resplan', 'resbook'].includes(role) && !loading" class="col-12">
+      <h3 class="text-xl font-bold mb-4 text-indigo-600">Statistiques des Packs BC1</h3>
+
+      <div class="grid mb-4">
+        <!-- Each Pack in its own panel -->
+        <div class="col-12 lg:col-6 xl:col-4" *ngFor="let pack of packsByPack">
+          <p-panel [header]="pack.pack_titre + ' (' + pack.pack_type + ')'" class="h-full">
+            <p-table [value]="pack.surfaces"
+                     [paginator]="pack.surfaces.length > 5"
+                     [rows]="5"
+                     styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th pSortableColumn="surface">Surface (m²) <p-sortIcon field="surface" /></th>
+                  <th pSortableColumn="prix_ht">Prix HT <p-sortIcon field="prix_ht" /></th>
+                  <th pSortableColumn="enterprise_count">Nb Ent. <p-sortIcon field="enterprise_count" /></th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-surface>
+                <tr>
+                  <td>{{ surface.surface || '-' }} m²</td>
+                  <td>{{ surface.prix_ht | currency:'EUR':'symbol':'1.2-2' }}</td>
+                  <td class="text-center font-bold">{{ surface.enterprise_count || 0 }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="3" class="text-center text-gray-600">Aucune surface disponible</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </p-panel>
+        </div>
+
+        <!-- Message if no packs -->
+        <div class="col-12" *ngIf="packsByPack.length === 0">
+          <p-panel header="Packs BC1">
+            <div class="p-3 text-center text-gray-600">
+              Aucun pack disponible
+            </div>
+          </p-panel>
+        </div>
+      </div>
+    </div>
+
     <!-- Options Dashboard (BC1/BC2 Options by Category) -->
-    <div *ngIf="['pres', 'tres', 'rescom', 'reslog', 'resplan'].includes(role) && !loading" class="col-12">
+    <div *ngIf="['pres', 'tres', 'rescom', 'reslog', 'resplan','resbook'].includes(role) && !loading" class="col-12">
       <h3 class="text-xl font-bold mb-4 text-purple-600">Toutes les options achetées</h3>
 
       <!-- BC1 Options Section -->

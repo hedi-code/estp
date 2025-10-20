@@ -22,6 +22,8 @@ import { cloneDeep } from 'lodash';
 import { Table } from 'primeng/table';
 import { Commande, CommandeService } from '../../../entreprise/commande/commande.service';
 import { DecimalPipe } from '@angular/common';
+import { UserService } from '../../services/user.service';
+import { User } from '../../models/user.model';
 
 
 
@@ -77,6 +79,9 @@ export class Bc1SouscritsComponent implements OnInit {
   factureVisible: boolean = false;
   @ViewChild('factureBc1') factureBc1!: Bc1SouscritFactureComponent;
 bc1DialogVisible: boolean = false;
+  dateSoldeFacture: Date = new Date('2025-11-10'); // Date du solde modifiable
+
+  commercials: User[] = [];
 
   constructor(
     private commandeService: Commande1Service,
@@ -90,7 +95,8 @@ bc1DialogVisible: boolean = false;
     private contactService: ContactService,
     private emailService: EmailService,
     private commandeGenService: CommandeService,
-    private decimalPipe: DecimalPipe
+    private decimalPipe: DecimalPipe,
+    private userService: UserService
   ) { }
 
   ngOnInit(): void {
@@ -103,20 +109,32 @@ bc1DialogVisible: boolean = false;
       commandes: this.commandeService.getAllCommande1s(),
       entreprises: this.entrepriseService.getAllEntreprises(),
       pack: this.packService.getAllPacks(),
-      options: this.optionService.getAllOptions()
+      options: this.optionService.getAllOptions(),
+      commercials: this.userService.getCommercials()
     }).subscribe({
-      next: ({ commandes, entreprises, pack, options }) => {
-        this.optionsBc1 = options
-        this.entreprises = entreprises;
-        this.pack = pack
+      next: ({ commandes, entreprises, pack, options, commercials }) => {
+        this.optionsBc1 = options;
+        this.commercials = commercials;
+        this.pack = pack;
+
+        // Map commercial names to entreprises
+        this.entreprises = entreprises.map(ent => {
+          const commercial = commercials.find(c => c.id == ent.commercial_id);
+          return {
+            ...ent,
+            commercial: (commercial && commercial.first_name && commercial.last_name)
+              ? `${commercial.first_name} ${commercial.last_name}`
+              : '-'
+          };
+        });
 
         const commandeIds = commandes.map(c => c.entreprise_id);
-        this.ajoutEntreprises = entreprises.filter(e => !commandeIds.includes(e.id ?? -1));
+        this.ajoutEntreprises = this.entreprises.filter(e => !commandeIds.includes(e.id ?? -1));
         this.ajoutOption = options;
         this.ajoutPacks = pack;
         this.commandes = commandes.map(cmd => ({
           ...cmd,
-          entreprise: entreprises.find(e => e.id === cmd.entreprise_id),
+          entreprise: this.entreprises.find(e => e.id === cmd.entreprise_id),
           pack: pack.find(p => (p.surfaces?.find(s => s.surface_id == cmd.pack1_id))),
           packDescription: this.getPackDesrcription(cmd.pack1_id ?? -1, pack.find(p => (p.surfaces?.find(s => s.surface_id == cmd.pack1_id))))
         }));

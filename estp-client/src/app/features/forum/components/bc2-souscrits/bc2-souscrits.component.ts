@@ -18,6 +18,8 @@ import { cloneDeep } from 'lodash';
 import { Table } from 'primeng/table';
 import { DecimalPipe } from '@angular/common';
 import { Option2CategoriesService } from '../../services/option2-categories.service';
+import { UserService } from '../../services/user.service';
+import { User } from '../../models/user.model';
 
 interface CommandeWithEntreprise extends Commande2 {
   entreprise?: Entreprise,
@@ -69,6 +71,8 @@ export class Bc2SouscritsComponent implements OnInit {
   @ViewChild('factureBc2') factureBc2!: any;
   @ViewChild('bc2Pdf') bc2Pdf!: any;
 
+  commercials: User[] = [];
+
   constructor(
     private commande2Service: Commande2Service,
     private entrepriseService: EntrepriseService,
@@ -81,7 +85,8 @@ export class Bc2SouscritsComponent implements OnInit {
     private contactService: ContactService,
     private emailService: EmailService,
     private decimalPipe: DecimalPipe,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private userService: UserService
   ) {
     this.initStandisteForms();
   }
@@ -115,20 +120,32 @@ export class Bc2SouscritsComponent implements OnInit {
       commandes: this.commande2Service.getAllCommande2s(),
       entreprises: this.entrepriseService.getAllEntreprises(),
       options: this.option2Service.getAllOption2s(),
-      categories: this.option2CategoriesService.getAllOption2Categories()
+      categories: this.option2CategoriesService.getAllOption2Categories(),
+      commercials: this.userService.getCommercials()
     }).subscribe({
-      next: ({ commandes, entreprises, options, categories }) => {
+      next: ({ commandes, entreprises, options, categories, commercials }) => {
         this.optionsBc2 = options;
         this.option2Categories = categories;
-        this.entreprises = entreprises;
+        this.commercials = commercials;
+
+        // Map commercial names to entreprises
+        this.entreprises = entreprises.map(ent => {
+          const commercial = commercials.find(c => c.id == ent.commercial_id);
+          return {
+            ...ent,
+            commercial: (commercial && commercial.first_name && commercial.last_name)
+              ? `${commercial.first_name} ${commercial.last_name}`
+              : '-'
+          };
+        });
 
         const commandeIds = commandes.map(c => c.entreprise_id);
-        this.ajoutEntreprises = entreprises.filter(e => !commandeIds.includes(e.id ?? -1));
+        this.ajoutEntreprises = this.entreprises.filter(e => !commandeIds.includes(e.id ?? -1));
         this.ajoutOption = options;
 
         this.commandes = commandes.map(cmd => ({
           ...cmd,
-          entreprise: entreprises.find(e => e.id === cmd.entreprise_id)
+          entreprise: this.entreprises.find(e => e.id === cmd.entreprise_id)
         }));
 
         if (this.cookieService.getRole() == "comm") {

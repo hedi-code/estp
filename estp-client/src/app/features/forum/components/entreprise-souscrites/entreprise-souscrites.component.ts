@@ -78,31 +78,40 @@ export class EntrepriseSouscritesComponent implements OnInit {
   ngOnInit(): void {
     this.role = this.cookieService.getRole();
     this.readOnly = ['resplan', 'reslog'].includes(this.role as string);
-    this.entrepriseService.getAllEntreprises().subscribe({
-      next: (response) => {
-        if (this.cookieService.getRole() == "comm") {
-          this.entreprises = response.filter(e => e.commercial_id == Number(this.cookieService.getUserId()));
-        }
-        else {
-          this.entreprises = response;
-        }
-        // Load contact information for each entreprise
-        this.loadContactInformation();
-      },
-      error: (err) => console.log(err)
-    })
+
+    // Load commercials first, then entreprises
     this.userService.getCommercials().subscribe({
-      next: (response) => {
-        this.commercials = response
-          this.entreprises.forEach(element => {
-      element.commercial = this.commercials.find(e => e.id == element.commercial_id)?.first_name + " " + this.commercials.find(e => e.id == element.commercial_id)?.last_name;
-          console.log(this.entreprises)
-    })
+      next: (commercials) => {
+        this.commercials = commercials;
+
+        // Now load entreprises and map commercial names
+        this.entrepriseService.getAllEntreprises().subscribe({
+          next: (response) => {
+            if (this.cookieService.getRole() == "comm") {
+              this.entreprises = response.filter(e => e.commercial_id == Number(this.cookieService.getUserId()));
+            }
+            else {
+              this.entreprises = response;
+            }
+
+            // Map commercial names to entreprises
+            this.entreprises.forEach(element => {
+              const commercial = this.commercials.find(c => c.id == element.commercial_id);
+              if (commercial && commercial.first_name && commercial.last_name) {
+                element.commercial = `${commercial.first_name} ${commercial.last_name}`;
+              } else {
+                element.commercial = '-';
+              }
+            });
+
+            // Load contact information for each entreprise
+            this.loadContactInformation();
+          },
+          error: (err) => console.log(err)
+        });
       },
       error: (err) => console.log(err)
-    })
-
-
+    });
   }
 
 

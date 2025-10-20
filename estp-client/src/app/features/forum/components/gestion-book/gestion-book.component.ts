@@ -28,11 +28,12 @@ export class GestionBookComponent {
   selectedUser!: User;
   displayBatDialog = false;
   expandedRows: {[s: string]: boolean} = {};
+  commercials: User[] = [];
 
 
   constructor(
-    private bookService: BookService, 
-    private fileService: FileService, 
+    private bookService: BookService,
+    private fileService: FileService,
     private emailService: EmailService,
     private userService: UserService,
     private entrepriseService: EntrepriseService
@@ -43,17 +44,36 @@ export class GestionBookComponent {
   }
 
   loadBooks() {
-    this.bookService.getAll().subscribe({
-      next: (data) => {
-        this.books = data || []
-        this.books.forEach(book => {
-          this.entrepriseService.getEntrepriseById(book.entreprise_id).subscribe(entreprise => {
-            this.books[this.books.findIndex(book => book.entreprise_id == entreprise.id)].entreprise_nom = entreprise.nom
-          })
-        })
-        
+    // Load commercials first
+    this.userService.getCommercials().subscribe({
+      next: (commercials) => {
+        this.commercials = commercials;
+
+        // Then load books
+        this.bookService.getAll().subscribe({
+          next: (data) => {
+            this.books = data || [];
+            this.books.forEach(book => {
+              this.entrepriseService.getEntrepriseById(book.entreprise_id).subscribe(entreprise => {
+                const bookIndex = this.books.findIndex(b => b.entreprise_id == entreprise.id);
+                if (bookIndex !== -1) {
+                  this.books[bookIndex].entreprise_nom = entreprise.nom;
+
+                  // Map commercial name
+                  const commercial = this.commercials.find(c => c.id == entreprise.commercial_id);
+                  if (commercial && commercial.first_name && commercial.last_name) {
+                    this.books[bookIndex].entreprise_commercial = `${commercial.first_name} ${commercial.last_name}`;
+                  } else {
+                    this.books[bookIndex].entreprise_commercial = '-';
+                  }
+                }
+              });
+            });
+          },
+          error: (e) => console.error(e),
+        });
       },
-      error: (e) => console.error(e),
+      error: (err) => console.log(err)
     });
   }
 

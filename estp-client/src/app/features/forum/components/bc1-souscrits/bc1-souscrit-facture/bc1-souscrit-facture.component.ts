@@ -30,6 +30,7 @@ export class Bc1SouscritFactureComponent implements OnInit{
   @Input() modifyTotalHt: number | undefined = 0
   @Input() modificationCommandeOption: Commande1Option[]=[];
   @Input() modificationContact: Contact | undefined;
+  @Input() dateSolde: Date = new Date('2025-11-10'); // Default date
   contactEntreprise: Contact | undefined;
   @Output() envoyerFactureEvent = new EventEmitter<void>();
   today = new Date();

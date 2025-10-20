@@ -4,6 +4,7 @@ import { Entreprise } from '../../../entreprise/entreprise.model';
 import { EmailService } from '../../../../core/services/email.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthCookieService } from '../../../../core/services/auth-cookie.service';
 
 @Component({
   selector: 'app-mailing',
@@ -24,7 +25,8 @@ export class MailingComponent implements OnInit {
     private emailService: EmailService,
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authCookieService: AuthCookieService
   ) {
     this.emailForm = this.fb.group({
       subject: ['', Validators.required],
@@ -38,9 +40,19 @@ export class MailingComponent implements OnInit {
   }
 
   loadEntreprises() {
+    const role = this.authCookieService.getRole();
+    const userId = this.authCookieService.getUserId();
+
     this.entrepriseService.getAllEntreprises().subscribe({
       next: (response) => {
-        this.entreprises = response;
+        // Filter enterprises for commercials (role == 'comm')
+        // Show only enterprises assigned to this commercial
+        if (role === 'comm' && userId) {
+          this.entreprises = response.filter(e => e.commercial_id === Number(userId));
+        } else {
+          // For other roles, show all enterprises
+          this.entreprises = response;
+        }
       },
       error: (err) => {
         console.error('Error loading enterprises:', err);

@@ -13,6 +13,7 @@ export interface Book {
   created_at?: string;
   updated_at?: string;
   entreprise_nom?: string;
+  entreprise_commercial?: string;
   chiffreAff?: string;
   // New fields
   annee_creation?: number;
