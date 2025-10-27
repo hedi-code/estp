@@ -731,6 +731,7 @@
       [entreprise]="modifyCommande.entreprise"
       [signature]=""
       [fait]=""
+      [commercial]="getCommercialForEntreprise(modifyCommande?.entreprise?.commercial_id)"
     ></app-facture-bc2>
     <p-button icon="pi pi-plus" label="Regénérer le BC2" (click)="regenerateBC2Pdf()" styleClass="w-full"></p-button>
   </p-dialog>

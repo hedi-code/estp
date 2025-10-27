@@ -24,6 +24,7 @@ export class FactureBc2Component implements OnInit {
   @Input() fait: string | undefined;
   @Input() prixTotal: number = 0;
   @Input() showButton: boolean = true;
+  @Input() commercial: any;
   @Output() createBc2Event = new EventEmitter<void>();
     @Input() nomFichierBc2: string | undefined;
 

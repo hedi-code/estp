@@ -370,3 +370,33 @@ exports.getBC1PackStats = (req, res) => {
     });
   });
 };
+
+exports.getEntreprisesBySurface = (req, res) => {
+  const { surfaceId } = req.params;
+
+  const query = `
+    SELECT
+      e.id as entreprise_id,
+      e.nom as entreprise_nom,
+      e.siren,
+      c1.id as commande_id,
+      c1.total_ht,
+      c1.created as commande_date,
+      c1.valide,
+      ps.surface,
+      ps.prix as prix_surface
+    FROM commande1s c1
+    JOIN entreprises e ON c1.entreprise_id = e.id
+    JOIN pack1s_surface ps ON c1.pack1_id = ps.id
+    WHERE ps.id = ?
+    ORDER BY e.nom ASC
+  `;
+
+  db.query(query, [surfaceId], (err, results) => {
+    if (err) {
+      console.error('Error getting enterprises by surface:', err);
+      return res.status(500).json({ error: 'Erreur base de données' });
+    }
+    res.json(results);
+  });
+};

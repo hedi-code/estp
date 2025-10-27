@@ -422,7 +422,8 @@
   <p-dialog header="header" [(visible)]="bc1DialogVisible" [modal]="true" [style]="{ width: '960px' }" [baseZIndex]="-1">
     <app-facture-bc1 style="z-index: -1;" id="contentToExport"  #factureBc1 *ngIf="modifyCommande && modifyCommande.entreprise && modificationContact"
                   [signature]="" [contactPrincipal]="modificationContact" [prixTotal]="modifyTotalHt ?? 0"
-                  [nomFichierBc1]="modifyCommande.entreprise.id + '_BC1'" [entreprise]="modifyCommande.entreprise" [fait]=""></app-facture-bc1>
+                  [nomFichierBc1]="modifyCommande.entreprise.id + '_BC1'" [entreprise]="modifyCommande.entreprise" [fait]=""
+                  [commercial]="getCommercialForEntreprise(modifyCommande?.entreprise?.commercial_id)"></app-facture-bc1>
         <p-button icon="pi pi-plus" label="Regénérer le BC1" (click)="regenerateBC1Pdf()" styleClass="w-full"></p-button>
 
   </p-dialog>

@@ -187,10 +187,10 @@
                     </tr>
                     <tr *ngIf="option.reduction && option.reduction > 0" class="lightBlueBg">
                         <td colspan="4" style="padding-left: 20px; font-style: italic;">
-                            Réduction
+                            Réduction ({{option.reduction}}%)
                         </td>
                         <td style="text-align:right; font-style: italic;">
-                            -{{option.reduction | number:'1.2-2'}} €
+                            -{{((option.reduction / 100) * (option.option_prix_ht || 0) * (option.qty || 1)) | number:'1.2-2'}} €
                         </td>
                     </tr>
                 </ng-container>

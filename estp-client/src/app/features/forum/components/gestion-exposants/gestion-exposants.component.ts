@@ -245,6 +245,7 @@ async generateBadgesPdf() {
   const badgeWidth = 75;
   const badgeHeight = 55;
   const badgesPerRow = 2;
+  const badgesPerPage = 8; // Maximum 8 badges per page (4 rows x 2 columns)
   const horizontalMargin = (pageWidth - (badgeWidth * badgesPerRow)) / 3; // Space between and around badges
   const verticalMargin = 10;
   let currentX = horizontalMargin;
@@ -269,7 +270,8 @@ async generateBadgesPdf() {
     const exposant = this.pdfExposants[i];
 
     // Add new page if needed (except for first badge)
-    if (badgeCount > 0 && badgeCount % 10 === 0) {
+    // Start a new page after every 8 badges
+    if (badgeCount > 0 && badgeCount % badgesPerPage === 0) {
       pdf.addPage();
       currentX = horizontalMargin;
       currentY = verticalMargin;
@@ -296,7 +298,7 @@ async generateBadgesPdf() {
 
       const logoX = currentX + (badgeWidth - logoWidth) / 2;
       const logoY = currentY + 5;
-      
+
       try {
         pdf.addImage(logoDataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
       } catch (err) {
@@ -329,7 +331,7 @@ async generateBadgesPdf() {
     badgeCount++;
     currentX += badgeWidth + horizontalMargin;
 
-    // Move to next row if needed
+    // Move to next row if needed (after every 2 badges)
     if (badgeCount % badgesPerRow === 0) {
       currentX = horizontalMargin;
       currentY += badgeHeight + verticalMargin;

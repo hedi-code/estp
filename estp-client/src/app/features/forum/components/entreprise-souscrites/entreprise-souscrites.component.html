@@ -328,7 +328,7 @@
         <a *ngIf="selectedEntreprise.siteweb" [href]="selectedEntreprise.siteweb" target="_blank">{{ selectedEntreprise.siteweb }}</a>
         <span *ngIf="!selectedEntreprise.siteweb">-</span>
     </div>
-    <div class="field col-12 md:6"><strong>A participé:</strong> {{ selectedEntreprise.has_participated || '-' }}</div>
+    <div class="field col-12 md:6"><strong>A participé:</strong> {{selectedEntreprise.has_participated ? (selectedEntreprise.has_participated == 1 ? 'Oui' : 'Non') : '-' }}</div>
     <div class="field col-12 md:6"><strong>Créer le:</strong> {{ selectedEntreprise.created || '-' }}</div>
     <h3 class="text-blue-400">Commercial assigné</h3>
     <div class="field col-12 md:6"><strong>Commercial:</strong> {{ selectedEntreprise.commercial || '-' }}</div>

@@ -111,4 +111,8 @@ export class DashboardService {
   getBC1PackStats(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/dashboard/bc1-pack-stats`);
   }
+
+  getEntreprisesBySurface(surfaceId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/dashboard/entreprises-by-surface/${surfaceId}`);
+  }
 }

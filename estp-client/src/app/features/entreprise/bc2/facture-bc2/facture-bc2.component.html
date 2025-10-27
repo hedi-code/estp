@@ -165,7 +165,7 @@
                                     <p class="blockTitle">Correspondant</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">Alice Douard</p>
+                                    <p class="blockContent">{{ commercial ? (commercial.first_name + ' ' + commercial.last_name) : 'Alice Douard' }}</p>
                                 </td>
                             </tr>
                             <tr>
@@ -173,7 +173,7 @@
                                     <p class="blockTitle">E-mail</p>
                                 </td>
                                 <td>
-                                    <p class="blockContent">alice.douard&#64;forumestp.fr</p>
+                                    <p class="blockContent">{{ commercial?.email || 'alice.douard&#64;forumestp.fr' }}</p>
                                 </td>
                             </tr>
                             <tr>

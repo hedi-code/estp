@@ -52,6 +52,12 @@ bc2OptionsByCategory: { [categoryId: number]: any[] } = {};
   selectedBcType: 'BC1' | 'BC2' = 'BC1';
   entreprisesByOption: any[] = [];
 
+  // Dialog for entreprises by surface
+  displayEntreprisesBySurfaceDialog = false;
+  selectedSurface: any = null;
+  selectedPackTitle: string = '';
+  entreprisesBySurface: any[] = [];
+
   // Bar Chart for counts
   barChartData: ChartData<'bar'> = {
     labels: ['Books', 'BC1', 'BC2', 'Entreprises'],
@@ -353,5 +359,22 @@ bc2OptionsByCategory: { [categoryId: number]: any[] } = {};
         this.entreprisesByOption = [];
       }
     });
-  };
+  }
+
+  showEntreprisesBySurface(surface: any, packTitle: string): void {
+    this.selectedSurface = surface;
+    this.selectedPackTitle = packTitle;
+    this.displayEntreprisesBySurfaceDialog = true;
+
+    // Load entreprises for this surface
+    this.dashboardService.getEntreprisesBySurface(surface.surface_id).subscribe({
+      next: (entreprises) => {
+        this.entreprisesBySurface = entreprises;
+      },
+      error: (err) => {
+        console.error('Error loading entreprises by surface:', err);
+        this.entreprisesBySurface = [];
+      }
+    });
+  }
 }

@@ -110,32 +110,116 @@ exports.updateEntreprise = (req, res) => {
 };
 
 
-// Delete entreprise
-exports.deleteEntreprise = (req, res) => {
+// Delete entreprise with cascade delete
+exports.deleteEntreprise = async (req, res) => {
   const { id } = req.params;
 
-  // First get entreprise to know which user_id is linked
-  db.query('SELECT user_id FROM entreprises WHERE id = ?', [id], (err, rows) => {
-    if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-    if (rows.length === 0) return res.status(404).json({ message: 'Entreprise non trouvée' });
-
-    const userId = rows[0].user_id;
-
-    // Delete the linked user
-    db.query('DELETE FROM users WHERE id = ?', [userId], (err, userResult) => {
-      if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-
-      // Then delete the entreprise
-      db.query('DELETE FROM entreprises WHERE id = ?', [id], (err, entrepriseResult) => {
-        if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
-
-        res.json({
-          message: 'Entreprise supprimée',
-          deletedEntreprise: entrepriseResult.affectedRows
-        });
+  try {
+    // First get entreprise to know which user_id is linked
+    const entrepriseRows = await new Promise((resolve, reject) => {
+      db.query('SELECT user_id FROM entreprises WHERE id = ?', [id], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
       });
     });
-  });
+
+    if (entrepriseRows.length === 0) {
+      return res.status(404).json({ message: 'Entreprise non trouvée' });
+    }
+
+    const userId = entrepriseRows[0].user_id;
+
+    // Start cascade delete - delete all related data
+
+    // 1. Delete commande1_options for all commande1s of this entreprise
+    await new Promise((resolve, reject) => {
+      db.query(`
+        DELETE co FROM commande1_options co
+        INNER JOIN commande1s c ON co.commande1_id = c.id
+        WHERE c.entreprise_id = ?
+      `, [id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 2. Delete commande2_options for all commande2s of this entreprise
+    await new Promise((resolve, reject) => {
+      db.query(`
+        DELETE co FROM commande2_options co
+        INNER JOIN commande2s c ON co.commande2_id = c.id
+        WHERE c.entreprise_id = ?
+      `, [id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 3. Delete commande1s
+    await new Promise((resolve, reject) => {
+      db.query('DELETE FROM commande1s WHERE entreprise_id = ?', [id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 4. Delete commande2s
+    await new Promise((resolve, reject) => {
+      db.query('DELETE FROM commande2s WHERE entreprise_id = ?', [id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 5. Delete books
+    await new Promise((resolve, reject) => {
+      db.query('DELETE FROM book WHERE entreprise_id = ?', [id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 6. Delete exposants
+    await new Promise((resolve, reject) => {
+      db.query('DELETE FROM exposants WHERE entreprise_id = ?', [id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 7. Delete standistes (assuming table name is 'standistes' or similar)
+    await new Promise((resolve, reject) => {
+      db.query('DELETE FROM standistes WHERE entreprise_id = ?', [id], (err) => {
+        // If table doesn't exist, just continue
+        if (err && err.code !== 'ER_NO_SUCH_TABLE') reject(err);
+        else resolve();
+      });
+    });
+
+    // 8. Delete the linked user
+    await new Promise((resolve, reject) => {
+      db.query('DELETE FROM users WHERE id = ?', [userId], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 9. Finally, delete the entreprise
+    const entrepriseResult = await new Promise((resolve, reject) => {
+      db.query('DELETE FROM entreprises WHERE id = ?', [id], (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    res.json({
+      message: 'Entreprise et toutes ses données associées supprimées avec succès',
+      deletedEntreprise: entrepriseResult.affectedRows
+    });
+  } catch (err) {
+    console.error('Error deleting entreprise:', err);
+    res.status(500).json({ message: 'Erreur serveur lors de la suppression', error: err.message });
+  }
 };
 
 

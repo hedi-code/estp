@@ -223,7 +223,10 @@
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-surface>
-                <tr>
+                <tr class="cursor-pointer"
+                    (click)="surface.enterprise_count > 0 ? showEntreprisesBySurface(surface, pack.pack_titre) : null"
+                    [pTooltip]="surface.enterprise_count > 0 ? 'Cliquer pour voir les entreprises' : ''"
+                    [class.hover:bg-blue-50]="surface.enterprise_count > 0">
                   <td>{{ surface.surface || '-' }} m²</td>
                   <td>{{ surface.prix_ht | currency:'EUR':'symbol':'1.2-2' }}</td>
                   <td class="text-center font-bold">{{ surface.enterprise_count || 0 }}</td>
@@ -399,6 +402,66 @@
       <ng-template pTemplate="emptymessage">
         <tr>
           <td colspan="4" class="text-center">Aucune entreprise trouvée pour cette option</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</p-dialog>
+
+<!-- Dialog for Entreprises by Surface -->
+<p-dialog [(visible)]="displayEntreprisesBySurfaceDialog"
+          [header]="'Entreprises ayant acheté: ' + selectedPackTitle + ' - ' + (selectedSurface?.surface || '') + 'm²'"
+          [modal]="true"
+          [style]="{width: '70vw'}"
+          [draggable]="false"
+          [resizable]="false">
+  <div class="p-3">
+    <p class="mb-3">
+      <strong>Pack:</strong> {{selectedPackTitle}} |
+      <strong>Surface:</strong> {{selectedSurface?.surface}}m² |
+      <strong>Prix HT:</strong> {{selectedSurface?.prix_ht | currency:'EUR':'symbol':'1.2-2'}}
+    </p>
+
+    <p-table [value]="entreprisesBySurface"
+             [paginator]="true"
+             [rows]="10"
+             [rowsPerPageOptions]="[10, 25, 50]"
+             [globalFilterFields]="['entreprise_nom', 'siren']"
+             styleClass="p-datatable-sm">
+      <ng-template pTemplate="caption">
+        <div class="flex">
+          <span class="p-input-icon-left ml-auto">
+            <i class="pi pi-search"></i>
+            <input pInputText type="text"
+                   (input)="$any($event.target).value"
+                   placeholder="Rechercher..."
+                   class="w-full" />
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="entreprise_nom">Entreprise <p-sortIcon field="entreprise_nom" /></th>
+          <th pSortableColumn="siren">SIREN <p-sortIcon field="siren" /></th>
+          <th pSortableColumn="total_ht">Total HT <p-sortIcon field="total_ht" /></th>
+          <th pSortableColumn="valide">Validé <p-sortIcon field="valide" /></th>
+          <th pSortableColumn="commande_date">Date Commande <p-sortIcon field="commande_date" /></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entreprise>
+        <tr>
+          <td>{{entreprise.entreprise_nom}}</td>
+          <td>{{entreprise.siren}}</td>
+          <td>{{entreprise.total_ht | currency:'EUR':'symbol':'1.2-2'}}</td>
+          <td>
+            <i [class]="entreprise.valide ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'"></i>
+          </td>
+          <td>{{entreprise.commande_date | date:'dd/MM/yyyy'}}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center">Aucune entreprise trouvée pour cette surface</td>
         </tr>
       </ng-template>
     </p-table>

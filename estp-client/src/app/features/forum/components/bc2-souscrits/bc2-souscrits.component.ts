@@ -156,6 +156,11 @@ export class Bc2SouscritsComponent implements OnInit {
     });
   }
 
+  getCommercialForEntreprise(commercialId?: number) {
+    if (!commercialId) return undefined;
+    return this.commercials.find(c => c.id === commercialId);
+  }
+
   getCommandeOptionConsultation() {
     this.detailsOptions = [];
     this.commande2OptionService.getOptionsByCommande2Id(this.detailsCommande?.id ?? -1).subscribe((response: Commande2Option[]) => {

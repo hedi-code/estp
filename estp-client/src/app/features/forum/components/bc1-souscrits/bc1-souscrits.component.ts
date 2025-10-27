@@ -145,6 +145,12 @@ bc1DialogVisible: boolean = false;
       error: (err) => console.log(err)
     });
   }
+
+  getCommercialForEntreprise(commercialId?: number) {
+    if (!commercialId) return undefined;
+    return this.commercials.find(c => c.id === commercialId);
+  }
+
   getPackDesrcription(cmdPackId: number, pack?: Pack) {
     let ret: string = "";
     if (pack) {
