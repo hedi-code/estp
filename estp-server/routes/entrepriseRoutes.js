@@ -21,7 +21,7 @@ router.post('/', entrepriseController.createEntreprise);
 router.put('/:id', entrepriseController.updateEntreprise);
 
 // UPDATE place_plan
-router.put('/:id/place-plan', entrepriseController.updatePlacePlan);
+router.put('/:id/place-plan', jwt, entrepriseController.updatePlacePlan);
 
 // DELETE entreprise
 router.delete('/:id', jwt, entrepriseController.deleteEntreprise);

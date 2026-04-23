@@ -7,14 +7,15 @@ const {
   updateOption2,
   deleteOption2
 } = require("../controllers/option2Controller");
+const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
-router.post("/", createOption2);
-router.get("/", getAllOption2s);
-router.get("/:id", getOption2ById);
-router.get("/category/:category_id", getOption2sByCategory);
-router.put("/:id", updateOption2);
-router.delete("/:id", deleteOption2);
+router.post("/", authMiddleware, createOption2);
+router.get("/", authMiddleware, getAllOption2s);
+router.get("/:id",authMiddleware,  getOption2ById);
+router.get("/category/:category_id",authMiddleware,  getOption2sByCategory);
+router.put("/:id", authMiddleware, updateOption2);
+router.delete("/:id", authMiddleware, deleteOption2);
 
 module.exports = router;

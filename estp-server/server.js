@@ -21,7 +21,6 @@ const option2CategoriesRoutes = require('./routes/option2CategoriesRoutes'); // 
 const dashboardRoutes = require('./routes/dashboardRoutes'); // <- Import dashboard routes
 const exposantRoutes = require('./routes/exposantRoutes'); // <- Import exposant routes
 const configRoutes = require('./routes/configRoutes'); // <- Import config routes
-const authMiddleware = require('./middleware/auth'); // <- Import JWT middleware
 
 
 
@@ -32,9 +31,6 @@ dotenv.config();
 const app = express();
 const corsOptions = {
   origin: [ 
-    'http://localhost:4200',    
-    'http://localhost:4201',
-    'http://localhost:4300',
     'https://test.app.forumestp.fr',
     'http://test.app.forumestp.fr',
     'https://www.test.app.forumestp.fr',

@@ -8,14 +8,14 @@ const jwt = require('../middleware/auth');
 router.post('/', contactController.createContact);
 
 // Get all contacts
-router.get('/', contactController.getAllContacts);
+router.get('/', jwt, contactController.getAllContacts);
 
 // Get a contact by ID
-router.get('/:id', contactController.getContactById);
-router.get('/user/:id', contactController.getContactByUserId);
+router.get('/:id', jwt, contactController.getContactById);
+router.get('/user/:id', jwt, contactController.getContactByUserId);
 
 // Update a contact by ID
-router.put('/:id', jwt, contactController.updateContact);
+router.put('/:id', contactController.updateContact);
 
 // Delete a contact by ID
 router.delete('/:id', jwt, contactController.deleteContact);

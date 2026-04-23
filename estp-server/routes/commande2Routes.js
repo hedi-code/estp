@@ -10,17 +10,18 @@ const {
   setFactureEnvoyee,
   setFacturePayee
 } = require("../controllers/commande2Controller");
+const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
-router.post("/", createCommande2);
-router.get("/", getAllCommande2s);
-router.get("/:id", getCommande2ById);
-router.get("/entreprise/:id", getCommande2ByEntrepriseId);
-router.get("/:id/details", getCommande2WithDetails);
-router.put("/:id", updateCommande2);
-router.put("/:id/facture-envoyee", setFactureEnvoyee);
-router.put("/:id/facture-payee", setFacturePayee);
-router.delete("/:id", deleteCommande2);
+router.post("/", authMiddleware, createCommande2);
+router.get("/",authMiddleware,  getAllCommande2s);
+router.get("/:id",authMiddleware,  getCommande2ById);
+router.get("/entreprise/:id",authMiddleware,  getCommande2ByEntrepriseId);
+router.get("/:id/details",authMiddleware,  getCommande2WithDetails);
+router.put("/:id", authMiddleware, updateCommande2);
+router.put("/:id/facture-envoyee", authMiddleware, setFactureEnvoyee);
+router.put("/:id/facture-payee", authMiddleware, setFacturePayee);
+router.delete("/:id", authMiddleware, deleteCommande2);
 
 module.exports = router;

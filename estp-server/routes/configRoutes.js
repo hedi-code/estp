@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const configController = require('../controllers/configController');
+const authMiddleware = require('../middleware/auth');
 
 // Get all configs
-router.get('/', configController.getAllConfigs);
+router.get('/', authMiddleware, configController.getAllConfigs);
 
 // Get config by name
-router.get('/:configName', configController.getConfigByName);
+router.get('/:configName', authMiddleware, configController.getConfigByName);
 
 // Update config
-router.put('/:id', configController.updateConfig);
+router.put('/:id', authMiddleware, configController.updateConfig);
 
 // Upload config file
-router.post('/upload', configController.uploadConfigFile, configController.handleConfigFileUpload);
+router.post('/upload', authMiddleware, configController.uploadConfigFile, configController.handleConfigFileUpload);
 
 module.exports = router;

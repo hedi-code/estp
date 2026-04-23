@@ -7,14 +7,15 @@ const {
   updateOption2Category,
   deleteOption2Category
 } = require("../controllers/option2CategoriesController");
+const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
-router.post("/", createOption2Category);
-router.get("/", getAllOption2Categories);
-router.get("/:id", getOption2CategoryById);
-router.get("/:id/with-options", getOption2CategoryWithOptions);
-router.put("/:id", updateOption2Category);
-router.delete("/:id", deleteOption2Category);
+router.post("/", authMiddleware, createOption2Category);
+router.get("/",authMiddleware,  getAllOption2Categories);
+router.get("/:id",authMiddleware,  getOption2CategoryById);
+router.get("/:id/with-options",authMiddleware,  getOption2CategoryWithOptions);
+router.put("/:id", authMiddleware, updateOption2Category);
+router.delete("/:id", authMiddleware, deleteOption2Category);
 
 module.exports = router;
