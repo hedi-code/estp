@@ -4,21 +4,21 @@ const entrepriseController = require('../controllers/entrepriseController');
 const jwt = require('../middleware/auth');
 
 // GET all entreprises
-router.get('/', entrepriseController.getAllEntreprises);
+router.get('/', jwt,entrepriseController.getAllEntreprises);
 
 // GET all entreprises with pack1s and place_plan (must be before /:id)
-router.get('/with-pack1s/all', entrepriseController.getEntreprisesWithPack1s);
+router.get('/with-pack1s/all', jwt,entrepriseController.getEntreprisesWithPack1s);
 
 // GET entreprise by user ID (must be before /:id)
-router.get('/user/:id', entrepriseController.getEntrepriseByUserId);
+router.get('/user/:id',jwt, entrepriseController.getEntrepriseByUserId);
 
 // GET one entreprise by ID
 router.get('/:id', entrepriseController.getEntrepriseById);
 // CREATE new entreprise
-router.post('/', entrepriseController.createEntreprise);
+router.post('/', jwt,entrepriseController.createEntreprise);
 
 // UPDATE entreprise
-router.put('/:id', entrepriseController.updateEntreprise);
+router.put('/:id',jwt, entrepriseController.updateEntreprise);
 
 // UPDATE place_plan
 router.put('/:id/place-plan', jwt, entrepriseController.updatePlacePlan);
