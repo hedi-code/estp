@@ -1,6 +1,7 @@
 // controllers/pack1sController.js
 
 const db = require('../config/db');
+const { syncPack1Surface, deleteAxonautProduct } = require('../axonaut/axonautService');
 
 exports.getAllPack1sWithDetails = (req, res) => {
   const query = `
@@ -104,15 +105,29 @@ exports.deletePack1 = (req, res) => {
   const deleteSurfaces = 'DELETE FROM pack1s_surface WHERE id_pack1=?';
   const deletePack = 'DELETE FROM pack1s WHERE id=?';
 
-  db.query(deleteOptions, [id], (err) => {
-    if (err) return res.status(500).json({ error: 'Failed to delete pack options' });
+  // Collect Axonaut product IDs for surfaces before deleting
+  db.query('SELECT axonaut_product_id FROM pack1s_surface WHERE id_pack1=?', [id], (err, surfaceRows) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete pack' });
 
-    db.query(deleteSurfaces, [id], (err) => {
-      if (err) return res.status(500).json({ error: 'Failed to delete pack surfaces' });
+    const axonautIds = surfaceRows.map(r => r.axonaut_product_id).filter(Boolean);
 
-      db.query(deletePack, [id], (err) => {
-        if (err) return res.status(500).json({ error: 'Failed to delete pack' });
-        res.json({ message: 'Pack and related data deleted' });
+    db.query(deleteOptions, [id], (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to delete pack options' });
+
+      db.query(deleteSurfaces, [id], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to delete pack surfaces' });
+
+        db.query(deletePack, [id], (err) => {
+          if (err) return res.status(500).json({ error: 'Failed to delete pack' });
+          res.json({ message: 'Pack and related data deleted' });
+
+          // Delete surfaces from Axonaut (fire-and-forget)
+          for (const pid of axonautIds) {
+            deleteAxonautProduct(pid).catch(e =>
+              console.error(`[Axonaut] deleteProduct pack1 #${id}:`, e.message)
+            );
+          }
+        });
       });
     });
   });
@@ -150,6 +165,10 @@ exports.createSurface = (req, res) => {
   db.query('INSERT INTO pack1s_surface (surface, prix, id_pack1) VALUES (?, ?, ?)', [surface, prix, id_pack1], (err, result) => {
     if (err) return res.status(500).json({ error: 'Failed to create surface' });
     res.json({ message: 'Surface created', surface_id: result.insertId });
+
+    syncPack1Surface(result.insertId).catch(e =>
+      console.error(`[Axonaut] syncPack1Surface create #${result.insertId}:`, e.message)
+    );
   });
 };
 
@@ -159,13 +178,31 @@ exports.updateSurface = (req, res) => {
   db.query('UPDATE pack1s_surface SET surface=?, prix=? WHERE id=?', [surface, prix, id], (err) => {
     if (err) return res.status(500).json({ error: 'Failed to update surface' });
     res.json({ message: 'Surface updated' });
+
+    syncPack1Surface(Number(id)).catch(e =>
+      console.error(`[Axonaut] syncPack1Surface update #${id}:`, e.message)
+    );
   });
 };
 
 exports.deleteSurface = (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM pack1s_surface WHERE id=?', [id], (err) => {
+
+  // Get axonaut_product_id before deleting
+  db.query('SELECT axonaut_product_id FROM pack1s_surface WHERE id=?', [id], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Failed to delete surface' });
-    res.json({ message: 'Surface deleted' });
+
+    const axonautProductId = rows[0]?.axonaut_product_id;
+
+    db.query('DELETE FROM pack1s_surface WHERE id=?', [id], (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to delete surface' });
+      res.json({ message: 'Surface deleted' });
+
+      if (axonautProductId) {
+        deleteAxonautProduct(axonautProductId).catch(e =>
+          console.error(`[Axonaut] deleteProduct pack1Surface #${id}:`, e.message)
+        );
+      }
+    });
   });
 };

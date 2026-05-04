@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { syncOption1, deleteAxonautProduct } = require('../axonaut/axonautService');
 
 // Create
 exports.createOption1 = (req, res) => {
@@ -26,6 +27,10 @@ exports.createOption1 = (req, res) => {
           ordre,
         },
       });
+
+      syncOption1(id).catch(e =>
+        console.error(`[Axonaut] syncOption1 create #${id}:`, e.message)
+      );
     }
   );
 };
@@ -90,6 +95,10 @@ exports.updateOption1 = (req, res) => {
             ...updatedData
           },
         });
+
+        syncOption1(Number(id)).catch(e =>
+          console.error(`[Axonaut] syncOption1 update #${id}:`, e.message)
+        );
       }
     );
   });
@@ -98,8 +107,21 @@ exports.updateOption1 = (req, res) => {
 // Delete
 exports.deleteOption1 = (req, res) => {
   const { id } = req.params;
-  db.query('DELETE FROM option1s WHERE id = ?', [id], (err) => {
+
+  db.query('SELECT axonaut_product_id FROM option1s WHERE id = ?', [id], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erreur suppression' });
-    res.json({ message: 'Option supprimée avec succès' });
+
+    const axonautProductId = rows[0]?.axonaut_product_id;
+
+    db.query('DELETE FROM option1s WHERE id = ?', [id], (err) => {
+      if (err) return res.status(500).json({ error: 'Erreur suppression' });
+      res.json({ message: 'Option supprimée avec succès' });
+
+      if (axonautProductId) {
+        deleteAxonautProduct(axonautProductId).catch(e =>
+          console.error(`[Axonaut] deleteProduct option1 #${id}:`, e.message)
+        );
+      }
+    });
   });
 };

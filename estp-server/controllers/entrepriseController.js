@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { syncEntreprise, deleteAxonautCompany } = require('../axonaut/axonautService');
 
 // Get all entreprises
 exports.getAllEntreprises = (req, res) => {
@@ -46,6 +47,10 @@ exports.createEntreprise = (req, res) => {
 
   const now = new Date();
 
+  // Sanitize integer fields: convert empty strings to null
+  const safeActivity = (activity === '' || activity === undefined) ? null : activity;
+  const safeHasParticipated = (has_participated === '' || has_participated === undefined) ? null : has_participated;
+
   const insertQuery = `
     INSERT INTO entreprises (
       contact_principal_id, user_id, commercial_id, secteur_id,
@@ -59,7 +64,7 @@ exports.createEntreprise = (req, res) => {
     contact_principal_id, user_id, commercial_id, secteur_id,
     nom, logo, siren, adresse, now, now,
     telephone_standard, telephone_fax, siteweb,
-    fct_adresse, fct_nom, has_participated, activity
+    fct_adresse, fct_nom, safeHasParticipated, safeActivity
   ];
 
   db.query(insertQuery, values, (err, result) => {
@@ -69,6 +74,11 @@ exports.createEntreprise = (req, res) => {
     db.query('SELECT * FROM entreprises WHERE id = ?', [insertedId], (err2, inserted) => {
       if (err2) return res.status(500).json({ message: 'Erreur lors de la récupération', error: err2 });
       res.status(201).json(inserted[0]);
+
+      // Sync to Axonaut (fire-and-forget)
+      syncEntreprise(insertedId).catch(e =>
+        console.error(`[Axonaut] syncEntreprise create #${insertedId}:`, e.message)
+      );
     });
   });
 };
@@ -86,6 +96,10 @@ exports.updateEntreprise = (req, res) => {
 
   const now = new Date(); // Today's date for modified
 
+  // Sanitize integer fields: convert empty strings to null
+  const safeActivity = (activity === '' || activity === undefined) ? null : activity;
+  const safeHasParticipated = (has_participated === '' || has_participated === undefined) ? null : has_participated;
+
   const updateQuery = `
     UPDATE entreprises SET
       contact_principal_id = ?, user_id = ?, commercial_id = ?, secteur_id = ?,
@@ -99,13 +113,18 @@ exports.updateEntreprise = (req, res) => {
     contact_principal_id, user_id, commercial_id, secteur_id,
     nom, logo, siren, adresse, now,
     telephone_standard, telephone_fax, siteweb,
-    fct_adresse, fct_nom, has_participated, activity,
+    fct_adresse, fct_nom, safeHasParticipated, safeActivity,
     id
   ];
 
   db.query(updateQuery, values, (err, result) => {
     if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
     res.json({ nonDisplayMessage: 'Entreprise mise à jour', affectedRows: result.affectedRows });
+
+    // Sync to Axonaut (fire-and-forget)
+    syncEntreprise(Number(id)).catch(e =>
+      console.error(`[Axonaut] syncEntreprise update #${id}:`, e.message)
+    );
   });
 };
 
@@ -128,6 +147,16 @@ exports.deleteEntreprise = async (req, res) => {
     }
 
     const userId = entrepriseRows[0].user_id;
+
+    // Delete company from Axonaut first (fire-and-forget)
+    const [[entForAxonaut]] = await db.promise().query(
+      'SELECT axonaut_company_id FROM entreprises WHERE id = ?', [id]
+    );
+    if (entForAxonaut?.axonaut_company_id) {
+      deleteAxonautCompany(entForAxonaut.axonaut_company_id).catch(e =>
+        console.error(`[Axonaut] deleteCompany #${id}:`, e.message)
+      );
+    }
 
     // Start cascade delete - delete all related data
 

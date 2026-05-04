@@ -1,6 +1,7 @@
 // controllers/option2Controller.js
 
 const db = require("../config/db");
+const { syncOption2, deleteAxonautProduct } = require('../axonaut/axonautService');
 
 exports.createOption2 = (req, res) => {
   const {
@@ -24,6 +25,10 @@ exports.createOption2 = (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.status(201).json({ message: "Option 2 créée avec succès", id: result.insertId });
+
+      syncOption2(result.insertId).catch(e =>
+        console.error(`[Axonaut] syncOption2 create #${result.insertId}:`, e.message)
+      );
     }
   );
 };
@@ -122,6 +127,10 @@ exports.updateOption2 = (req, res) => {
     }
     console.log('Update successful. Affected rows:', result.affectedRows);
     res.json({ message: "Option 2 mise à jour" });
+
+    syncOption2(Number(id)).catch(e =>
+      console.error(`[Axonaut] syncOption2 update #${id}:`, e.message)
+    );
   });
 };
 
@@ -136,9 +145,22 @@ exports.deleteOption2 = (req, res) => {
       return res.status(400).json({ error: "Cette option est utilisée dans des commandes et ne peut pas être supprimée" });
     }
 
-    db.query("DELETE FROM option2s WHERE id = ?", [id], (err) => {
+    // Get axonaut_product_id before deleting
+    db.query("SELECT axonaut_product_id FROM option2s WHERE id = ?", [id], (err, optRows) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
-      res.json({ message: "Option 2 supprimée" });
+
+      const axonautProductId = optRows[0]?.axonaut_product_id;
+
+      db.query("DELETE FROM option2s WHERE id = ?", [id], (err) => {
+        if (err) return res.status(500).json({ error: "Erreur base de données" });
+        res.json({ message: "Option 2 supprimée" });
+
+        if (axonautProductId) {
+          deleteAxonautProduct(axonautProductId).catch(e =>
+            console.error(`[Axonaut] deleteProduct option2 #${id}:`, e.message)
+          );
+        }
+      });
     });
   });
 };

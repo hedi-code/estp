@@ -4,6 +4,7 @@ const db = require("../config/db");
 const { sendEmail } = require("../utils/email");
 const fs = require('fs');
 const path = require('path');
+const { syncBC2, markInvoicePaid, deleteAxonautInvoice } = require('../axonaut/axonautService');
 function waitForFile(filePath, timeout = 10000, interval = 500) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
@@ -78,6 +79,12 @@ exports.createCommande2 = (req, res) => {
         (err, result) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
           res.status(201).json({ message: "Commande 2 créée avec succès", id: result.insertId });
+
+          // Sync to Axonaut (fire-and-forget)
+          syncBC2(result.insertId).catch(e =>
+            console.error(`[Axonaut] syncBC2 create #${result.insertId}:`, e.message)
+          );
+
             db.query(`SELECT u.*, e.nom as nomEntreprise FROM users u, entreprises e WHERE u.id = e.user_id AND e.id = ?`, [entreprise_id],
             async (err, result) => {
               if (result.length > 0) {
@@ -180,15 +187,35 @@ exports.updateCommande2 = (req, res) => {
     (err) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.json({ message: "Commande 2 mise à jour" });
+
+      // Sync to Axonaut (fire-and-forget)
+      syncBC2(Number(id)).catch(e =>
+        console.error(`[Axonaut] syncBC2 update #${id}:`, e.message)
+      );
     }
   );
 };
 
 exports.deleteCommande2 = (req, res) => {
   const id = req.params.id;
-  db.query("DELETE FROM commande2s WHERE id = ?", [id], (err) => {
+
+  // Get the Axonaut invoice ID before deleting
+  db.query("SELECT axonaut_invoice_id FROM commande2s WHERE id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
-    res.json({ message: "Commande 2 supprimée" });
+
+    const axonautInvoiceId = rows[0]?.axonaut_invoice_id;
+
+    db.query("DELETE FROM commande2s WHERE id = ?", [id], (err) => {
+      if (err) return res.status(500).json({ error: "Erreur base de données" });
+      res.json({ message: "Commande 2 supprimée" });
+
+      // Delete from Axonaut (fire-and-forget)
+      if (axonautInvoiceId) {
+        deleteAxonautInvoice(axonautInvoiceId).catch(e =>
+          console.error(`[Axonaut] deleteInvoice BC2 #${id}:`, e.message)
+        );
+      }
+    });
   });
 };
 
@@ -242,6 +269,19 @@ exports.setFacturePayee = (req, res) => {
     (err) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.json({ message: "Facture marquée comme payée" });
+
+      // Propagate paid status to Axonaut (fire-and-forget)
+      db.query(
+        'SELECT axonaut_invoice_id FROM commande2s WHERE id = ?',
+        [id],
+        (_err, rows) => {
+          if (!_err && rows[0]?.axonaut_invoice_id) {
+            markInvoicePaid(rows[0].axonaut_invoice_id).catch(e =>
+              console.error(`[Axonaut] markInvoicePaid BC2 #${id}:`, e.message)
+            );
+          }
+        }
+      );
     }
   );
 };
