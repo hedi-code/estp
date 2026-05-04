@@ -210,13 +210,14 @@ async function runCompanySync() {
   const results = [];
   for (const row of rows) {
     try {
-      const axonautId = await syncEntreprise(row.id);
+      const axonautId = await withRetry(() => syncEntreprise(row.id));
       console.log(`  [OK] ${row.nom}  →  company #${axonautId}`);
       results.push({ id: row.id, nom: row.nom, axonautId });
     } catch (err) {
       console.error(`  [ERR] ${row.nom}: ${err.message}`);
       results.push({ id: row.id, nom: row.nom, error: err.message });
     }
+    await sleep(DELAY_MS);
   }
 
   const errors = results.filter(r => r.error);
@@ -242,26 +243,28 @@ async function runCommandeSync() {
   const bc1Results = [];
   for (const { id } of bc1Rows) {
     try {
-      const axonautId = await syncBC1(id);
+      const axonautId = await withRetry(() => syncBC1(id));
       console.log(`  [OK] BC1 #${id}  →  invoice #${axonautId}`);
       bc1Results.push({ id, axonautId });
     } catch (err) {
       console.error(`  [ERR] BC1 #${id}: ${err.message}`);
       bc1Results.push({ id, error: err.message });
     }
+    await sleep(DELAY_MS);
   }
 
   console.log(`\n── BC2 pending: ${bc2Rows.length}`);
   const bc2Results = [];
   for (const { id } of bc2Rows) {
     try {
-      const axonautId = await syncBC2(id);
+      const axonautId = await withRetry(() => syncBC2(id));
       console.log(`  [OK] BC2 #${id}  →  invoice #${axonautId}`);
       bc2Results.push({ id, axonautId });
     } catch (err) {
       console.error(`  [ERR] BC2 #${id}: ${err.message}`);
       bc2Results.push({ id, error: err.message });
     }
+    await sleep(DELAY_MS);
   }
 
   console.log(`\n  BC1: ${bc1Results.length}  (${bc1Results.filter(r => !r.error).length} OK, ${bc1Results.filter(r => r.error).length} err)`);
