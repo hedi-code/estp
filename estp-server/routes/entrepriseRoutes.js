@@ -15,7 +15,7 @@ router.get('/user/:id',jwt, entrepriseController.getEntrepriseByUserId);
 // GET one entreprise by ID
 router.get('/:id', entrepriseController.getEntrepriseById);
 // CREATE new entreprise
-router.post('/', jwt,entrepriseController.createEntreprise);
+router.post('/', entrepriseController.createEntreprise);
 
 // UPDATE entreprise
 router.put('/:id',jwt, entrepriseController.updateEntreprise);
