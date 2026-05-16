@@ -28,6 +28,82 @@ exports.getCommercials = (req, res) => {
   });
 };
 
+// Get all members (users with role different than 'user')
+exports.getMembers = (req, res) => {
+  db.query(
+    "SELECT id, email, first_name, last_name, role, created, modified, last_login, step, verified FROM users WHERE role IS NOT NULL AND role <> 'user' ORDER BY created DESC",
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(result);
+    }
+  );
+};
+
+// Update a member (first_name, last_name, email, role)
+exports.updateMember = (req, res) => {
+  const { id } = req.params;
+  const { first_name, last_name, email, role } = req.body;
+
+  if (!first_name || !last_name || !email || !role) {
+    return res.status(400).json({ error: "Tous les champs sont requis (prénom, nom, email, rôle)" });
+  }
+
+  const emailRegex = /^(?!.*@estp).*^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Format email invalide" });
+  }
+
+  if (role === 'user') {
+    return res.status(400).json({ error: "Le rôle 'user' n'est pas autorisé pour un membre" });
+  }
+
+  db.query('SELECT id FROM users WHERE email = ? AND id <> ?', [email, id], (err, existing) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (existing.length > 0) return res.status(400).json({ error: "Cet email est déjà utilisé" });
+
+    const modified = new Date();
+    db.query(
+      'UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, modified = ? WHERE id = ?',
+      [first_name, last_name, email, role, modified, id],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) return res.status(404).json({ message: 'Utilisateur introuvable' });
+        res.json({ message: 'Membre mis à jour avec succès', affectedRows: result.affectedRows });
+      }
+    );
+  });
+};
+
+// Reset member password (president action — no old password required)
+exports.resetMemberPassword = async (req, res) => {
+  const { id } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ error: "Nouveau mot de passe requis" });
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({
+      error: "Mot de passe requis (min 8 caractères, un symbole, une majuscule, une minuscule, un chiffre)",
+    });
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const modified = new Date();
+
+  db.query(
+    'UPDATE users SET password = ?, modified = ? WHERE id = ?',
+    [hashedPassword, modified, id],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (result.affectedRows === 0) return res.status(404).json({ message: 'Utilisateur introuvable' });
+      res.json({ message: 'Mot de passe réinitialisé avec succès' });
+    }
+  );
+};
+
 // Create new user
 exports.createUser = async (req, res) => {
   const { email, password, first_name, last_name, role, step = 0, verified = 1 } = req.body;

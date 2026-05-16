@@ -1,0 +1,160 @@
+<div class="card p-3 bg-white mt-3 mr-3 w-full">
+
+    <h3 class="text-blue-400 p-2">Gestion des membres</h3>
+
+    <div class="mb-4">
+        <p-button icon="pi pi-plus" label="Ajouter un membre" (click)="onAdd()"></p-button>
+    </div>
+
+    <p-table #dt [value]="members" dataKey="id" responsiveLayout="scroll" [loading]="loading"
+             [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+             [globalFilterFields]="['first_name','last_name','email','role']">
+        <ng-template pTemplate="caption">
+            <div class="flex justify-content-end">
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" #search
+                           (input)="dt.filterGlobal(search.value, 'contains')"
+                           placeholder="Rechercher..." />
+                </span>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th>ID</th>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Vérifié</th>
+                <th>Créé le</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-member>
+            <tr>
+                <td>{{ member.id }}</td>
+                <td>{{ member.first_name }}</td>
+                <td>{{ member.last_name }}</td>
+                <td>{{ member.email }}</td>
+                <td>
+                    <p-tag [value]="getRoleLabel(member.role)" severity="info"></p-tag>
+                </td>
+                <td>
+                    <i class="pi"
+                       [ngClass]="member.verified ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'"></i>
+                </td>
+                <td>{{ member.created | date:'dd/MM/yyyy' }}</td>
+                <td>
+                    <button pButton [text]="true" severity="warning" icon="pi pi-pencil" pTooltip="Modifier"
+                            tooltipPosition="bottom" (click)="onEdit(member)"></button>
+                    <button pButton [text]="true" severity="info" icon="pi pi-key" pTooltip="Réinitialiser le mot de passe"
+                            tooltipPosition="bottom" (click)="onResetPassword(member)"></button>
+                    <button pButton [text]="true" severity="danger" icon="pi pi-trash" pTooltip="Supprimer"
+                            tooltipPosition="bottom" (click)="onDelete(member)"></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="8" class="text-center p-4">Aucun membre trouvé.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Edit Member Dialog -->
+<p-dialog *ngIf="selectedMember" header="Modifier le membre" [(visible)]="editDialogVisible"
+          [modal]="true" [closable]="false" [style]="{width: '500px'}">
+    <div class="p-fluid">
+        <div class="p-field mt-3">
+            <label for="editFirstName">Prénom</label>
+            <input id="editFirstName" type="text" pInputText class="w-full mt-2"
+                   [(ngModel)]="selectedMember.first_name" />
+        </div>
+        <div class="p-field mt-3">
+            <label for="editLastName">Nom</label>
+            <input id="editLastName" type="text" pInputText class="w-full mt-2"
+                   [(ngModel)]="selectedMember.last_name" />
+        </div>
+        <div class="p-field mt-3">
+            <label for="editEmail">Email</label>
+            <input id="editEmail" type="email" pInputText class="w-full mt-2"
+                   [(ngModel)]="selectedMember.email" />
+        </div>
+        <div class="p-field mt-3">
+            <label for="editRole">Rôle</label>
+            <p-dropdown id="editRole" [options]="roleOptions" optionLabel="label" optionValue="value"
+                        [(ngModel)]="selectedMember.role" appendTo="body" class="w-full mt-2"></p-dropdown>
+        </div>
+    </div>
+    <p-footer>
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text"
+                (click)="editDialogVisible=false"></button>
+        <button pButton label="Valider" icon="pi pi-check" class="p-button-success"
+                (click)="confirmEdit()"></button>
+    </p-footer>
+</p-dialog>
+
+<!-- Add Member Dialog -->
+<p-dialog header="Ajouter un membre" [(visible)]="addDialogVisible" [modal]="true"
+          [closable]="false" [style]="{width: '500px'}">
+    <div class="p-fluid">
+        <div class="p-field mt-3">
+            <label for="newFirstName">Prénom</label>
+            <input id="newFirstName" type="text" pInputText class="w-full mt-2"
+                   [(ngModel)]="newMember.first_name" />
+        </div>
+        <div class="p-field mt-3">
+            <label for="newLastName">Nom</label>
+            <input id="newLastName" type="text" pInputText class="w-full mt-2"
+                   [(ngModel)]="newMember.last_name" />
+        </div>
+        <div class="p-field mt-3">
+            <label for="newEmail">Email</label>
+            <input id="newEmail" type="email" pInputText class="w-full mt-2"
+                   [(ngModel)]="newMember.email" />
+        </div>
+        <div class="p-field mt-3">
+            <label for="newPassword">Mot de passe</label>
+            <input id="newPassword" type="password" pInputText class="w-full mt-2"
+                   [(ngModel)]="newMember.password" />
+            <small class="text-color-secondary">Min 8 caractères, majuscule, minuscule, chiffre, symbole.</small>
+        </div>
+        <div class="p-field mt-3">
+            <label for="newRole">Rôle</label>
+            <p-dropdown id="newRole" [options]="roleOptions" optionLabel="label" optionValue="value"
+                        [(ngModel)]="newMember.role" appendTo="body" class="w-full mt-2"></p-dropdown>
+        </div>
+    </div>
+    <p-footer>
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text"
+                (click)="addDialogVisible=false"></button>
+        <button pButton label="Ajouter" icon="pi pi-check" class="p-button-success"
+                (click)="confirmAdd()"></button>
+    </p-footer>
+</p-dialog>
+
+<!-- Reset Password Dialog -->
+<p-dialog *ngIf="passwordTarget" header="Réinitialiser le mot de passe" [(visible)]="passwordDialogVisible"
+          [modal]="true" [closable]="false" [style]="{width: '450px'}">
+    <p>Réinitialiser le mot de passe de
+        <strong>{{ passwordTarget.first_name }} {{ passwordTarget.last_name }}</strong> ?
+    </p>
+    <div class="p-field mt-3">
+        <label for="resetPassword">Nouveau mot de passe</label>
+        <input id="resetPassword" type="password" pInputText class="w-full mt-2"
+               [(ngModel)]="newPassword" />
+        <small class="text-color-secondary">Min 8 caractères, majuscule, minuscule, chiffre, symbole.</small>
+    </div>
+    <p-footer>
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text"
+                (click)="passwordDialogVisible=false"></button>
+        <button pButton label="Valider" icon="pi pi-check" class="p-button-success"
+                (click)="confirmResetPassword()"></button>
+    </p-footer>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

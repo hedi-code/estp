@@ -24,6 +24,7 @@ import { MailingComponent } from './features/forum/components/mailing/mailing.co
 import { StandisteComponent } from './features/forum/components/standiste/standiste.component';
 import { GestionExposantsComponent } from './features/forum/components/gestion-exposants/gestion-exposants.component';
 import { ConfigComponent } from './features/forum/components/config/config.component';
+import { GestionMembresComponent } from './features/forum/components/gestion-membres/gestion-membres.component';
 import { RoleGuard } from './core/guards/role.guard';
 
 const routes: Routes = [
@@ -61,6 +62,7 @@ const routes: Routes = [
       { path: 'standiste', component: StandisteComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
       { path: 'gestion-exposants', component: GestionExposantsComponent, canActivate: [RoleGuard], data: { roles: ['pres','rescom','comm'] } },
       { path: 'logistique', component: ConfigComponent, canActivate: [RoleGuard], data: { roles: ['pres', 'reslog'] } },
+      { path: 'gestion-membres', component: GestionMembresComponent, canActivate: [RoleGuard], data: { roles: ['pres'] } },
     ]
   }
 

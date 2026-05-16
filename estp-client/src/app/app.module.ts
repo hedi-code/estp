@@ -75,6 +75,7 @@ import { provideCharts, withDefaultRegisterables, BaseChartDirective } from 'ng2
 import { CalendarModule } from 'primeng/calendar';
 import { GestionExposantsComponent } from './features/forum/components/gestion-exposants/gestion-exposants.component';
 import { ConfigComponent } from './features/forum/components/config/config.component';
+import { GestionMembresComponent } from './features/forum/components/gestion-membres/gestion-membres.component';
 
 
 
@@ -114,7 +115,8 @@ import { ConfigComponent } from './features/forum/components/config/config.compo
     StandisteComponent,
     Bc2SouscritFactureComponent,
     GestionExposantsComponent,
-    ConfigComponent
+    ConfigComponent,
+    GestionMembresComponent
     ],
   imports: [
     BrowserModule,

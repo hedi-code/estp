@@ -32,7 +32,27 @@ export class UserService {
   getCommercials(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/commercials`);
   }
-  
+
+  // Get all members (users with role <> 'user')
+  getMembers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/members`);
+  }
+
+  // Create a new member (uses existing createUser endpoint)
+  createMember(member: Partial<User>): Observable<any> {
+    return this.http.post(`${this.apiUrl}`, member);
+  }
+
+  // Update a member
+  updateMember(id: number, member: Partial<User>): Observable<any> {
+    return this.http.put(`${this.apiUrl}/members/${id}`, member);
+  }
+
+  // Reset member password (president action)
+  resetMemberPassword(id: number, newPassword: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/members/${id}/reset-password`, { newPassword });
+  }
+
   delete(id: number){
     return this.http.delete(`${this.apiUrl}/${id}`)
   }

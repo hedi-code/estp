@@ -46,6 +46,9 @@ export class MenuComponent {
             {
               label: 'Standiste', icon: 'pi pi-fw pi-users', routerLink: ['/forum/standiste']
             },
+            {
+              label: 'Gestion membres', icon: 'pi pi-fw pi-user-edit', routerLink: ['/forum/gestion-membres']
+            },
 
           ]
         }
