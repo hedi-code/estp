@@ -1,6 +1,14 @@
 // controllers/commande1OptionsController.js
 
 const db = require("../config/db");
+const { syncBC1 } = require("../axonaut/axonautService");
+
+function triggerSyncBC1(commande1Id, action) {
+  if (!commande1Id) return;
+  syncBC1(Number(commande1Id)).catch(e =>
+    console.error(`[Axonaut] syncBC1 ${action} #${commande1Id}:`, e.message)
+  );
+}
 
 exports.createCommande1Option = (req, res) => {
   const { commande1_id, option1_id, qty } = req.body;
@@ -9,6 +17,7 @@ exports.createCommande1Option = (req, res) => {
   db.query(query, [commande1_id, option1_id, qty], (err, result) => {
     if (err) return res.status(500).json({ error: err });
     res.status(201).json({ nonDisplayMessage: "Option added successfully", id: result.insertId });
+    triggerSyncBC1(commande1_id, 'option-add');
   });
 };
 
@@ -50,15 +59,33 @@ exports.updateCommande1Option = (req, res) => {
   db.query(query, [qty, id], (err) => {
     if (err) return res.status(500).json({ nonDisplayMessage: "Error updating option" });
     res.json({ nonDisplayMessage: "Option updated successfully" });
+
+    db.query(
+      "SELECT commande1_id FROM commande1_options WHERE id = ?",
+      [id],
+      (lookupErr, rows) => {
+        if (lookupErr || !rows[0]) return;
+        triggerSyncBC1(rows[0].commande1_id, 'option-update');
+      }
+    );
   });
 };
 
 exports.deleteCommande1Option = (req, res) => {
   const { id } = req.params;
 
-  const query = "DELETE FROM commande1_options WHERE id = ?";
-  db.query(query, [id], (err) => {
-    if (err) return res.status(500).json({ nonDisplayMessage: "Error deleting option" });
-    res.json({ nonDisplayMessage: "Option deleted successfully" });
-  });
+  db.query(
+    "SELECT commande1_id FROM commande1_options WHERE id = ?",
+    [id],
+    (lookupErr, rows) => {
+      if (lookupErr) return res.status(500).json({ nonDisplayMessage: "Error fetching option" });
+      const commande1Id = rows[0]?.commande1_id;
+
+      db.query("DELETE FROM commande1_options WHERE id = ?", [id], (err) => {
+        if (err) return res.status(500).json({ nonDisplayMessage: "Error deleting option" });
+        res.json({ nonDisplayMessage: "Option deleted successfully" });
+        triggerSyncBC1(commande1Id, 'option-delete');
+      });
+    }
+  );
 };

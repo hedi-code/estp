@@ -71,7 +71,7 @@ async function syncBC1(commande1Id) {
 
   // 3. Load options for this order
   const [optRows] = await q(
-    `SELECT o.name, o.prix_ht, co.qty
+    `SELECT o.name, o.prix_ht, o.axonaut_product_id, co.qty
      FROM commande1_options co
      JOIN option1s o ON o.id = co.option1_id
      WHERE co.commande1_id = ?`,
@@ -86,7 +86,7 @@ async function syncBC1(commande1Id) {
   let surface = null;
   if (commande.pack1_id && packPriceGuess > 0) {
     const [surfaceRows] = await q(
-      `SELECT surface, prix FROM pack1s_surface
+      `SELECT surface, prix, axonaut_product_id FROM pack1s_surface
        WHERE id_pack1 = ? AND ABS(prix - ?) < 0.01
        LIMIT 1`,
       [commande.pack1_id, packPriceGuess]
@@ -97,22 +97,39 @@ async function syncBC1(commande1Id) {
   // 6. Build payload and create/update invoice in Axonaut
   const bc1Data = {
     commande,
-    pack: { titre: commande.pack_titre || 'Pack' },
+    pack: { titre: commande.pack_titre || null },
     surface,
-    options: optRows.map(r => ({ name: r.name, prix_ht: r.prix_ht, qty: r.qty })),
+    options: optRows.map(r => ({
+      name: r.name,
+      prix_ht: r.prix_ht,
+      qty: r.qty,
+      axonaut_product_id: r.axonaut_product_id,
+    })),
   };
 
-  // Axonaut invoices are immutable once created — skip update if already synced
-  if (commande.axonaut_invoice_id) {
-    return commande.axonaut_invoice_id;
+  const payload = toAxonautInvoice1(bc1Data, axonautCompanyId);
+  const oldInvoiceId = commande.axonaut_invoice_id;
+
+  // Nothing to invoice yet — skip the API call (and clean up any stale invoice)
+  if (payload.products.length === 0) {
+    if (oldInvoiceId) {
+      try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
+      catch (e) { console.error(`[Axonaut] delete stale invoice ${oldInvoiceId}: ${e.message}`); }
+      await q('UPDATE commande1s SET axonaut_invoice_id = NULL WHERE id = ?', [commande1Id]);
+    }
+    return null;
   }
 
-  const payload = toAxonautInvoice1(bc1Data, axonautCompanyId);
+  // Resync: create the new invoice, point the DB at it, then best-effort delete the old one
   const created = await axonaut.post('/invoices', payload);
   await q(
     'UPDATE commande1s SET axonaut_invoice_id = ? WHERE id = ?',
     [String(created.id), commande1Id]
   );
+  if (oldInvoiceId) {
+    try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
+    catch (e) { console.error(`[Axonaut] delete old invoice ${oldInvoiceId}: ${e.message}`); }
+  }
   return String(created.id);
 }
 
@@ -127,6 +144,7 @@ async function syncBC2(commande2Id) {
   const [[commande]] = await q(
     `SELECT c.*,
             p.nom AS pack_nom, p.coloris AS pack_coloris, p.prix_ht AS pack_prix_ht,
+            p.axonaut_product_id AS pack_axonaut_product_id,
             e.axonaut_company_id, e.id AS entreprise_id
      FROM commande2s c
      JOIN entreprises e ON e.id = c.entreprise_id
@@ -142,7 +160,8 @@ async function syncBC2(commande2Id) {
 
   // 3. Load options for this order
   const [optRows] = await q(
-    `SELECT o.nom, o.prix_ht, o.taux_tva, co.qty, co.color, co.reduction
+    `SELECT o.nom, o.prix_ht, o.taux_tva, o.axonaut_product_id,
+            co.qty, co.color, co.reduction
      FROM commande2_options co
      JOIN option2s o ON o.id = co.option2_id
      WHERE co.commande2_id = ?`,
@@ -153,9 +172,10 @@ async function syncBC2(commande2Id) {
   const bc2Data = {
     commande,
     pack: {
-      nom:      commande.pack_nom      || 'Pack',
+      nom:      commande.pack_nom      || null,
       coloris:  commande.pack_coloris  || null,
       prix_ht:  commande.pack_prix_ht  || 0,
+      axonaut_product_id: commande.pack_axonaut_product_id || null,
     },
     options: optRows.map(r => ({
       nom:       r.nom,
@@ -164,20 +184,33 @@ async function syncBC2(commande2Id) {
       qty:       r.qty,
       color:     r.color,
       reduction: r.reduction,
+      axonaut_product_id: r.axonaut_product_id,
     })),
   };
 
-  // Axonaut invoices are immutable once created — skip update if already synced
-  if (commande.axonaut_invoice_id) {
-    return commande.axonaut_invoice_id;
+  const payload = toAxonautInvoice2(bc2Data, axonautCompanyId);
+  const oldInvoiceId = commande.axonaut_invoice_id;
+
+  // Nothing to invoice yet — skip the API call (and clean up any stale invoice)
+  if (payload.products.length === 0) {
+    if (oldInvoiceId) {
+      try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
+      catch (e) { console.error(`[Axonaut] delete stale invoice ${oldInvoiceId}: ${e.message}`); }
+      await q('UPDATE commande2s SET axonaut_invoice_id = NULL WHERE id = ?', [commande2Id]);
+    }
+    return null;
   }
 
-  const payload = toAxonautInvoice2(bc2Data, axonautCompanyId);
+  // Resync: create the new invoice, point the DB at it, then best-effort delete the old one
   const created = await axonaut.post('/invoices', payload);
   await q(
     'UPDATE commande2s SET axonaut_invoice_id = ? WHERE id = ?',
     [String(created.id), commande2Id]
   );
+  if (oldInvoiceId) {
+    try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
+    catch (e) { console.error(`[Axonaut] delete old invoice ${oldInvoiceId}: ${e.message}`); }
+  }
   return String(created.id);
 }
 
@@ -197,7 +230,7 @@ async function syncPack1Surface(surfaceId) {
   if (!row) throw new Error(`pack1s_surface ${surfaceId} introuvable`);
 
   const payload = {
-    name: `Pack ${row.pack_titre} – ${row.surface} m²`,
+    name: `${row.pack_titre} – ${row.surface} m²`,
     product_code: `PACK1-SURF-${row.id}`,
     price: parseFloat(row.prix),
     tax_rate: DEFAULT_TVA,

@@ -126,7 +126,7 @@ exports.createUser = async (req, res) => {
     [email, hashedPassword, first_name, last_name, role, created, modified, step, verified],
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.status(201).json({ message: 'User created', id: result.insertId });
+      res.status(201).json({ message: 'Membre créer', id: result.insertId });
     }
   );
 };

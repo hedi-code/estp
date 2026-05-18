@@ -3,10 +3,10 @@
 //
 // bc1Data shape:
 // {
-//   commande  : commande1 row  (id, total_ht, total_ht_avt_remise, reduc_pct, reduc_lin, created)
-//   pack      : { titre }      (pack1s row)
-//   surface   : { surface, prix } | null   (pack1s_surface row, null if unresolvable)
-//   options   : [{ name, prix_ht, qty }]   (option1s joined with commande1_options)
+//   commande  : commande1 row  (id, pack1_id, total_ht, total_ht_avt_remise, reduc_pct, reduc_lin, created)
+//   pack      : { titre }      (pack1s row, titre null if no pack selected)
+//   surface   : { surface, prix, axonaut_product_id } | null
+//   options   : [{ name, prix_ht, qty, axonaut_product_id }]
 // }
 
 const DEFAULT_TVA = 20;
@@ -16,26 +16,41 @@ function toAxonautInvoice1(bc1Data, axonautCompanyId) {
 
   const products = [];
 
-  // Line 1 – Pack + surface
-  const packName = surface
-    ? `Pack ${pack.titre} – Surface ${surface.surface} m²`
-    : `Pack ${pack.titre}`;
+  // Pack line — only when a pack is actually selected
+  if (commande.pack1_id) {
+    if (surface && surface.axonaut_product_id) {
+      products.push({
+        id: parseInt(surface.axonaut_product_id, 10),
+        quantity: 1,
+      });
+    } else {
+      const packName = surface
+        ? `${pack.titre} – ${surface.surface} m²`
+        : pack.titre;
+      products.push({
+        name: packName,
+        price: parseFloat(surface ? surface.prix : commande.total_ht_avt_remise),
+        quantity: 1,
+        tax_rate: DEFAULT_TVA,
+      });
+    }
+  }
 
-  products.push({
-    name: packName,
-    price: parseFloat(surface ? surface.prix : commande.total_ht_avt_remise),
-    quantity: 1,
-    tax_rate: DEFAULT_TVA,
-  });
-
-  // Lines 2..N – Selected BC1 options
+  // Selected BC1 options
   for (const opt of options) {
-    products.push({
-      name: opt.name,
-      price: parseFloat(opt.prix_ht),
-      quantity: opt.qty,
-      tax_rate: DEFAULT_TVA,
-    });
+    if (opt.axonaut_product_id) {
+      products.push({
+        id: parseInt(opt.axonaut_product_id, 10),
+        quantity: opt.qty,
+      });
+    } else {
+      products.push({
+        name: opt.name,
+        price: parseFloat(opt.prix_ht),
+        quantity: opt.qty,
+        tax_rate: DEFAULT_TVA,
+      });
+    }
   }
 
   // Fixed discount line

@@ -1,6 +1,14 @@
 // controllers/commande2OptionsController.js
 
 const db = require("../config/db");
+const { syncBC2 } = require("../axonaut/axonautService");
+
+function triggerSyncBC2(commande2Id, action) {
+  if (!commande2Id) return;
+  syncBC2(Number(commande2Id)).catch(e =>
+    console.error(`[Axonaut] syncBC2 ${action} #${commande2Id}:`, e.message)
+  );
+}
 
 exports.addOptionToCommande2 = (req, res) => {
   const { commande2_id, option2_id, qty = 1, color, reduction = 0 } = req.body;
@@ -12,6 +20,7 @@ exports.addOptionToCommande2 = (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.status(201).json({ nonDisplayMessage: "Option ajoutée à la commande", id: result.insertId });
+      triggerSyncBC2(commande2_id, 'option-add');
     }
   );
 };
@@ -77,6 +86,15 @@ exports.updateCommande2Option = (req, res) => {
     (err) => {
       if (err) return res.status(500).json({ error: "Erreur base de données" });
       res.json({ message: "Option de commande mise à jour" });
+
+      db.query(
+        "SELECT commande2_id FROM commande2_options WHERE id = ?",
+        [id],
+        (lookupErr, rows) => {
+          if (lookupErr || !rows[0]) return;
+          triggerSyncBC2(rows[0].commande2_id, 'option-update');
+        }
+      );
     }
   );
 };
@@ -84,10 +102,20 @@ exports.updateCommande2Option = (req, res) => {
 exports.removeOptionFromCommande2 = (req, res) => {
   const id = req.params.id;
 
-  db.query("DELETE FROM commande2_options WHERE id = ?", [id], (err) => {
-    if (err) return res.status(500).json({ error: "Erreur base de données" });
-    res.json({ message: "Option supprimée de la commande" });
-  });
+  db.query(
+    "SELECT commande2_id FROM commande2_options WHERE id = ?",
+    [id],
+    (lookupErr, rows) => {
+      if (lookupErr) return res.status(500).json({ error: "Erreur base de données" });
+      const commande2Id = rows[0]?.commande2_id;
+
+      db.query("DELETE FROM commande2_options WHERE id = ?", [id], (err) => {
+        if (err) return res.status(500).json({ error: "Erreur base de données" });
+        res.json({ message: "Option supprimée de la commande" });
+        triggerSyncBC2(commande2Id, 'option-delete');
+      });
+    }
+  );
 };
 
 exports.getCommande2OptionById = (req, res) => {
@@ -124,5 +152,6 @@ exports.removeAllOptionsFromCommande2 = (req, res) => {
   db.query("DELETE FROM commande2_options WHERE commande2_id = ?", [commande2_id], (err) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
     res.json({ message: "Toutes les options supprimées de la commande" });
+    triggerSyncBC2(commande2_id, 'option-remove-all');
   });
 };
