@@ -53,13 +53,20 @@ async function syncEntreprise(entrepriseId) {
  * Returns the Axonaut invoice id (string).
  */
 async function syncBC1(commande1Id) {
-  // 1. Load commande + pack + entreprise
+  // 1. Load commande + surface + pack + entreprise.
+  // NOTE: commande1s.pack1_id references pack1s_surface.id (not pack1s.id).
+  // We join pack1s through the surface row to recover the pack title.
   const [[commande]] = await q(
-    `SELECT c.*, p.titre AS pack_titre,
+    `SELECT c.*,
+            ps.surface             AS pack_surface,
+            ps.prix                AS pack_surface_prix,
+            ps.axonaut_product_id  AS pack_surface_axonaut_id,
+            p.titre                AS pack_titre,
             e.axonaut_company_id, e.id AS entreprise_id
      FROM commande1s c
      JOIN entreprises e ON e.id = c.entreprise_id
-     LEFT JOIN pack1s p ON p.id = c.pack1_id
+     LEFT JOIN pack1s_surface ps ON ps.id = c.pack1_id
+     LEFT JOIN pack1s p ON p.id = ps.id_pack1
      WHERE c.id = ?`,
     [commande1Id]
   );
@@ -84,28 +91,19 @@ async function syncBC1(commande1Id) {
     [commande1Id]
   );
 
-  // 4. Derive pack price by subtracting option totals from total_ht_avt_remise
-  const optionsTotal = optRows.reduce((sum, r) => sum + parseFloat(r.prix_ht) * r.qty, 0);
-  const packPriceGuess = parseFloat(commande.total_ht_avt_remise || 0) - optionsTotal;
+  // 4. Build payload and create/update invoice in Axonaut
+  const surface = (commande.pack1_id && commande.pack_surface != null)
+    ? {
+        surface: commande.pack_surface,
+        prix: commande.pack_surface_prix,
+        axonaut_product_id: commande.pack_surface_axonaut_id,
+      }
+    : null;
 
-  // 5. Try to match the surface row from pack1s_surface
-  let surface = null;
-  if (commande.pack1_id && packPriceGuess > 0) {
-    const [surfaceRows] = await q(
-      `SELECT surface, prix, axonaut_product_id FROM pack1s_surface
-       WHERE id_pack1 = ? AND ABS(prix - ?) < 0.01
-       LIMIT 1`,
-      [commande.pack1_id, packPriceGuess]
-    );
-    surface = surfaceRows[0] || null;
-  }
-
-  // 6. Build payload and create/update invoice in Axonaut
   const bc1Data = {
     commande,
     pack: { titre: commande.pack_titre || null },
     surface,
-    packPriceGuess,
     options: optRows.map(r => ({
       name: r.name,
       prix_ht: r.prix_ht,

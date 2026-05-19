@@ -3,11 +3,10 @@
 //
 // bc1Data shape:
 // {
-//   commande        : commande1 row  (id, pack1_id, total_ht, total_ht_avt_remise, reduc_pct, reduc_lin, created)
-//   pack            : { titre }      (pack1s row, titre null if no pack selected)
-//   surface         : { surface, prix, axonaut_product_id } | null
-//   packPriceGuess  : number — total_ht_avt_remise minus options total (fallback pack price)
-//   options         : [{ name, prix_ht, qty, axonaut_product_id }]
+//   commande : commande1 row  (id, pack1_id, total_ht, total_ht_avt_remise, reduc_pct, reduc_lin, created)
+//   pack     : { titre }      (pack1s row joined through pack1s_surface — titre null if no pack)
+//   surface  : { surface, prix, axonaut_product_id } | null   (resolved from pack1s_surface by id)
+//   options  : [{ name, prix_ht, qty, axonaut_product_id }]
 // }
 
 const DEFAULT_TVA = 20;
@@ -23,7 +22,7 @@ function nonEmptyName(name) {
 }
 
 function toAxonautInvoice1(bc1Data, axonautCompanyId) {
-  const { commande, pack, surface, packPriceGuess, options } = bc1Data;
+  const { commande, pack, surface, options } = bc1Data;
 
   const products = [];
 
@@ -31,11 +30,9 @@ function toAxonautInvoice1(bc1Data, axonautCompanyId) {
   if (commande.pack1_id) {
     const titre = nonEmptyName(pack.titre) || `Pack #${commande.pack1_id}`;
     const packName = surface ? `${titre} – ${surface.surface} m²` : titre;
-    // Price preference: matched surface > derived pack price (total − options) > total_ht_avt_remise
-    const fallback = parseFloat(packPriceGuess) > 0
-      ? parseFloat(packPriceGuess)
+    const packPrice = surface
+      ? (parseFloat(surface.prix) || 0)
       : (parseFloat(commande.total_ht_avt_remise) || 0);
-    const packPrice = surface ? parseFloat(surface.prix) : fallback;
 
     const line = {
       name: packName,
