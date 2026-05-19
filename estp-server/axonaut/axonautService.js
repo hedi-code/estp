@@ -105,6 +105,7 @@ async function syncBC1(commande1Id) {
     commande,
     pack: { titre: commande.pack_titre || null },
     surface,
+    packPriceGuess,
     options: optRows.map(r => ({
       name: r.name,
       prix_ht: r.prix_ht,
