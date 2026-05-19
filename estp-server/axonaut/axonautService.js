@@ -12,6 +12,40 @@ const { toAxonautInvoice2 } = require('./mappers/invoice2Mapper');
 
 const q = (sql, params) => db.promise().query(sql, params);
 
+/**
+ * Look up an existing Axonaut product by its product_code.
+ * Axonaut's product_code filter is a substring match, so we re-check for
+ * an exact match in the results.
+ * Returns the Axonaut product id (string) or null if not found.
+ */
+async function findAxonautProductIdByCode(productCode) {
+  try {
+    const res = await axonaut.get(`/products?product_code=${encodeURIComponent(productCode)}`);
+    if (!Array.isArray(res) || res.length === 0) return null;
+    const exact = res.find(p => p.product_code === productCode);
+    return exact ? String(exact.id) : null;
+  } catch (e) {
+    console.error(`[Axonaut] product lookup failed for ${productCode}: ${e.message}`);
+    return null;
+  }
+}
+
+/**
+ * Ensure a catalog row has its axonaut_product_id populated.
+ * If the row's id is null, try to find a matching Axonaut product by product_code
+ * (so we link to an existing product instead of creating a duplicate). Persists the
+ * id in the given table when found.
+ * Returns the resolved id (string) or null.
+ */
+async function ensureProductIdByCode(table, rowId, currentAxonautId, productCode) {
+  if (currentAxonautId) return String(currentAxonautId);
+  const found = await findAxonautProductIdByCode(productCode);
+  if (found) {
+    await q(`UPDATE ${table} SET axonaut_product_id = ? WHERE id = ?`, [found, rowId]);
+  }
+  return found;
+}
+
 // ─── COMPANY SYNC ────────────────────────────────────────────────────────────
 
 /**
@@ -84,12 +118,31 @@ async function syncBC1(commande1Id) {
 
   // 3. Load options for this order
   const [optRows] = await q(
-    `SELECT o.name, o.prix_ht, o.axonaut_product_id, co.qty
+    `SELECT o.id AS option1_id, o.name, o.prix_ht, o.axonaut_product_id, co.qty
      FROM commande1_options co
      JOIN option1s o ON o.id = co.option1_id
      WHERE co.commande1_id = ?`,
     [commande1Id]
   );
+
+  // 3b. Backfill missing axonaut_product_ids from Axonaut by product_code, so the
+  // invoice links to existing products instead of letting Axonaut create duplicates.
+  if (commande.pack1_id) {
+    commande.pack_surface_axonaut_id = await ensureProductIdByCode(
+      'pack1s_surface',
+      commande.pack1_id,
+      commande.pack_surface_axonaut_id,
+      `PACK1-SURF-${commande.pack1_id}`
+    );
+  }
+  for (const opt of optRows) {
+    opt.axonaut_product_id = await ensureProductIdByCode(
+      'option1s',
+      opt.option1_id,
+      opt.axonaut_product_id,
+      `OPT1-${opt.option1_id}`
+    );
+  }
 
   // 4. Build payload and create/update invoice in Axonaut
   const surface = (commande.pack1_id && commande.pack_surface != null)
@@ -165,13 +218,32 @@ async function syncBC2(commande2Id) {
 
   // 3. Load options for this order
   const [optRows] = await q(
-    `SELECT o.nom, o.prix_ht, o.taux_tva, o.axonaut_product_id,
+    `SELECT o.id AS option2_id, o.nom, o.prix_ht, o.taux_tva, o.axonaut_product_id,
             co.qty, co.color, co.reduction
      FROM commande2_options co
      JOIN option2s o ON o.id = co.option2_id
      WHERE co.commande2_id = ?`,
     [commande2Id]
   );
+
+  // 3b. Backfill missing axonaut_product_ids by product_code so we link to existing
+  // Axonaut products instead of letting Axonaut create duplicates.
+  if (commande.pack2_id) {
+    commande.pack_axonaut_product_id = await ensureProductIdByCode(
+      'pack2s',
+      commande.pack2_id,
+      commande.pack_axonaut_product_id,
+      `PACK2-${commande.pack2_id}`
+    );
+  }
+  for (const opt of optRows) {
+    opt.axonaut_product_id = await ensureProductIdByCode(
+      'option2s',
+      opt.option2_id,
+      opt.axonaut_product_id,
+      `OPT2-${opt.option2_id}`
+    );
+  }
 
   // 4. Build payload and create/update invoice in Axonaut
   const bc2Data = {
