@@ -65,6 +65,12 @@ async function syncBC1(commande1Id) {
   );
   if (!commande) throw new Error(`Commande1 ${commande1Id} introuvable`);
 
+  // Wait until the commande is validated before syncing — Axonaut invoices are
+  // immutable, so we only push once the user has marked the commande "done".
+  if (!commande.valide) {
+    return commande.axonaut_invoice_id || null;
+  }
+
   // 2. Ensure the company exists in Axonaut
   const axonautCompanyId = commande.axonaut_company_id
     || await syncEntreprise(commande.entreprise_id);
@@ -107,29 +113,23 @@ async function syncBC1(commande1Id) {
     })),
   };
 
-  const payload = toAxonautInvoice1(bc1Data, axonautCompanyId);
-  const oldInvoiceId = commande.axonaut_invoice_id;
+  // Axonaut invoices are immutable (API supports only GET/POST) — skip if already synced
+  if (commande.axonaut_invoice_id) {
+    return commande.axonaut_invoice_id;
+  }
 
-  // Nothing to invoice yet — skip the API call (and clean up any stale invoice)
+  const payload = toAxonautInvoice1(bc1Data, axonautCompanyId);
+
+  // Nothing to invoice yet — don't create an empty invoice that would then be locked
   if (payload.products.length === 0) {
-    if (oldInvoiceId) {
-      try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
-      catch (e) { console.error(`[Axonaut] delete stale invoice ${oldInvoiceId}: ${e.message}`); }
-      await q('UPDATE commande1s SET axonaut_invoice_id = NULL WHERE id = ?', [commande1Id]);
-    }
     return null;
   }
 
-  // Resync: create the new invoice, point the DB at it, then best-effort delete the old one
   const created = await axonaut.post('/invoices', payload);
   await q(
     'UPDATE commande1s SET axonaut_invoice_id = ? WHERE id = ?',
     [String(created.id), commande1Id]
   );
-  if (oldInvoiceId) {
-    try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
-    catch (e) { console.error(`[Axonaut] delete old invoice ${oldInvoiceId}: ${e.message}`); }
-  }
   return String(created.id);
 }
 
@@ -153,6 +153,12 @@ async function syncBC2(commande2Id) {
     [commande2Id]
   );
   if (!commande) throw new Error(`Commande2 ${commande2Id} introuvable`);
+
+  // Wait until the commande is validated before syncing — Axonaut invoices are
+  // immutable, so we only push once the user has marked the commande "done".
+  if (!commande.valide) {
+    return commande.axonaut_invoice_id || null;
+  }
 
   // 2. Ensure the company exists in Axonaut
   const axonautCompanyId = commande.axonaut_company_id
@@ -188,29 +194,23 @@ async function syncBC2(commande2Id) {
     })),
   };
 
-  const payload = toAxonautInvoice2(bc2Data, axonautCompanyId);
-  const oldInvoiceId = commande.axonaut_invoice_id;
+  // Axonaut invoices are immutable (API supports only GET/POST) — skip if already synced
+  if (commande.axonaut_invoice_id) {
+    return commande.axonaut_invoice_id;
+  }
 
-  // Nothing to invoice yet — skip the API call (and clean up any stale invoice)
+  const payload = toAxonautInvoice2(bc2Data, axonautCompanyId);
+
+  // Nothing to invoice yet — don't create an empty invoice that would then be locked
   if (payload.products.length === 0) {
-    if (oldInvoiceId) {
-      try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
-      catch (e) { console.error(`[Axonaut] delete stale invoice ${oldInvoiceId}: ${e.message}`); }
-      await q('UPDATE commande2s SET axonaut_invoice_id = NULL WHERE id = ?', [commande2Id]);
-    }
     return null;
   }
 
-  // Resync: create the new invoice, point the DB at it, then best-effort delete the old one
   const created = await axonaut.post('/invoices', payload);
   await q(
     'UPDATE commande2s SET axonaut_invoice_id = ? WHERE id = ?',
     [String(created.id), commande2Id]
   );
-  if (oldInvoiceId) {
-    try { await axonaut.delete(`/invoices/${oldInvoiceId}`); }
-    catch (e) { console.error(`[Axonaut] delete old invoice ${oldInvoiceId}: ${e.message}`); }
-  }
   return String(created.id);
 }
 

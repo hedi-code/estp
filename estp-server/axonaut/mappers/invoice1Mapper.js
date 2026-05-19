@@ -11,6 +11,16 @@
 
 const DEFAULT_TVA = 20;
 
+function resolveProductId(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function nonEmptyName(name) {
+  return typeof name === 'string' && name.trim().length > 0 ? name.trim() : null;
+}
+
 function toAxonautInvoice1(bc1Data, axonautCompanyId) {
   const { commande, pack, surface, options } = bc1Data;
 
@@ -18,38 +28,42 @@ function toAxonautInvoice1(bc1Data, axonautCompanyId) {
 
   // Pack line — only when a pack is actually selected
   if (commande.pack1_id) {
-    if (surface && surface.axonaut_product_id) {
-      products.push({
-        id: parseInt(surface.axonaut_product_id, 10),
-        quantity: 1,
-      });
+    const surfaceProductId = surface ? resolveProductId(surface.axonaut_product_id) : null;
+    if (surfaceProductId) {
+      products.push({ id: surfaceProductId, quantity: 1 });
     } else {
-      const packName = surface
-        ? `${pack.titre} – ${surface.surface} m²`
-        : pack.titre;
-      products.push({
-        name: packName,
-        price: parseFloat(surface ? surface.prix : commande.total_ht_avt_remise),
-        quantity: 1,
-        tax_rate: DEFAULT_TVA,
-      });
+      const titre = nonEmptyName(pack.titre);
+      const packName = surface && titre
+        ? `${titre} – ${surface.surface} m²`
+        : titre;
+      // Skip the pack line entirely if we have neither a linked product nor a usable name —
+      // Axonaut rejects lines that have no id/name/internal_id/product_code.
+      if (packName) {
+        products.push({
+          name: packName,
+          price: parseFloat(surface ? surface.prix : commande.total_ht_avt_remise),
+          quantity: 1,
+          tax_rate: DEFAULT_TVA,
+        });
+      }
     }
   }
 
   // Selected BC1 options
   for (const opt of options) {
-    if (opt.axonaut_product_id) {
-      products.push({
-        id: parseInt(opt.axonaut_product_id, 10),
-        quantity: opt.qty,
-      });
+    const optProductId = resolveProductId(opt.axonaut_product_id);
+    if (optProductId) {
+      products.push({ id: optProductId, quantity: opt.qty });
     } else {
-      products.push({
-        name: opt.name,
-        price: parseFloat(opt.prix_ht),
-        quantity: opt.qty,
-        tax_rate: DEFAULT_TVA,
-      });
+      const optName = nonEmptyName(opt.name);
+      if (optName) {
+        products.push({
+          name: optName,
+          price: parseFloat(opt.prix_ht),
+          quantity: opt.qty,
+          tax_rate: DEFAULT_TVA,
+        });
+      }
     }
   }
 

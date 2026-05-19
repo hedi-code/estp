@@ -10,6 +10,16 @@
 
 const DEFAULT_TVA = 20;
 
+function resolveProductId(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function nonEmptyName(name) {
+  return typeof name === 'string' && name.trim().length > 0 ? name.trim() : null;
+}
+
 function toAxonautInvoice2(bc2Data, axonautCompanyId) {
   const { commande, pack, options } = bc2Data;
 
@@ -17,22 +27,22 @@ function toAxonautInvoice2(bc2Data, axonautCompanyId) {
 
   // Pack line — only when a pack is actually selected
   if (commande.pack2_id) {
-    if (pack.axonaut_product_id) {
-      products.push({
-        id: parseInt(pack.axonaut_product_id, 10),
-        quantity: 1,
-      });
+    const packProductId = resolveProductId(pack.axonaut_product_id);
+    if (packProductId) {
+      products.push({ id: packProductId, quantity: 1 });
     } else {
-      const packColor = commande.pack2_color || pack.coloris || null;
-      const packName = packColor
-        ? `${pack.nom} – ${packColor}`
-        : pack.nom;
-      products.push({
-        name: packName,
-        price: parseFloat(pack.prix_ht),
-        quantity: 1,
-        tax_rate: DEFAULT_TVA,
-      });
+      const nom = nonEmptyName(pack.nom);
+      if (nom) {
+        const packColor = commande.pack2_color || pack.coloris || null;
+        const packName = packColor ? `${nom} – ${packColor}` : nom;
+        products.push({
+          name: packName,
+          price: parseFloat(pack.prix_ht),
+          quantity: 1,
+          tax_rate: DEFAULT_TVA,
+        });
+      }
+      // Else: skip — neither linked product nor usable name; Axonaut would reject the line.
     }
   }
 
@@ -50,26 +60,25 @@ function toAxonautInvoice2(bc2Data, axonautCompanyId) {
   // Each option carries its own TVA rate and an optional per-line reduction.
   for (const opt of options) {
     const reduction = parseFloat(opt.reduction || 0);
-    if (opt.axonaut_product_id) {
-      const line = {
-        id: parseInt(opt.axonaut_product_id, 10),
-        quantity: opt.qty,
-      };
+    const optProductId = resolveProductId(opt.axonaut_product_id);
+    if (optProductId) {
+      const line = { id: optProductId, quantity: opt.qty };
       if (reduction > 0) {
         line.price = parseFloat(opt.prix_ht) - reduction;
       }
       products.push(line);
     } else {
-      const unitPrice = parseFloat(opt.prix_ht) - reduction;
-      const name = opt.color
-        ? `${opt.nom} – ${opt.color}`
-        : opt.nom;
-      products.push({
-        name,
-        price: unitPrice,
-        quantity: opt.qty,
-        tax_rate: parseFloat(opt.taux_tva) || DEFAULT_TVA,
-      });
+      const nom = nonEmptyName(opt.nom);
+      if (nom) {
+        const unitPrice = parseFloat(opt.prix_ht) - reduction;
+        const name = opt.color ? `${nom} – ${opt.color}` : nom;
+        products.push({
+          name,
+          price: unitPrice,
+          quantity: opt.qty,
+          tax_rate: parseFloat(opt.taux_tva) || DEFAULT_TVA,
+        });
+      }
     }
   }
 
