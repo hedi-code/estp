@@ -29,13 +29,31 @@ const sendEmail = async (
   attachmentName = null,
   attachment = null
 ) => {
+  // Garde-fou local : aucun email réel n'est envoyé si DISABLE_EMAIL=1.
+  if (process.env.DISABLE_EMAIL === '1') {
+    console.log(`[EMAIL DÉSACTIVÉ] (local) à=${receiverEmail} | sujet="${subject}"`);
+    return Promise.resolve({ disabled: true });
+  }
+
+  // Certains appels passent un simple fragment HTML (<p>…</p>) sans <html>/charset.
+  // Sans déclaration UTF-8, les clients mail affichent des accents cassés
+  // (« vÃ©rification », « chaÃ®ne »…). On enveloppe donc le contenu dans un document
+  // HTML complet avec charset UTF-8, sauf s'il en contient déjà un.
+  const hasHtmlDoc = /<html[\s>]/i.test(htmlText);
+  const fullHtml = hasHtmlDoc
+    ? htmlText
+    : `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">` +
+      `<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>` +
+      `<body>${htmlText}</body></html>`;
+
   const sendSmtpEmail = {
     sender: { email: senderEmail },
     to: [{ email: receiverEmail, name: receiverName }],
     subject: subject,
-    htmlContent: htmlText,
+    htmlContent: fullHtml,
     headers: {
-      'X-Mailin-custom': 'custom_header_1:custom_value_1|custom_header_2:custom_value_2'
+      'X-Mailin-custom': 'custom_header_1:custom_value_1|custom_header_2:custom_value_2',
+      'Content-Type': 'text/html; charset=UTF-8'
     }
   };
   if (ccEmails && Array.isArray(ccEmails) && ccEmails.length > 0) {

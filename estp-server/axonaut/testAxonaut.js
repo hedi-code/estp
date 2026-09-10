@@ -5,7 +5,7 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
 // Use localhost if server runs locally, or the deployed test server
-const BASE = process.env.TEST_BASE_URL || 'http://localhost:3000';
+const BASE = process.env.FRONT_BASE_URL;
 const AXONAUT_API = 'https://axonaut.com/api/v2';
 const AXONAUT_KEY = process.env.AXONAUT_API_KEY;
 

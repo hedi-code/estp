@@ -286,6 +286,23 @@ exports.getEntreprisesWithPack1s = (req, res) => {
   });
 };
 
+// Get the commercial assigned to an entreprise (public contact only, no password)
+exports.getEntrepriseCommercial = (req, res) => {
+  const { id } = req.params;
+  db.query(
+    `SELECT u.first_name, u.last_name, u.email, u.telephone
+       FROM entreprises e
+       JOIN users u ON u.id = e.commercial_id
+      WHERE e.id = ?`,
+    [id],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: 'Erreur serveur', error: err });
+      // Pas de commercial assigné => null (le front utilisera le contact par défaut)
+      res.json(results.length === 0 ? null : results[0]);
+    }
+  );
+};
+
 // Update place_plan for an entreprise
 exports.updatePlacePlan = (req, res) => {
   const { id } = req.params;

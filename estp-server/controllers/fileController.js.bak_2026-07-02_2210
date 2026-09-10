@@ -46,11 +46,8 @@ const storage = multer.diskStorage({
     const originalExt = path.extname(file.originalname).toLowerCase();
     const requestedName = req.query.filename;
     // Nettoyage : on ne garde que le nom de base, sans séparateur de chemin.
-    // On autorise le point (.) : les noms de facture utilisent des points
-    // (ex: festp.2026.331.fct1). path.basename() a déjà retiré tout séparateur
-    // de chemin, donc aucun risque de path traversal ici.
     const baseRequested = requestedName
-      ? path.basename(String(requestedName)).replace(/[^a-zA-Z0-9_.\-]/g, '')
+      ? path.basename(String(requestedName)).replace(/[^a-zA-Z0-9_\-]/g, '')
       : '';
     const safeName = baseRequested
       ? `${baseRequested}${originalExt}`

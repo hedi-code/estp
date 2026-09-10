@@ -22,17 +22,21 @@ const dashboardRoutes = require('./routes/dashboardRoutes'); // <- Import dashbo
 const exposantRoutes = require('./routes/exposantRoutes'); // <- Import exposant routes
 const configRoutes = require('./routes/configRoutes'); // <- Import config routes
 const authMiddleware = require('./middleware/auth'); // <- Import JWT middleware
+const uploadsAuth = require('./middleware/uploadsAuth'); // <- Auth pour fichiers sensibles
 const axonautRoutes = require('./axonaut/axonautRoutes'); // <- Import Axonaut integration routes
 
 
 
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 
 dotenv.config();
 const app = express();
 const corsOptions = {
   origin: [ 
+    'http://localhost:4200',
+    'http://127.0.0.1:4200',
     'https://test.app.forumestp.fr',
     'http://test.app.forumestp.fr',
     'https://www.test.app.forumestp.fr',
@@ -57,9 +61,16 @@ dotenv.config({ path: `.env.${env}` });
 
 console.log(`Loaded environment: ${env}`);
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
+app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
+
+// Fichiers sensibles (factures PDF) protégés par authentification.
+// Les autres fichiers (images d'options/packs, book…) restent publics car
+// chargés en sous-ressource <img> (où le cookie SameSite n'est pas garanti).
+app.use('/api/uploads/bc1', uploadsAuth);
+app.use('/api/uploads/bc2', uploadsAuth);
 app.use('/api/uploads', express.static('uploads'));
 
 

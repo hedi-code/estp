@@ -14,11 +14,14 @@ class AxonautError extends Error {
 
 class AxonautClient {
   constructor(apiKey) {
-    if (!apiKey) throw new Error('AXONAUT_API_KEY is not set');
-    this.apiKey = apiKey;
+    // On ne lève plus au chargement du module : un environnement sans clé
+    // (ex. TEST) doit pouvoir démarrer. L'erreur survient seulement si un
+    // appel Axonaut est réellement tenté sans clé configurée.
+    this.apiKey = apiKey || null;
   }
 
   async _request(method, path, body = null) {
+    if (!this.apiKey) throw new Error('AXONAUT_API_KEY is not set');
     const opts = {
       method,
       headers: {

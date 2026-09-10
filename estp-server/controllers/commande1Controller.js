@@ -2,6 +2,7 @@
 
 const db = require("../config/db");
 const { sendEmail } = require("../utils/email");
+const { loadForumConfig } = require("../utils/forumConfig");
 const fs = require('fs');
 const path = require('path');
 const { syncBC1, markInvoicePaid, deleteAxonautInvoice } = require('../axonaut/axonautService');
@@ -33,7 +34,8 @@ exports.createCommande1 = (req, res) => {
     validation_lieu = null,
     valide = 0,
     fct_payee = 0,
-    fct_envoyee = 0
+    fct_envoyee = 0,
+    signature = null
   } = req.body;
 
   const now = new Date();
@@ -48,8 +50,8 @@ exports.createCommande1 = (req, res) => {
       }
 
       db.query(
-        `INSERT INTO commande1s (entreprise_id, pack1_id, reduc_pct, reduc_lin, total_ht_avt_remise, total_ht, created, modified, validation_lieu, valide, fct_payee, fct_envoyee)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO commande1s (entreprise_id, pack1_id, reduc_pct, reduc_lin, total_ht_avt_remise, total_ht, created, modified, validation_lieu, valide, fct_payee, fct_envoyee, signature)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entreprise_id,
           pack1_id,
@@ -62,7 +64,8 @@ exports.createCommande1 = (req, res) => {
           validation_lieu,
           valide,
           fct_payee,
-          fct_envoyee
+          fct_envoyee,
+          signature
         ],
         (err, result) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
@@ -78,30 +81,45 @@ exports.createCommande1 = (req, res) => {
               if (result.length > 0) {
                 const attachmentPath = path.join(__dirname, '../uploads/bc1/', `${entreprise_id}_BC1.pdf`);
                 try {
-                  await waitForFile(attachmentPath, 20000);
-                  const attachmentBuffer = fs.readFileSync(attachmentPath);
-                  const base64Attachment = attachmentBuffer.toString('base64');
+                  const cfg = await loadForumConfig();
+
+                  // On attend le PDF jusqu'à 2 min (le navigateur du client le génère
+                  // puis l'upload ; il finit toujours par arriver). S'il n'est vraiment
+                  // pas là au bout de 2 min, on envoie quand même la confirmation, sans
+                  // pièce jointe, pour ne jamais laisser l'entreprise sans email.
+                  let base64Attachment = null;
+                  let attachmentFileName = null;
+                  try {
+                    await waitForFile(attachmentPath, 120000);
+                    base64Attachment = fs.readFileSync(attachmentPath).toString('base64');
+                    attachmentFileName = `${entreprise_id}_BC1.pdf`;
+                  } catch (waitErr) {
+                    console.warn(`[BC1] PDF indisponible après 2 min pour entreprise ${entreprise_id}, envoi du mail sans pièce jointe :`, waitErr.message);
+                  }
+
                   const htmlContent =
                     "<style>" +
                     "p { color: black !important; }" +
                     "</style>" +
                     "<p>Bonjour ,</p>" +
-                    "<p>Félicitations, votre inscription à la 46ème édition du Forum ESTP est validée. <br /> Nous avons hâte de vous recevoir.</p>" +
-                    "<p>Vous trouverez ci-joint votre bon de commande 1. <br /> La facture associée vous sera bientôt transmise.</p>" +
+                    `<p>Félicitations, votre inscription à la ${cfg.editionLabel} du Forum ESTP est validée. <br /> Nous avons hâte de vous recevoir.</p>` +
+                    (attachmentFileName
+                      ? "<p>Vous trouverez ci-joint votre bon de commande 1. <br /> La facture associée vous sera bientôt transmise.</p>"
+                      : "<p>Votre bon de commande 1 vous sera transmis dans un prochain email. <br /> La facture associée vous sera bientôt transmise.</p>") +
                     "<p>Vous pouvez maintenant compléter votre <b>page sur le Book du Forum</b>.</p>" +
                     "<p>Cet outil vous permet de présenter votre entreprise et de décrire ce que vous recherchez chez un futur collaborateur dans l’annuaire de l'évènement, support distribué à tous les visiteurs lors de leur passage au Forum.</p>" +
                     "<p>Vous bénéficiez d’une page dédiée pour présenter votre entreprise, expliquer en détail votre politique de recrutement et partager les secteurs porteurs pour le recrutement de nouveaux talents.</p>" +
-                    "<p>Vous avez jusqu’au <b>7 octobre 2025</b> pour compléter ce formulaire.</p>" +
-                    "<p>La campagne de personnalisation ouvrira à partir du 30 septembre 2025, sous la forme du Bon de Commande 2.</p>" +
+                    `<p>Vous avez jusqu’au <b>${cfg.bookDeadline}</b> pour compléter ce formulaire.</p>` +
+                    `<p>La campagne de personnalisation ouvrira à partir du ${cfg.bc2OpenDate}, sous la forme du Bon de Commande 2.</p>` +
                     "<p>Vous pourrez y réserver votre mobilier, votre électricité, vos places de parking… <br /> Tout ce qui permettra de rendre cette expérience inoubliable.</p>" +
                     "<p>Si vous rencontrez des difficultés pour remplir ce formulaire, veuillez contacter votre commercial référent.</p>" +
                     "<p>Bien cordialement,</p>" +
-                    "<img src=\"https://test.app.forumestp.fr/assets/logo.png\" alt=\"\" style=\"max-width: 100%; max-height: 200px;\" />" +
+                    "<img src=\"https://app.forumetp.fr/assets/logo.png?v=47\" alt=\"Forum ESTP\" style=\"max-width: 100%; max-height: 200px;\" />" +
                     "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex <br />Tél. : +33 9 51 23 97 76</p>" +
                     "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
-                  sendEmail("ne-pas-repondre@forumestp.fr", result[0].email, result[0].first_name + " " + result[0].last_name, "Inscription à la 46ème édition du Forum ESTP", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC1.pdf`, base64Attachment);
+                  await sendEmail("ne-pas-repondre@forumestp.fr", result[0].email, result[0].first_name + " " + result[0].last_name, `Inscription à la ${cfg.editionLabel} du Forum ESTP`, htmlContent, ["forumetp@gmail.com"], attachmentFileName, base64Attachment);
                 } catch (err) {
-                  console.error("Erreur en attente du PDF avant l'envoi de l'email :", err);
+                  console.error("Erreur lors de l'envoi de l'email de confirmation BC1 :", err);
                 }
               }
             }
@@ -178,10 +196,12 @@ exports.updateCommande1 = (req, res) => {
         (err) => {
           if (err) return res.status(500).json({ error: "Erreur base de données" });
 
-          // Sync to Axonaut (fire-and-forget)
-          syncBC1(Number(id)).catch(err =>
-            console.error(`[Axonaut] syncBC1 update #${id}:`, err.message)
-          );
+          // NB : l'envoi vers Axonaut n'est plus automatique ici.
+          // Le trésorier décide explicitement quand pousser la facture
+          // (bouton dédié « Envoyer vers Axonaut » + confirmation côté client,
+          // route POST /api/axonaut/sync/bc1/:id). Cela évite qu'une facture
+          // Axonaut soit créée à la validation puis désynchronisée si le BC1
+          // est modifié ensuite (Axonaut ne met pas à jour une facture existante).
 
           if (pack1Changed) {
             db.query(
@@ -264,6 +284,9 @@ exports.deleteCommande1 = (req, res) => {
 exports.getAllCommande1s = (req, res) => {
   db.query("SELECT * FROM commande1s", (err, results) => {
     if (err) return res.status(500).json({ error: "Erreur base de données" });
+    // On ne renvoie pas la signature (dataURL volumineux) dans la liste : elle est
+    // chargée à la demande via getCommande1ById lors de la (re)génération du PDF.
+    for (const row of results) delete row.signature;
     res.json(results);
   });
 };

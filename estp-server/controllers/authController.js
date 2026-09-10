@@ -4,45 +4,10 @@ const bcrypt = require('bcryptjs');
 const { sendEmail } = require("../utils/email");
 const entrepriseController = require('./entrepriseController');
 
-
-exports.register = async (req, res) => {
-  const { email, password, first_name, last_name, verified } = req.body;
-  const verificationCompte = verified ? 1 : 0;
-  const emailRegex = /^(?!.*@forumestp)[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: "Format email invalide" });
-  }
-
-  db.query("SELECT * FROM users WHERE email = ? AND verified = 1", [email], async (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length > 0) return res.status(400).json({ error: "Email existant" });
-
-  db.query("SELECT * FROM users WHERE email = ? AND verified = 0", [email], async (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length > 0) return res.status(400).json({ error: "Email existant mais non vérifié" });
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        error: "Mot de passe requis (min 6 caractères, un symbole, un caractère majuscule, un caractère miniscule)",
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
-
-    db.query(
-      "INSERT INTO users (email, password, first_name, last_name, verified) VALUES (?, ?, ?, ?, ?)",
-      [email, hashedPassword, first_name, last_name, verificationCompte],
-      (err, result) => {
-        if (err) return res.status(500).json({ error: err });
-        if(!verified){
-       sendEmail(
-          "ne-pas-repondre@forumestp.fr",
-          email,
-          `${first_name} ${last_name}`,
-          "Vérification d'email",
-          `<!DOCTYPE html>
+// Construit le HTML de l'email d'activation.
+function buildActivationEmailHtml(first_name, last_name, token) {
+  const link = `${process.env.FRONT_BASE_URL}/auth/verify/${token}`;
+  return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -81,53 +46,142 @@ exports.register = async (req, res) => {
 </head>
 <body>
   <div class="email-container">
-    <p>Bonjour <strong>${first_name} ${last_name}</p>
+    <p>Bonjour <strong>${first_name} ${last_name}</strong>,</p>
 
     <p>Suite à votre inscription sur le site du <strong>Forum ESTP</strong>, nous avons besoin de vérifier votre adresse e-mail.</p>
 
-    <p>Pour ce faire, il vous suffit de cliquer sur le bouton ci-dessous dans les prochaines 24 heures :  </p><a href="${process.env.FRONT_BASE_URL}/auth/verify/${token}" class="button">
-        Vérifier mon adresse e-mail
-      </a>
-          <br>
-    <p>Si le bouton ne fonctionne pas, copiez et collez le lien suivant dans votre navigateur :</p>
-
-    <p><a href="${process.env.FRONT_BASE_URL}/auth/verify/${token}">
-      ${process.env.FRONT_BASE_URL}/auth/verify/${token}
-    </a></p>
+    <p>Pour ce faire, il vous suffit de cliquer sur le bouton ci-dessous dans les prochaines 24 heures :</p>
+    <a href="${link}" class="button">Vérifier mon adresse e-mail</a>
     <br>
+    <p>Si le bouton ne fonctionne pas, copiez et collez le lien suivant dans votre navigateur :</p>
+    <p><a href="${link}">${link}</a></p>
+    <br>
+    <p>Si vous ne recevez pas nos emails, pensez à vérifier votre dossier <strong>spam / courrier indésirable</strong>.</p>
     <p>Merci par avance et à très bientôt,</p>
-
-    <p>L’équipe du Forum ESTP 2025</p><br>
+    <p>L'équipe du Forum ESTP</p><br>
 
     <div class="footer">
-      © 2025 Forum ESTP — Tous droits réservés.
+      © 2026 Forum ESTP — Tous droits réservés.
     </div>
   </div>
 </body>
 </html>
-`
-        );
-        }
+`;
+}
 
-        // Return the new user info (without password)
-        const newUser = {
-          id: result.insertId,
+// Génère un token d'activation (24h) et envoie l'email. Lève une erreur si l'envoi échoue.
+async function sendActivationEmail(email, first_name, last_name) {
+  const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  await sendEmail(
+    "ne-pas-repondre@forumestp.fr",
+    email,
+    `${first_name} ${last_name}`,
+    "Vérification d'email — Forum ESTP",
+    buildActivationEmailHtml(first_name, last_name, token)
+  );
+}
+
+exports.register = async (req, res) => {
+  const { email, password, first_name, last_name, verified } = req.body;
+  const verificationCompte = verified ? 1 : 0;
+  const emailRegex = /^(?!.*@forumestp)[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Format email invalide" });
+  }
+
+  db.query("SELECT * FROM users WHERE email = ? AND verified = 1", [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length > 0) return res.status(400).json({ error: "Un compte existe déjà pour cet email." });
+
+    db.query("SELECT * FROM users WHERE email = ? AND verified = 0", [email], async (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (results.length > 0) {
+        // Compte créé mais jamais activé : au lieu de bloquer, on propose le renvoi de l'email.
+        return res.status(409).json({
+          error: "Un compte existe déjà pour cet email mais n'a pas encore été activé.",
+          canResend: true,
           email,
-          first_name,
-          last_name,
-          verified: false
-        };
-        if(verificationCompte == 0){
+        });
+      }
 
-          res.status(201).json({ message: "Un email d'activation a été envoyé à votre compte, merci de l'activer.", user: newUser });
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+          error: "Mot de passe invalide (au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un symbole).",
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      db.query(
+        "INSERT INTO users (email, password, first_name, last_name, verified) VALUES (?, ?, ?, ?, ?)",
+        [email, hashedPassword, first_name, last_name, verificationCompte],
+        async (err, result) => {
+          if (err) return res.status(500).json({ error: err });
+
+          const newUser = {
+            id: result.insertId,
+            email,
+            first_name,
+            last_name,
+            verified: !!verified,
+          };
+
+          // Compte déjà vérifié (création par un admin) : pas d'email à envoyer.
+          if (verified) {
+            return res.status(201).json({ message: "Création réussie", user: newUser });
+          }
+
+          // Envoi de l'email d'activation AVANT de répondre "succès".
+          try {
+            await sendActivationEmail(email, first_name, last_name);
+          } catch (mailErr) {
+            console.error("Échec envoi email d'activation:", mailErr);
+            // On annule la création pour ne pas laisser l'utilisateur dans une impasse
+            // (ni connexion possible, ni réinscription). Il pourra réessayer.
+            db.query("DELETE FROM users WHERE id = ? AND verified = 0", [result.insertId], () => {});
+            return res.status(502).json({
+              error: "Votre compte n'a pas pu être créé : l'email d'activation n'a pas pu être envoyé (service d'envoi momentanément indisponible). Merci de réessayer dans quelques minutes.",
+            });
+          }
+
+          return res.status(201).json({
+            message: "Un email d'activation a été envoyé à votre adresse. Merci de l'activer (pensez à vérifier vos spams).",
+            user: newUser,
+          });
         }
-      else{
-                res.status(201).json({ message: "Création réussite", user: newUser });
+      );
+    });
+  });
+};
 
-      }
-      }
-    );
-  })});
+// Renvoie un email d'activation pour un compte existant non vérifié.
+exports.resendActivation = (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email requis" });
+
+  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: "Erreur base de données" });
+
+    if (results.length === 0) {
+      // Réponse générique : on n'indique pas si l'email existe ou non.
+      return res.json({ message: "Si un compte non activé existe pour cet email, un nouvel email d'activation vient d'être envoyé." });
+    }
+
+    const user = results[0];
+    if (user.verified) {
+      return res.status(400).json({ error: "Ce compte est déjà activé, vous pouvez vous connecter." });
+    }
+
+    try {
+      await sendActivationEmail(user.email, user.first_name, user.last_name);
+    } catch (mailErr) {
+      console.error("Échec renvoi email d'activation:", mailErr);
+      return res.status(502).json({ error: "Impossible d'envoyer l'email pour le moment (service momentanément indisponible). Réessayez plus tard." });
+    }
+
+    return res.json({ message: "Un nouvel email d'activation a été envoyé (pensez à vérifier vos spams)." });
+  });
 };
 
 
@@ -221,8 +275,8 @@ exports.login = (req, res) => {
       maxAge: 24 * 60 * 60 * 1000
     });
     res.cookie('token', token, {
-      httpOnly: false,
-      secure: false,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'Lax',
       maxAge: 24 * 60 * 60 * 1000
     });
@@ -258,7 +312,8 @@ exports.login = (req, res) => {
         maxAge: 24 * 60 * 60 * 1000
       });
     }
-    res.json({ nonDisplayMessage: "Login successful", user: results[0] });
+    const { password: _pw, ...safeUser } = results[0];
+    res.json({ nonDisplayMessage: "Login successful", user: safeUser });
   });
 };
 

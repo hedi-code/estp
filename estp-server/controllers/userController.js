@@ -2,36 +2,40 @@ const db = require("../config/db");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcryptjs');
 
-// Get user by ID
+// Get user by ID (sans le hash de mot de passe)
 exports.getUserById = (req, res) => {
   const { id } = req.params;
-  db.query('SELECT * FROM users WHERE id = ?', [id], (err, result) => {
+  db.query('SELECT id, email, first_name, last_name, telephone, role, created, modified, last_login, step, verified FROM users WHERE id = ?', [id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.length === 0) return res.status(404).json({ message: 'User not found' });
     res.json(result[0]);
   });
 };
-// Get all users
+// Get all users (sans le hash de mot de passe)
 exports.getAllUsers = (req, res) => {
-  db.query('SELECT * FROM users', (err, result) => {
+  db.query('SELECT id, email, first_name, last_name, telephone, role, created, modified, last_login, step, verified FROM users', (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(result);
   });
 };
 
-// Get all users where role = 'comm'
+// Get all users where role = 'comm' (sans le hash de mot de passe)
 exports.getCommercials = (req, res) => {
-  db.query('SELECT * FROM users WHERE role = ? OR role = ?', ['rescom','comm'], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (result.length === 0) return res.status(404).json({ message: 'No commercial users found' });
-    res.json(result);
-  });
+  db.query(
+    "SELECT id, email, first_name, last_name, telephone, role, created, modified FROM users WHERE role = ? OR role = ?",
+    ['rescom', 'comm'],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (result.length === 0) return res.status(404).json({ message: 'No commercial users found' });
+      res.json(result);
+    }
+  );
 };
 
 // Get all members (users with role different than 'user')
 exports.getMembers = (req, res) => {
   db.query(
-    "SELECT id, email, first_name, last_name, role, created, modified, last_login, step, verified FROM users WHERE role IS NOT NULL AND role <> 'user' ORDER BY created DESC",
+    "SELECT id, email, first_name, last_name, telephone, role, created, modified, last_login, step, verified FROM users WHERE role IS NOT NULL AND role <> 'user' ORDER BY created DESC",
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(result);
@@ -39,10 +43,37 @@ exports.getMembers = (req, res) => {
   );
 };
 
-// Update a member (first_name, last_name, email, role)
+// Get all company registrations (entreprise accounts, role = 'user').
+// Unverified ones first so the admin sees pending validations at the top.
+exports.getInscriptions = (req, res) => {
+  db.query(
+    "SELECT id, email, first_name, last_name, role, created, modified, last_login, verified FROM users WHERE role = 'user' ORDER BY verified ASC, created DESC",
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(result);
+    }
+  );
+};
+
+// Manually validate a pending account (admin action when the activation email never arrived)
+exports.verifyUser = (req, res) => {
+  const { id } = req.params;
+  const modified = new Date();
+  db.query(
+    "UPDATE users SET verified = 1, modified = ? WHERE id = ?",
+    [modified, id],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (result.affectedRows === 0) return res.status(404).json({ message: 'Utilisateur introuvable' });
+      res.json({ message: 'Compte validé avec succès', affectedRows: result.affectedRows });
+    }
+  );
+};
+
+// Update a member (first_name, last_name, email, role, telephone)
 exports.updateMember = (req, res) => {
   const { id } = req.params;
-  const { first_name, last_name, email, role } = req.body;
+  const { first_name, last_name, email, role, telephone } = req.body;
 
   if (!first_name || !last_name || !email || !role) {
     return res.status(400).json({ error: "Tous les champs sont requis (prénom, nom, email, rôle)" });
@@ -62,9 +93,10 @@ exports.updateMember = (req, res) => {
     if (existing.length > 0) return res.status(400).json({ error: "Cet email est déjà utilisé" });
 
     const modified = new Date();
+    const safeTelephone = (telephone === undefined || telephone === '') ? null : telephone;
     db.query(
-      'UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, modified = ? WHERE id = ?',
-      [first_name, last_name, email, role, modified, id],
+      'UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, telephone = ?, modified = ? WHERE id = ?',
+      [first_name, last_name, email, role, safeTelephone, modified, id],
       (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         if (result.affectedRows === 0) return res.status(404).json({ message: 'Utilisateur introuvable' });
@@ -106,9 +138,10 @@ exports.resetMemberPassword = async (req, res) => {
 
 // Create new user
 exports.createUser = async (req, res) => {
-  const { email, password, first_name, last_name, role, step = 0, verified = 1 } = req.body;
+  const { email, password, first_name, last_name, role, telephone, step = 0, verified = 1 } = req.body;
   const created = new Date();
   const modified = new Date();
+  const safeTelephone = (telephone === undefined || telephone === '') ? null : telephone;
  const emailRegex = /^(?!.*@estp).*^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: "Format email invalide" });
@@ -122,8 +155,8 @@ exports.createUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
   db.query(
-    'INSERT INTO users (email, password, first_name, last_name, role, created, modified, step, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [email, hashedPassword, first_name, last_name, role, created, modified, step, verified],
+    'INSERT INTO users (email, password, first_name, last_name, telephone, role, created, modified, step, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [email, hashedPassword, first_name, last_name, safeTelephone, role, created, modified, step, verified],
     (err, result) => {
       if (err) return res.status(500).json({ error: err.message });
       res.status(201).json({ message: 'Membre créer', id: result.insertId });

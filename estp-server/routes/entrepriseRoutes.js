@@ -12,6 +12,9 @@ router.get('/with-pack1s/all', jwt,entrepriseController.getEntreprisesWithPack1s
 // GET entreprise by user ID (must be before /:id)
 router.get('/user/:id',jwt, entrepriseController.getEntrepriseByUserId);
 
+// GET the commercial assigned to an entreprise (must be before /:id)
+router.get('/:id/commercial', jwt, entrepriseController.getEntrepriseCommercial);
+
 // GET one entreprise by ID
 router.get('/:id', entrepriseController.getEntrepriseById);
 // CREATE new entreprise

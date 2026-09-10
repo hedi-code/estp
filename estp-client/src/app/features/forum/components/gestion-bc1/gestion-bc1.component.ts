@@ -133,19 +133,76 @@ export class GestionBc1Component {
     }
   }
 
-  private async updatePackData() {
-    await this.packService.updatePack(this.selectedPack.pack_id!, this.selectedPack).subscribe(() => {
-      this.editPackDialogVisible = false;
+  private updatePackData() {
+    const packId = this.selectedPack.pack_id!;
+    const ops: Promise<any>[] = [];
+
+    // Métadonnées du pack
+    ops.push(this.packService.updatePack(packId, this.selectedPack).toPromise());
+
+    // Surfaces : créer les nouvelles (sans surface_id), mettre à jour celles qui ont changé
+    (this.selectedPack?.surfaces || []).forEach(element => {
+      const isNew = !element.surface_id;
+      if (isNew) {
+        if (element.surface != null && element.prix) {
+          ops.push(this.packService.createSurface({
+            surface: element.surface,
+            prix: element.prix,
+            id_pack1: packId
+          }).toPromise());
+        }
+      } else if (!this.packs.some(pack => pack.surfaces?.some(s => JSON.stringify(s) === JSON.stringify(element)))) {
+        ops.push(this.packService.updateSurface(element.surface_id, element).toPromise());
+      }
     });
-    await this.selectedPack?.surfaces?.forEach(element => {
-      if(!!!this.packs.some(pack => pack.surfaces?.some(s => JSON.stringify(s) === JSON.stringify(element))))
-      this.packService.updateSurface(element.surface_id, element).subscribe();
+
+    // Options existantes modifiées
+    (this.selectedPack?.options || []).forEach(element => {
+      if (!this.packs.some(pack => pack.options?.some(s => JSON.stringify(s) === JSON.stringify(element)))) {
+        ops.push(this.packService.updateOption(element.option_id, element).toPromise());
+      }
     });
-    await this.selectedPack?.options?.forEach(element => {
-      if(!!!this.packs.some(pack => pack.options?.some(s => JSON.stringify(s) === JSON.stringify(element))))
-      this.packService.updateOption(element.option_id, element).subscribe();
+
+    Promise.all(ops)
+      .then(() => {
+        this.editPackDialogVisible = false;
+        this.loadPacks();
+      })
+      .catch(err => {
+        console.error('Erreur lors de la mise à jour du pack :', err);
+        this.editPackDialogVisible = false;
+        this.loadPacks();
+      });
+  }
+
+  // Ajoute une ligne de surface vierge dans le pack en cours d'édition (créée à la validation)
+  addPackSurface() {
+    const surfaces = this.selectedPack.surfaces ? [...this.selectedPack.surfaces] : [];
+    surfaces.push({ surface_id: 0, surface: undefined, prix: '' });
+    this.selectedPack.surfaces = surfaces;
+  }
+
+  // Retire une surface : suppression locale si non enregistrée, sinon suppression en base après confirmation
+  removePackSurface(s: any) {
+    if (!s.surface_id) {
+      this.selectedPack.surfaces = (this.selectedPack.surfaces || []).filter(x => x !== s);
+      return;
+    }
+    this.confirmationService.confirm({
+      message: 'Êtes-vous sûr de supprimer cette surface ?',
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Supprimer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.packService.deleteSurface(s.surface_id).subscribe(() => {
+          this.selectedPack.surfaces = (this.selectedPack.surfaces || []).filter(x => x.surface_id !== s.surface_id);
+          this.loadPacks();
+        });
+      }
     });
-    await this.loadPacks()
   }
 
   async deletePackOption(id: number){

@@ -46,12 +46,148 @@ async function ensureProductIdByCode(table, rowId, currentAxonautId, productCode
   return found;
 }
 
+/**
+ * Crée une facture Axonaut. Si Axonaut renvoie 404 (une ressource référencée
+ * n'existe plus — ex. un produit supprimé), on retente une fois sans les ids de
+ * produits, en laissant Axonaut recréer les lignes à partir du nom/prix. Évite
+ * l'erreur "404 Resource not found" quand un objet a été supprimé côté Axonaut.
+ */
+async function createAxonautInvoice(payload) {
+  try {
+    return await axonaut.post('/invoices', payload);
+  } catch (e) {
+    if (e && e.status === 404) {
+      console.warn('[Axonaut] 404 sur /invoices → nouvelle tentative sans les ids de produits');
+      const stripped = {
+        ...payload,
+        products: (payload.products || []).map(({ id, ...rest }) => rest),
+      };
+      return await axonaut.post('/invoices', stripped);
+    }
+    throw e;
+  }
+}
+
 // ─── COMPANY SYNC ────────────────────────────────────────────────────────────
 
+const normSiren = (v) => String(v || '').replace(/\D/g, '');
+const normName  = (v) => String(v || '').trim().toLowerCase();
+
 /**
- * Sync one entreprise to Axonaut.
- * Creates a new company if axonaut_company_id is NULL, updates otherwise.
- * Returns the Axonaut company id (string).
+ * Look for an EXISTING Axonaut company that matches this entreprise, to avoid
+ * creating duplicates when axonaut_company_id was never persisted (fire-and-forget
+ * failures, legacy data from the previous developer, etc.).
+ * Match priority: SIREN (registration_number) first, then exact company name.
+ * Returns the Axonaut company id (string) or null.
+ */
+async function findExistingAxonautCompanyId(entreprise) {
+  const siren = normSiren(entreprise.siren);
+  const name  = normName(entreprise.nom);
+
+  // 1. Match by SIREN — the most reliable key.
+  if (siren) {
+    try {
+      const res = await axonaut.get(`/companies?search=${encodeURIComponent(siren)}`);
+      const hit = Array.isArray(res)
+        ? res.find(c => c.is_disabled !== true && normSiren(c.registration_number) === siren)
+        : null;
+      if (hit) return String(hit.id);
+    } catch (e) {
+      console.error(`[Axonaut] company lookup by SIREN failed (${siren}): ${e.message}`);
+    }
+  }
+
+  // 2. Fallback: exact (case-insensitive) name match.
+  if (name) {
+    try {
+      const res = await axonaut.get(`/companies?search=${encodeURIComponent(entreprise.nom)}`);
+      const hit = Array.isArray(res)
+        ? res.find(c => c.is_disabled !== true && normName(c.name) === name)
+        : null;
+      if (hit) return String(hit.id);
+    } catch (e) {
+      console.error(`[Axonaut] company lookup by name failed (${entreprise.nom}): ${e.message}`);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Récupère une société Axonaut par id. Renvoie l'objet société, ou null si elle
+ * n'existe plus (404). Sert à détecter les clients supprimés ET désactivés
+ * (is_disabled) : Axonaut refuse de facturer un client désactivé et répond alors
+ * "404 Resource not found" au POST /invoices.
+ */
+async function getAxonautCompany(companyId) {
+  try {
+    return await axonaut.get(`/companies/${companyId}`);
+  } catch (e) {
+    if (e && e.status === 404) return null;
+    throw e;
+  }
+}
+
+/**
+ * Charge le contact principal (interlocuteur) d'une entreprise.
+ * Renvoie la ligne `contacts` ou null.
+ */
+async function loadContactPrincipal(entreprise) {
+  if (!entreprise.contact_principal_id) return null;
+  const [[c]] = await q(
+    `SELECT nom, prenom, email, telephone1, fonction, genre
+     FROM contacts WHERE id = ?`,
+    [entreprise.contact_principal_id]
+  );
+  return c || null;
+}
+
+/**
+ * Ajoute l'interlocuteur (contact principal) comme "employé" du client Axonaut,
+ * pour que son nom soit stocké côté Axonaut. Dé-doublonnage par email sur la liste
+ * `employees` de la société (GET société), fiable contrairement à /employees?email=.
+ * Best-effort : ne doit jamais faire échouer la synchro société / la facture.
+ */
+async function ensureAxonautEmployee(companyId, entreprise, company = null) {
+  try {
+    const contact = await loadContactPrincipal(entreprise);
+    const email = String(contact?.email || '').trim();
+    if (!email) return; // l'email est obligatoire côté Axonaut
+
+    // Dé-doublonnage FIABLE : la fiche société renvoie sa liste `employees`.
+    // (L'endpoint /employees?email= répond 404 sur ce compte et créait un doublon
+    // à chaque envoi.) On relit la société au besoin.
+    const comp = company || (await getAxonautCompany(companyId));
+    const emps = comp && Array.isArray(comp.employees) ? comp.employees : [];
+    const already = emps.some(
+      (e) => String(e.email || '').trim().toLowerCase() === email.toLowerCase()
+    );
+    if (already) return;
+
+    await axonaut.post('/employees', {
+      company_id: Number(companyId),
+      email,
+      firstname: contact.prenom || '',
+      lastname: contact.nom || '',
+      ...(contact.fonction ? { job: contact.fonction } : {}),
+    });
+  } catch (e) {
+    console.error(`[Axonaut] ensureAxonautEmployee (entreprise ${entreprise.id}): ${e.message}`);
+  }
+}
+
+/**
+ * Sync one entreprise to Axonaut et renvoie l'id d'un client ACTIF, prêt à être
+ * facturé (string).
+ *
+ * Le stored axonaut_company_id n'est réutilisé QUE s'il pointe vers un client
+ * réellement exploitable : ni supprimé (GET 404), ni désactivé (is_disabled).
+ * En effet, quand on "supprime" un client qui a des factures, Axonaut ne le
+ * supprime pas mais le DÉSACTIVE ; le PATCH continue de répondre 200 mais le
+ * POST /invoices répond "404 Resource not found". On détecte donc ce cas via un
+ * GET et, si le client est inutilisable, on l'oublie pour repartir en
+ * find-or-create (la recherche Axonaut excluant déjà les désactivés, on
+ * retombe soit sur un client actif existant, soit sur un client neuf).
  */
 async function syncEntreprise(entrepriseId) {
   const [[entreprise]] = await q(
@@ -64,18 +200,41 @@ async function syncEntreprise(entrepriseId) {
   if (!entreprise) throw new Error(`Entreprise ${entrepriseId} introuvable`);
 
   const payload = toAxonautCompany(entreprise, entreprise.secteur_nom);
+  let companyId = null;
 
+  // 1. Id déjà connu → on ne le garde que s'il pointe vers un client ACTIF.
   if (entreprise.axonaut_company_id) {
-    await axonaut.patch(`/companies/${entreprise.axonaut_company_id}`, payload);
-    return entreprise.axonaut_company_id;
+    const existing = await getAxonautCompany(entreprise.axonaut_company_id);
+    if (existing && existing.is_disabled !== true) {
+      companyId = String(entreprise.axonaut_company_id);
+    } else {
+      console.warn(
+        `[Axonaut] société ${entreprise.axonaut_company_id} inutilisable ` +
+          `(${existing ? 'désactivée' : 'supprimée'}) → on repart sur un client actif`
+      );
+      await q('UPDATE entreprises SET axonaut_company_id = NULL WHERE id = ?', [entrepriseId]);
+      entreprise.axonaut_company_id = null;
+    }
   }
 
-  const created = await axonaut.post('/companies', payload);
-  await q(
-    'UPDATE entreprises SET axonaut_company_id = ? WHERE id = ?',
-    [String(created.id), entrepriseId]
-  );
-  return String(created.id);
+  // 2. Sinon : réutiliser un client actif existant (anti-doublon), sinon le créer.
+  if (!companyId) {
+    const existingId = await findExistingAxonautCompanyId(entreprise);
+    if (existingId) {
+      companyId = existingId;
+    } else {
+      const created = await axonaut.post('/companies', payload);
+      companyId = String(created.id);
+    }
+    await q('UPDATE entreprises SET axonaut_company_id = ? WHERE id = ?', [companyId, entrepriseId]);
+  }
+
+  // 3. Mettre la fiche à jour puis garantir l'interlocuteur.
+  //    ensureAxonautEmployee relit la société (GET) pour dé-doublonner sur la liste
+  //    `employees` — la réponse du PATCH ne la contient pas toujours.
+  await axonaut.patch(`/companies/${companyId}`, payload);
+  await ensureAxonautEmployee(companyId, entreprise);
+  return companyId;
 }
 
 // ─── BC1 SYNC ────────────────────────────────────────────────────────────────
@@ -86,7 +245,7 @@ async function syncEntreprise(entrepriseId) {
  * total_ht_avt_remise (price before discount) so we can match the pack price.
  * Returns the Axonaut invoice id (string).
  */
-async function syncBC1(commande1Id) {
+async function syncBC1(commande1Id, { force = false } = {}) {
   // 1. Load commande + surface + pack + entreprise.
   // NOTE: commande1s.pack1_id references pack1s_surface.id (not pack1s.id).
   // We join pack1s through the surface row to recover the pack title.
@@ -112,9 +271,11 @@ async function syncBC1(commande1Id) {
     return commande.axonaut_invoice_id || null;
   }
 
-  // 2. Ensure the company exists in Axonaut
-  const axonautCompanyId = commande.axonaut_company_id
-    || await syncEntreprise(commande.entreprise_id);
+  // 2. Ensure the company exists in Axonaut.
+  // On résout TOUJOURS via syncEntreprise : ça met la fiche à jour et, surtout,
+  // ça détecte/répare une société supprimée côté Axonaut (sinon on enverrait la
+  // facture vers un client mort → "404 Resource not found").
+  const axonautCompanyId = await syncEntreprise(commande.entreprise_id);
 
   // 3. Load options for this order
   const [optRows] = await q(
@@ -165,19 +326,22 @@ async function syncBC1(commande1Id) {
     })),
   };
 
-  // Axonaut invoices are immutable (API supports only GET/POST) — skip if already synced
-  if (commande.axonaut_invoice_id) {
+  // Axonaut invoices are immutable (API supports only GET/POST) — skip if already synced,
+  // SAUF en mode force : on crée alors une NOUVELLE facture et on écrase l'id stocké
+  // (l'ancienne facture Axonaut n'est pas touchée, elle est gérée manuellement côté Axonaut).
+  if (commande.axonaut_invoice_id && !force) {
     return commande.axonaut_invoice_id;
   }
 
-  const payload = toAxonautInvoice1(bc1Data, axonautCompanyId);
+  // Date d'émission = maintenant (moment de l'envoi / du clic).
+  const payload = toAxonautInvoice1(bc1Data, axonautCompanyId, new Date());
 
   // Nothing to invoice yet — don't create an empty invoice that would then be locked
   if (payload.products.length === 0) {
     return null;
   }
 
-  const created = await axonaut.post('/invoices', payload);
+  const created = await createAxonautInvoice(payload);
   await q(
     'UPDATE commande1s SET axonaut_invoice_id = ? WHERE id = ?',
     [String(created.id), commande1Id]
@@ -191,7 +355,7 @@ async function syncBC1(commande1Id) {
  * Sync a BC2 (commande2) to Axonaut as an invoice.
  * Returns the Axonaut invoice id (string).
  */
-async function syncBC2(commande2Id) {
+async function syncBC2(commande2Id, { force = false } = {}) {
   // 1. Load commande + pack + entreprise
   const [[commande]] = await q(
     `SELECT c.*,
@@ -212,9 +376,11 @@ async function syncBC2(commande2Id) {
     return commande.axonaut_invoice_id || null;
   }
 
-  // 2. Ensure the company exists in Axonaut
-  const axonautCompanyId = commande.axonaut_company_id
-    || await syncEntreprise(commande.entreprise_id);
+  // 2. Ensure the company exists in Axonaut.
+  // On résout TOUJOURS via syncEntreprise : ça met la fiche à jour et, surtout,
+  // ça détecte/répare une société supprimée côté Axonaut (sinon on enverrait la
+  // facture vers un client mort → "404 Resource not found").
+  const axonautCompanyId = await syncEntreprise(commande.entreprise_id);
 
   // 3. Load options for this order
   const [optRows] = await q(
@@ -265,19 +431,22 @@ async function syncBC2(commande2Id) {
     })),
   };
 
-  // Axonaut invoices are immutable (API supports only GET/POST) — skip if already synced
-  if (commande.axonaut_invoice_id) {
+  // Axonaut invoices are immutable (API supports only GET/POST) — skip if already synced,
+  // SAUF en mode force : on crée alors une NOUVELLE facture et on écrase l'id stocké
+  // (l'ancienne facture Axonaut n'est pas touchée, elle est gérée manuellement côté Axonaut).
+  if (commande.axonaut_invoice_id && !force) {
     return commande.axonaut_invoice_id;
   }
 
-  const payload = toAxonautInvoice2(bc2Data, axonautCompanyId);
+  // Date d'émission = maintenant (moment de l'envoi / du clic).
+  const payload = toAxonautInvoice2(bc2Data, axonautCompanyId, new Date());
 
   // Nothing to invoice yet — don't create an empty invoice that would then be locked
   if (payload.products.length === 0) {
     return null;
   }
 
-  const created = await axonaut.post('/invoices', payload);
+  const created = await createAxonautInvoice(payload);
   await q(
     'UPDATE commande2s SET axonaut_invoice_id = ? WHERE id = ?',
     [String(created.id), commande2Id]

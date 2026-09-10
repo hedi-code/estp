@@ -25,7 +25,8 @@ router.post('/sync/entreprise/:id', authMiddleware, async (req, res) => {
 // ── Sync a single BC1 ────────────────────────────────────────────────────────
 router.post('/sync/bc1/:id', authMiddleware, async (req, res) => {
   try {
-    const axonautId = await syncBC1(Number(req.params.id));
+    const force = !!(req.body && req.body.force);
+    const axonautId = await syncBC1(Number(req.params.id), { force });
     res.json({ axonaut_invoice_id: axonautId });
   } catch (err) {
     console.error('[Axonaut] sync BC1 error:', err.message);
@@ -36,7 +37,8 @@ router.post('/sync/bc1/:id', authMiddleware, async (req, res) => {
 // ── Sync a single BC2 ────────────────────────────────────────────────────────
 router.post('/sync/bc2/:id', authMiddleware, async (req, res) => {
   try {
-    const axonautId = await syncBC2(Number(req.params.id));
+    const force = !!(req.body && req.body.force);
+    const axonautId = await syncBC2(Number(req.params.id), { force });
     res.json({ axonaut_invoice_id: axonautId });
   } catch (err) {
     console.error('[Axonaut] sync BC2 error:', err.message);

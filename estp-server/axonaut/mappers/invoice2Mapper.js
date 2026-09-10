@@ -20,7 +20,7 @@ function nonEmptyName(name) {
   return typeof name === 'string' && name.trim().length > 0 ? name.trim() : null;
 }
 
-function toAxonautInvoice2(bc2Data, axonautCompanyId) {
+function toAxonautInvoice2(bc2Data, axonautCompanyId, invoiceDate = new Date()) {
   const { commande, pack, options } = bc2Data;
 
   const products = [];
@@ -74,7 +74,10 @@ function toAxonautInvoice2(bc2Data, axonautCompanyId) {
   return {
     reference: `BC2-${commande.id}`,
     company_id: axonautCompanyId,
-    date: formatDate(commande.created),
+    // Date d'émission = moment de l'envoi vers Axonaut (date du clic), et non la
+    // date de création de la commande. Évite l'erreur 409 "date being anterior to
+    // last invoice's date" quand la commande a été créée dans le passé.
+    date: formatDate(invoiceDate),
     discount_percent: commande.reduc_pct ? parseFloat(commande.reduc_pct) : 0,
     products,
   };

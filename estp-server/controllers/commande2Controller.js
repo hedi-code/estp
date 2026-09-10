@@ -2,6 +2,7 @@
 
 const db = require("../config/db");
 const { sendEmail } = require("../utils/email");
+const { loadForumConfig } = require("../utils/forumConfig");
 const fs = require('fs');
 const path = require('path');
 const { syncBC2, markInvoicePaid, deleteAxonautInvoice } = require('../axonaut/axonautService');
@@ -90,26 +91,39 @@ exports.createCommande2 = (req, res) => {
               if (result.length > 0) {
                 const attachmentPath = path.join(__dirname, '../uploads/bc2/', `${entreprise_id}_BC2.pdf`);
                 try {
-                  await waitForFile(attachmentPath, 20000);
-                  const attachmentBuffer = fs.readFileSync(attachmentPath);
-                  const base64Attachment = attachmentBuffer.toString('base64');
+                  const cfg = await loadForumConfig();
+
+                  // Attente du PDF jusqu'à 2 min ; s'il n'est vraiment pas là, on envoie
+                  // quand même la confirmation, sans pièce jointe.
+                  let base64Attachment = null;
+                  let attachmentFileName = null;
+                  try {
+                    await waitForFile(attachmentPath, 120000);
+                    base64Attachment = fs.readFileSync(attachmentPath).toString('base64');
+                    attachmentFileName = `${entreprise_id}_BC2.pdf`;
+                  } catch (waitErr) {
+                    console.warn(`[BC2] PDF indisponible après 2 min pour entreprise ${entreprise_id}, envoi du mail sans pièce jointe :`, waitErr.message);
+                  }
+
                   const htmlContent =
                     "<style>" +
                     "p { color: black !important; }" +
                     "</style>" +
 "<p>Bonjour,</p>"+
-"<p>Félicitations, votre bon de commande 2 pour la 46ème édition du Forum ESTP est validé. Nous avons hâte de vous recevoir.</p>"+
-"<p>Vous trouverez ci-joint votre bon de commande 2.<br />La facture associée vous sera bientôt transmise. Pour toute demande concernant la facture, contactez Kahina Saibi sur l’adresse mail suivante : <a href='mailto:kahina.saibi@forumestp.fr'>kahina.saibi@forumestp.fr</a>.</p>"+
-"<p>Vous pouvez dès maintenant enregistrer vos exposants directement dans la rubrique \"récapitulatifs\". Après le 19 Novembre, il ne sera plus possible d’en ajouter.</p>"+
+`<p>Félicitations, votre bon de commande 2 pour la ${cfg.editionLabel} du Forum ESTP est validé. Nous avons hâte de vous recevoir.</p>`+
+(attachmentFileName
+  ? "<p>Vous trouverez ci-joint votre bon de commande 2.<br />La facture associée vous sera bientôt transmise. Pour toute demande concernant la facture, contactez Vincent Lavorel sur l’adresse mail suivante : <a href='mailto:vincent.lavorel@forumestp.fr'>vincent.lavorel@forumestp.fr</a>.</p>"
+  : "<p>Votre bon de commande 2 vous sera transmis dans un prochain email.<br />La facture associée vous sera bientôt transmise. Pour toute demande concernant la facture, contactez Vincent Lavorel sur l’adresse mail suivante : <a href='mailto:vincent.lavorel@forumestp.fr'>vincent.lavorel@forumestp.fr</a>.</p>")+
+`<p>Vous pouvez dès maintenant enregistrer vos exposants directement dans la rubrique \"récapitulatifs\". Après le ${cfg.bc2ExposantsDeadline}, il ne sera plus possible d’en ajouter.</p>`+
 "<p>Vous pouvez aussi y consulter votre BC1, BC2 et les informations clefs de l’organisation du Forum.</p>"+
 "<p>Si vous avez des questions sur l'organisation le jour J, n'hésitez pas à contacter votre commercial référent.</p>"+
 "<p>Bien cordialement,</p>"+
-                    "<img src=\"https://test.app.forumestp.fr/assets/logo.png\" alt=\"\" style=\"max-width: 300px; max-height: 200px;\" />" +
+                    "<img src=\"https://app.forumetp.fr/assets/logo.png?v=47\" alt=\"Forum ESTP\" style=\"max-width: 300px; max-height: 200px;\" />" +
                     "<p>28 avenue du Président Wilson <br />94234 CACHAN Cedex </p>" +
                     "<p>Notre site WEB : <a href=\"https://www.forumetp.org\">Forum ESTP</a></p>";
-                  sendEmail("ne-pas-repondre@forumestp.fr", result[0].email , result[0].first_name + " " + result[0].last_name, "Forum ESTP : Bon de commande 2", htmlContent, ["alice.douard@forumestp.fr"], `${entreprise_id}_BC2.pdf`, base64Attachment);
+                  await sendEmail("ne-pas-repondre@forumestp.fr", result[0].email , result[0].first_name + " " + result[0].last_name, "Forum ESTP : Bon de commande 2", htmlContent, ["forumetp@gmail.com"], attachmentFileName, base64Attachment);
                 } catch (err) {
-                  console.error("Erreur en attente du PDF avant l'envoi de l'email :", err);
+                  console.error("Erreur lors de l'envoi de l'email de confirmation BC2 :", err);
                 }
               }
             }
